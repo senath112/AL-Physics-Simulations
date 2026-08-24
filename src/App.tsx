@@ -23,6 +23,8 @@ type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'therm
 interface SimulationMetadata {
   id: string;
   title: string;
+  sinhalaTitle?: string;
+  tamilTitle?: string;
   unit: SyllabusUnit;
   description: string;
   icon: any;
@@ -41,6 +43,8 @@ function App() {
     {
       id: 'newtons_laws',
       title: "Newton's Second Law",
+      sinhalaTitle: "නිව්ටන්ගේ දෙවන නියමය",
+      tamilTitle: "நியூட்டனின் இரண்டாம் விதி",
       unit: 'mechanics',
       description: 'Simulate sliding block dynamics, examine vector forces, and study static/kinetic friction limits with an integrated laboratory notebook.',
       icon: Compass,
@@ -50,6 +54,8 @@ function App() {
     {
       id: 'inclined_plane',
       title: 'Friction on an Inclined Plane',
+      sinhalaTitle: "ඇල තලයක ඝර්ෂණය",
+      tamilTitle: "சாய்வுத்தளத்தில் உராய்வு",
       unit: 'mechanics',
       description: 'Resolve gravity vectors on sloped surfaces, find critical angle thresholds, and observe kinetic friction sliding blocks.',
       icon: Compass,
@@ -60,6 +66,8 @@ function App() {
     {
       id: 'projectile',
       title: 'Projectile Motion',
+      sinhalaTitle: "ප්‍රක්ෂේපිත චලිතය",
+      tamilTitle: "எறியக் கணிய இயக்கம்",
       unit: 'mechanics',
       description: 'Analyze horizontal and vertical independent motions, trace parabolic trajectory vectors, and evaluate range metrics without air resistance.',
       icon: Compass,
@@ -69,6 +77,8 @@ function App() {
     {
       id: 'optics',
       title: 'Geometrical Optics Explainer',
+      sinhalaTitle: "ජ්‍යාමිතික ප්‍රකාශ විද්‍යාව",
+      tamilTitle: "வடிவியல் ஒளியியல்",
       unit: 'waves',
       description: 'Study Reflection, Refraction, Snell\'s Law, Total Internal Reflection critical angles, and Optical Fibre waveguidance parameters with real-time explain mode overlays.',
       icon: Atom,
@@ -78,6 +88,8 @@ function App() {
     {
       id: 'shm',
       title: 'Simple Harmonic Motion',
+      sinhalaTitle: "සරල අනුවර්තී චලිතය",
+      tamilTitle: "எளிய இசை இயக்கம்",
       unit: 'mechanics',
       description: 'Explore dynamic displacement, velocity, acceleration phase vectors, and energy state relationships for spring-mass oscillators.',
       icon: Activity,
@@ -87,6 +99,8 @@ function App() {
     {
       id: 'dc_circuits',
       title: 'DC Circuits & Ohm\'s Law',
+      sinhalaTitle: "සරල ධාරා පරිපථ සහ ඕම්ගේ නියමය",
+      tamilTitle: "நேரோட்ட மின்சுற்றுகளும் ஓமின் விதியும்",
       unit: 'electricity',
       description: 'Build simple series and parallel circuit configurations, manipulate resistor attributes, and plot live current/voltage loops.',
       icon: Zap,
@@ -95,6 +109,8 @@ function App() {
     {
       id: 'doppler',
       title: 'Doppler Effect',
+      sinhalaTitle: "ඩොප්ලර් ආචරණය",
+      tamilTitle: "டொப்ளர் விளைவு",
       unit: 'waves',
       description: 'Visualize progressive wavefront compressions and calculate frequency shifts for moving sound sources and observers.',
       icon: Waves,
@@ -103,6 +119,8 @@ function App() {
     {
       id: 'gas_laws',
       title: 'Kinetic Theory of Gases',
+      sinhalaTitle: "වායුවල චාලක වාදය",
+      tamilTitle: "வாயுக்களின் இயக்கவிசைக் கொள்கை",
       unit: 'thermal',
       description: 'Simulate thermodynamic gas molecule collisions in a chamber to visualize Boyles, Charles, and pressure laws.',
       icon: Thermometer,
@@ -174,17 +192,10 @@ function App() {
             </button>
             <button 
               onClick={() => { setCurrentPage('sims'); setSearchQuery(''); }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-slate-900 bg-slate-100 transition-all cursor-pointer"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Chemistry
-            </button>
-            <button 
-              onClick={() => { setCurrentPage('sims'); setSearchQuery(''); }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 transition-all cursor-pointer"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-              Mathematics
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              Physics
             </button>
           </div>
 
@@ -534,6 +545,13 @@ function App() {
                             </div>
                             <div>
                               <h4 className="font-bold text-slate-900 text-base">{sim.title}</h4>
+                              {sim.sinhalaTitle && sim.tamilTitle && (
+                                <div className="text-[10px] font-semibold text-slate-400 space-x-1 mt-0.5 font-sans leading-none flex items-center gap-1">
+                                  <span>{sim.sinhalaTitle}</span>
+                                  <span className="text-[8px] text-slate-350">•</span>
+                                  <span>{sim.tamilTitle}</span>
+                                </div>
+                              )}
                               <p className="text-slate-600 text-xs mt-1.5 leading-relaxed">{sim.description}</p>
                             </div>
                           </div>
@@ -566,10 +584,13 @@ function App() {
         {currentPage === 'projectile_sim' && (
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             {/* Top breadcrumb navigation bar */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-3 shrink-0">
-              <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
-              <span>&gt;</span>
-              <span className="text-slate-900 font-semibold">Projectile Motion</span>
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Projectile Motion</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ප්‍රක්ෂේපිත චලිතය • எறியக் கணிய இயக்கம்</span>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
@@ -582,10 +603,13 @@ function App() {
         {currentPage === 'newtons_sim' && (
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             {/* Top breadcrumb navigation bar */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-3 shrink-0">
-              <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
-              <span>&gt;</span>
-              <span className="text-slate-900 font-semibold">Newton's Second Law</span>
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Newton's Second Law</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">නිව්ටන්ගේ දෙවන නියමය • நியூட்டனின் இரண்டாம் விதி</span>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
@@ -605,7 +629,10 @@ function App() {
               >
                 ← Back to Directory
               </button>
-              <span className="text-slate-900 font-semibold">Friction on an Inclined Plane</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ඇල තලයක ඝර්ෂණය • சாய்வுத்தளத்தில் உராய்வு</span>
+                <span className="text-slate-900 font-semibold text-sm">Friction on an Inclined Plane</span>
+              </div>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
@@ -625,7 +652,10 @@ function App() {
               >
                 ← Back to Directory
               </button>
-              <span className="text-slate-900 font-semibold">Geometrical Optics Explainer</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ජ්‍යාමිතික ප්‍රකාශ විද්‍යාව • வடிவியல் ஒளியியல்</span>
+                <span className="text-slate-900 font-semibold text-sm">Geometrical Optics Explainer</span>
+              </div>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
@@ -645,7 +675,10 @@ function App() {
               >
                 ← Back to Directory
               </button>
-              <span className="text-slate-900 font-semibold">Simple Harmonic Motion Explainer</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සරල අනුවර්තී චලිතය • எளிய இசை இயக்கம்</span>
+                <span className="text-slate-900 font-semibold text-sm">Simple Harmonic Motion Explainer</span>
+              </div>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
