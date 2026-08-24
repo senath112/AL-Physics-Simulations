@@ -171,33 +171,7 @@ function App() {
             </span>
           </div>
 
-          {/* Navigation Pill Filters */}
-          <div className="hidden md:flex items-center gap-1 bg-slate-50 border border-slate-100/80 rounded-full p-1">
-            <button 
-              onClick={() => { setCurrentPage('home'); setSearchQuery(''); }}
-              className={`px-4 py-1 rounded-full text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                currentPage === 'home' 
-                  ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50' 
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              All
-            </button>
-            <button 
-              onClick={() => { setCurrentPage('sims'); setSearchQuery(''); }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 transition-all cursor-pointer"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              Physics
-            </button>
-            <button 
-              onClick={() => { setCurrentPage('sims'); setSearchQuery(''); }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-slate-900 bg-slate-100 transition-all cursor-pointer"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              Physics
-            </button>
-          </div>
+
 
           {/* Right Action buttons */}
           <div className="flex items-center gap-3">
