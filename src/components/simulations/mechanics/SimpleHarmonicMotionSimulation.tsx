@@ -354,26 +354,23 @@ export function SimpleHarmonicMotionSimulation() {
 
       // Draw reference circle if requested
       if (showRefCircle) {
-        const circleX = 110;
-        const circleY = mode === 'spring' ? 160 : 170;
+        const circleX = 90;
+        const circleY = 220;
+        const maxRadius = 55;
         
-        // Max amplitude radius in pixels
-        const maxRadius = Math.abs(amplitude * (mode === 'spring' ? 50 : (length * 85 * Math.PI / 180)));
-        
-        // Current radius (with damping)
-        const currentRadius = Math.sqrt(
-          Math.pow(state.displacement * (mode === 'spring' ? 50 : (length * 85)), 2) +
-          Math.pow((state.velocity / omega0) * (mode === 'spring' ? 50 : (length * 85)), 2)
-        );
+        // Damping decay
+        const beta = damping / (2 * (mode === 'spring' ? mass : mass * length));
+        const decayFactor = Math.exp(-beta * timeRef.current);
+        const currentRadius = maxRadius * decayFactor;
 
         // Draw axes
         ctx.strokeStyle = '#f1f5f9';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(circleX - maxRadius - 15, circleY);
-        ctx.lineTo(circleX + maxRadius + 15, circleY);
-        ctx.moveTo(circleX, circleY - maxRadius - 15);
-        ctx.lineTo(circleX, circleY + maxRadius + 15);
+        ctx.moveTo(circleX - maxRadius - 10, circleY);
+        ctx.lineTo(circleX + maxRadius + 10, circleY);
+        ctx.moveTo(circleX, circleY - maxRadius - 10);
+        ctx.lineTo(circleX, circleY + maxRadius + 10);
         ctx.stroke();
 
         // Draw main boundary auxiliary circle
@@ -393,10 +390,22 @@ export function SimpleHarmonicMotionSimulation() {
           ctx.setLineDash([]);
         }
 
-        // Phasor vector coordinates
-        const px = state.displacement * (mode === 'spring' ? 50 : (length * 85));
-        // y-coordinate is proportional to velocity / omega0
-        const py = -(state.velocity / omega0) * (mode === 'spring' ? 50 : (length * 85));
+        // Phasor rotation angle phi
+        // If spring, phase makes vertical displacement represent position
+        // If pendulum, phase makes horizontal displacement represent position
+        const phi = omega0 * timeRef.current;
+        let px = 0;
+        let py = 0;
+
+        if (mode === 'spring') {
+          // Vertical SHM: Y component is displacement (cos), X component is velocity (sin)
+          px = Math.sin(phi) * currentRadius;
+          py = Math.cos(phi) * currentRadius;
+        } else {
+          // Horizontal SHM: X component is displacement (cos), Y component is velocity (sin)
+          px = Math.cos(phi) * currentRadius;
+          py = -Math.sin(phi) * currentRadius;
+        }
 
         // Draw Phasor line
         ctx.strokeStyle = '#6366f1';
