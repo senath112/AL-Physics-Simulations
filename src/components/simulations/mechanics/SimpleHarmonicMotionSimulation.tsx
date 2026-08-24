@@ -493,10 +493,10 @@ export function SimpleHarmonicMotionSimulation() {
           : Math.abs(visualL * Math.sin((amplitude * Math.PI) / 180));
         
         // Align center of the circle exactly on the equilibrium lines:
-        // - Spring: shift to the left side (X = 180) and centered vertically at spring equilibrium Y = 240
+        // - Spring: shift to the left side (X = 180) and centered vertically at spring equilibrium Y = 260 (40 + 200 + 20)
         // - Pendulum: vertical equilibrium level (X = centerX) and positioned under the bob (Y = 350)
         const circleX = mode === 'spring' ? 180 : centerX;
-        const circleY = mode === 'spring' ? 240 : 350;
+        const circleY = mode === 'spring' ? 260 : 350;
         
         // Damping decay factor
         const beta = damping / (2 * (mode === 'spring' ? mass : mass * length));
@@ -537,8 +537,10 @@ export function SimpleHarmonicMotionSimulation() {
 
         if (mode === 'spring') {
           // Vertical SHM: Y component is displacement, X component is velocity
-          px = Math.sin(phi) * currentRadius;
-          py = Math.cos(phi) * currentRadius;
+          // Calculate py to exactly match the mass block's physical vertical displacement
+          py = state.displacement * 75;
+          const sign = Math.sin(phi) >= 0 ? 1 : -1;
+          px = sign * Math.sqrt(Math.max(0, currentRadius * currentRadius - py * py));
         } else {
           // Horizontal SHM: X component is displacement, Y component is velocity
           px = Math.cos(phi) * currentRadius;
@@ -565,11 +567,9 @@ export function SimpleHarmonicMotionSimulation() {
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
         if (mode === 'spring') {
-          // Spring: project vertically to mass block Y coordinate
-          const springScale = 75;
-          const springEq = 240;
-          const blockCenterY = springEq + state.displacement * springScale + 20;
-          ctx.moveTo(circleX + px, circleY + py);
+          // Spring: project horizontally to mass block center of gravity Y coordinate
+          const blockCenterY = 260 + state.displacement * 75;
+          ctx.moveTo(circleX + px, blockCenterY);
           ctx.lineTo(springX, blockCenterY);
         } else {
           // Pendulum: project horizontally/vertically to bob coordinate
