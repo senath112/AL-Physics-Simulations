@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { PlotlyGraph } from '../../PlotlyGraph';
-import { BlockMath } from '../../Math';
+import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
   Info, 
@@ -813,12 +813,12 @@ export function PhotoelectricEffectSimulation() {
               </p>
               <BlockMath math="E = \Phi + K_{\max}" />
               <p>
-                Where <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded">{"E = hf = \\frac{hc}{\\lambda}"}</span> is the incoming photon energy, <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded">{"\\Phi"}</span> is the work function of the metal target, and <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded">{"K_{\\max}"}</span> is the maximum kinetic energy of the ejected photoelectrons.
+                Where <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="E = hf = \frac{hc}{\lambda}" /></span> is the incoming photon energy, <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="\Phi" /></span> is the work function of the metal target, and <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="K_{\max}" /></span> is the maximum kinetic energy of the ejected photoelectrons.
               </p>
             </div>
             <div className="space-y-2">
               <p>
-                <strong>Stopping Potential (නැවැතුම් විභවය):</strong> The stopping potential <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded">V_s</span> is the negative voltage applied to the collector plate that retards the fastest ejected electrons, dropping the photocurrent to zero:
+                <strong>Stopping Potential (නැවැතුම් විභවය):</strong> The stopping potential <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="V_s" /></span> is the negative voltage applied to the collector plate that retards the fastest ejected electrons, dropping the photocurrent to zero:
               </p>
               <BlockMath math="e V_s = K_{\max} = hf - \Phi" />
               <p>
