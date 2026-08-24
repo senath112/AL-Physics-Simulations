@@ -32,6 +32,7 @@ export function SimpleHarmonicMotionSimulation() {
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
   const [explainMode, setExplainMode] = useState<boolean>(true);
   const [activeGraphTab, setActiveGraphTab] = useState<'displacement' | 'velocity' | 'acceleration' | 'phase' | 'energy'>('displacement');
+  const [showRefCircle, setShowRefCircle] = useState<boolean>(true);
   
   // Controls
   const [mass, setMass] = useState<number>(1.0);        // kg
@@ -351,16 +352,103 @@ export function SimpleHarmonicMotionSimulation() {
       ctx.fillText(`${mass.toFixed(1)}kg`, bobX, bobY + 3);
     }
 
-    // Overlay physics indicators
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 11px font-sans';
-    ctx.textAlign = 'left';
-    ctx.fillText(`Displacement (x): ${state.displacement.toFixed(2)} m`, 20, 30);
-    ctx.fillText(`Velocity (v): ${state.velocity.toFixed(2)} m/s`, 20, 48);
-    ctx.fillText(`Acceleration (a): ${state.acceleration.toFixed(2)} m/s²`, 20, 66);
+      // Draw reference circle if requested
+      if (showRefCircle) {
+        const circleX = 110;
+        const circleY = mode === 'spring' ? 160 : 170;
+        
+        // Max amplitude radius in pixels
+        const maxRadius = Math.abs(amplitude * (mode === 'spring' ? 50 : (length * 85 * Math.PI / 180)));
+        
+        // Current radius (with damping)
+        const currentRadius = Math.sqrt(
+          Math.pow(state.displacement * (mode === 'spring' ? 50 : (length * 85)), 2) +
+          Math.pow((state.velocity / omega0) * (mode === 'spring' ? 50 : (length * 85)), 2)
+        );
 
-    ctx.restore();
-  };
+        // Draw axes
+        ctx.strokeStyle = '#f1f5f9';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(circleX - maxRadius - 15, circleY);
+        ctx.lineTo(circleX + maxRadius + 15, circleY);
+        ctx.moveTo(circleX, circleY - maxRadius - 15);
+        ctx.lineTo(circleX, circleY + maxRadius + 15);
+        ctx.stroke();
+
+        // Draw main boundary auxiliary circle
+        ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(circleX, circleY, maxRadius, 0, 2 * Math.PI);
+        ctx.stroke();
+
+        // Draw current decaying orbit circle (dashed)
+        if (damping > 0 && currentRadius > 2) {
+          ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+          ctx.setLineDash([2, 3]);
+          ctx.beginPath();
+          ctx.arc(circleX, circleY, currentRadius, 0, 2 * Math.PI);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Phasor vector coordinates
+        const px = state.displacement * (mode === 'spring' ? 50 : (length * 85));
+        // y-coordinate is proportional to velocity / omega0
+        const py = -(state.velocity / omega0) * (mode === 'spring' ? 50 : (length * 85));
+
+        // Draw Phasor line
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(circleX, circleY);
+        ctx.lineTo(circleX + px, circleY + py);
+        ctx.stroke();
+
+        // Draw Phasor head dot
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(circleX + px, circleY + py, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Draw projection line to the mass block or bob
+        ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        if (mode === 'spring') {
+          // Spring: project vertically to mass block Y coordinate
+          const blockCenterY = 160 + state.displacement * 50 + 20;
+          ctx.moveTo(circleX + px, circleY + py);
+          ctx.lineTo(centerX, blockCenterY);
+        } else {
+          // Pendulum: project horizontally to bob X coordinate
+          const visualL = length * 85;
+          const bobX = centerX + visualL * Math.sin(state.displacement);
+          const bobY = 50 + visualL * Math.cos(state.displacement);
+          ctx.moveTo(circleX + px, circleY + py);
+          ctx.lineTo(bobX, bobY);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label reference circle
+        ctx.fillStyle = '#6366f1';
+        ctx.font = 'bold 8px font-sans';
+        ctx.fillText('Reference Phasor', circleX - 38, circleY - maxRadius - 8);
+      }
+
+      // Overlay physics indicators
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px font-sans';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Displacement (x): ${state.displacement.toFixed(2)} m`, 20, 30);
+      ctx.fillText(`Velocity (v): ${state.velocity.toFixed(2)} m/s`, 20, 48);
+      ctx.fillText(`Acceleration (a): ${state.acceleration.toFixed(2)} m/s²`, 20, 66);
+
+      ctx.restore();
+    };
 
   // Click & Drag event listeners for setting amplitude directly
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -647,9 +735,25 @@ export function SimpleHarmonicMotionSimulation() {
             </div>
 
             {/* Simulated environment constraints */}
-            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500">
-              <span>Gravity Constant (g)</span>
-              <span className="font-mono text-slate-800 bg-slate-100 px-2 py-0.5 rounded">10 m/s²</span>
+            <div className="pt-2.5 border-t border-slate-100 space-y-2">
+              {/* Reference Circle checkbox */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showRefCircle"
+                  checked={showRefCircle}
+                  onChange={(e) => setShowRefCircle(e.target.checked)}
+                  className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-350 focus:ring-indigo-500 cursor-pointer"
+                />
+                <label htmlFor="showRefCircle" className="text-xs font-bold text-slate-600 select-none cursor-pointer">
+                  Show SHM Reference Circle
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 pt-1">
+                <span>Gravity Constant (g)</span>
+                <span className="font-mono text-slate-800 bg-slate-100 px-2 py-0.5 rounded">10 m/s²</span>
+              </div>
             </div>
           </div>
 
