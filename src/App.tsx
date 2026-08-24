@@ -4,6 +4,7 @@ import { NewtonsLawsSimulation } from './components/simulations/mechanics/Newton
 import { InclinedPlaneSimulation } from './components/simulations/mechanics/InclinedPlaneSimulation';
 import { GeometricalOpticsSimulation } from './components/simulations/optics/GeometricalOpticsSimulation';
 import { SimpleHarmonicMotionSimulation } from './components/simulations/mechanics/SimpleHarmonicMotionSimulation';
+import { PhotoelectricEffectSimulation } from './components/simulations/modern/PhotoelectricEffectSimulation';
 import { 
   Compass, 
   Activity, 
@@ -17,7 +18,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -129,10 +130,13 @@ function App() {
     {
       id: 'photoelectric',
       title: 'Photoelectric Effect',
+      sinhalaTitle: "ප්‍රකාශ විද්‍යුත් ආචරණය",
+      tamilTitle: "ஒளிமின் விளைவு",
       unit: 'modern',
       description: 'Vary incident light frequency and intensity to calculate threshold frequencies, work functions, and stopping potentials.',
       icon: Atom,
-      status: 'coming_soon',
+      status: 'active',
+      pageLink: 'photoelectric_sim',
     },
   ];
 
@@ -671,6 +675,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <SimpleHarmonicMotionSimulation />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE PHOTOELECTRIC SIMULATION */}
+        {currentPage === 'photoelectric_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ප්‍රකාශ විද්‍යුත් ආචරණය • ஒளிமின் விளைவு</span>
+                <span className="text-slate-900 font-semibold text-sm">Photoelectric Effect Explainer</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <PhotoelectricEffectSimulation />
             </div>
           </div>
         )}
