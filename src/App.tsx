@@ -261,12 +261,8 @@ function App() {
                   {/* Stats Counter Row */}
                   <div className="pt-8 border-t border-slate-200/60 flex gap-8 select-none">
                     <div>
-                      <div className="text-2xl font-black text-slate-900">3</div>
+                      <div className="text-2xl font-black text-slate-900">4</div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Active Labs</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-black text-slate-900">10K+</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Students</div>
                     </div>
                     <div>
                       <div className="text-2xl font-black text-slate-900">100%</div>
