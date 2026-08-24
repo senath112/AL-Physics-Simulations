@@ -55,7 +55,15 @@ export function SimpleHarmonicMotionSimulation() {
   const isDragging = useRef<boolean>(false);
 
   // Chart data history
-  const [history, setHistory] = useState<{ t: number[]; x: number[]; v: number[]; a: number[]; ek: number[]; ep: number[]; et: number[] }>({
+  const [history, setHistory] = useState<{ 
+    t: number[]; 
+    x: (number | null)[]; 
+    v: (number | null)[]; 
+    a: (number | null)[]; 
+    ek: (number | null)[]; 
+    ep: (number | null)[]; 
+    et: (number | null)[]; 
+  }>({
     t: [],
     x: [],
     v: [],
@@ -64,6 +72,27 @@ export function SimpleHarmonicMotionSimulation() {
     ep: [],
     et: []
   });
+
+  // Real-Time Integrity Monitor status
+  const [healthStatus, setHealthStatus] = useState<{
+    status: 'Optimal' | 'Jittery' | 'Stalled' | 'Lagging';
+    fps: number;
+    droppedFrames: number;
+    jitter: number;
+    integrity: string;
+  }>({
+    status: 'Optimal',
+    fps: 60,
+    droppedFrames: 0,
+    jitter: 0.0,
+    integrity: '100.0%'
+  });
+
+  const frameCountRef = useRef<number>(0);
+  const lastFpsUpdateRef = useRef<number>(0);
+  const droppedFramesRef = useRef<number>(0);
+  const jitterAccumulatorRef = useRef<number>(0);
+  const accumulatorRef = useRef<number>(0);
 
   // DOM element refs for 60fps energy bar fluctuations
   const ekValRef = useRef<HTMLSpanElement>(null);
@@ -111,6 +140,7 @@ export function SimpleHarmonicMotionSimulation() {
   // Reset simulation timer
   const handleReset = () => {
     timeRef.current = 0;
+    accumulatorRef.current = 0;
     setHistory({ t: [], x: [], v: [], a: [], ek: [], ep: [], et: [] });
     // Force re-draw by checking current params
   };
@@ -120,11 +150,77 @@ export function SimpleHarmonicMotionSimulation() {
     let lastTimestamp = performance.now();
 
     const loop = (now: number) => {
-      const deltaSeconds = Math.min(0.03, (now - lastTimestamp) / 1000);
+      const deltaSeconds = Math.min(0.25, (now - lastTimestamp) / 1000);
       lastTimestamp = now;
 
+      // Track rendering integrity details
+      const frameIntervalMs = deltaSeconds * 1000;
+      frameCountRef.current++;
+      
+      // Calculate jitter (against target 16.67ms)
+      const targetInterval = 1000 / 60;
+      const currentJitter = Math.abs(frameIntervalMs - targetInterval);
+      jitterAccumulatorRef.current = jitterAccumulatorRef.current * 0.9 + currentJitter * 0.1;
+
+      // Detect frame drops and stalls
+      if (frameIntervalMs > 32) {
+        droppedFramesRef.current += Math.floor(frameIntervalMs / 16.67) - 1;
+      }
+
+      let currentStatus: 'Optimal' | 'Jittery' | 'Stalled' | 'Lagging' = 'Optimal';
+      if (frameIntervalMs > 100) {
+        currentStatus = 'Stalled';
+      } else if (frameIntervalMs > 45) {
+        currentStatus = 'Lagging';
+      } else if (jitterAccumulatorRef.current > 4.5) {
+        currentStatus = 'Jittery';
+      }
+
+      // Update Simulation Health stats every 500ms
+      if (now - lastFpsUpdateRef.current > 500) {
+        const computedFps = Math.round(frameCountRef.current / ((now - lastFpsUpdateRef.current) / 1000));
+        const totalExpectedFrames = ((now - lastFpsUpdateRef.current) / 1000) * 60;
+        const integrityPct = Math.max(0, 100 - (droppedFramesRef.current / Math.max(1, totalExpectedFrames)) * 100);
+        
+        setHealthStatus({
+          status: currentStatus,
+          fps: computedFps,
+          droppedFrames: droppedFramesRef.current,
+          jitter: parseFloat(jitterAccumulatorRef.current.toFixed(1)),
+          integrity: `${integrityPct.toFixed(1)}%`
+        });
+        frameCountRef.current = 0;
+        lastFpsUpdateRef.current = now;
+      }
+
       if (isPlaying && !isDragging.current) {
-        timeRef.current += deltaSeconds;
+        // Detect significant rendering gap (e.g. background tab or system stall)
+        if (deltaSeconds > 0.08) {
+          // Insert null break to prevent drawing artificial connecting line segments
+          setHistory(prev => {
+            const nextT = [...prev.t, timeRef.current + 0.001];
+            const nextX = [...prev.x, null];
+            const nextV = [...prev.v, null];
+            const nextA = [...prev.a, null];
+            const nextEk = [...prev.ek, null];
+            const nextEp = [...prev.ep, null];
+            const nextEt = [...prev.et, null];
+
+            if (nextT.length > 150) {
+              nextT.shift(); nextX.shift(); nextV.shift(); nextA.shift();
+              nextEk.shift(); nextEp.shift(); nextEt.shift();
+            }
+            return { t: nextT, x: nextX, v: nextV, a: nextA, ek: nextEk, ep: nextEp, et: nextEt };
+          });
+        }
+
+        // Fixed physics timestep accumulator
+        const dt = 1 / 100; // 10ms fixed physics steps
+        accumulatorRef.current += deltaSeconds;
+        while (accumulatorRef.current >= dt) {
+          timeRef.current += dt;
+          accumulatorRef.current -= dt;
+        }
 
         // Compute new state
         const state = calculateSHMState(timeRef.current, currentParams);
@@ -221,10 +317,11 @@ export function SimpleHarmonicMotionSimulation() {
     if (mode === 'spring') {
       // 1. Draw Mass-Spring System
       const ceilingY = 40;
-      const restLength = 120;
+      const restLength = showRefCircle ? 120 : 200;
+      const springScale = showRefCircle ? 50 : 75;
       
       // Calculate spring stretching scaling
-      const extension = state.displacement * 50; // Scale meters to pixels
+      const extension = state.displacement * springScale; // Scale meters to pixels
       const currentLength = restLength + extension;
 
       // Draw Ceiling support
@@ -312,8 +409,8 @@ export function SimpleHarmonicMotionSimulation() {
       // We scale amplitude to visual swing radians
       const theta = state.displacement; 
 
-      // Length scaling: 1 meter = 60 pixels
-      const visualL = length * 60;
+      // Length scaling: 1 meter = 60 pixels (with ref circle) or 110 pixels (expanded)
+      const visualL = length * (showRefCircle ? 60 : 110);
       const bobX = pivotX + visualL * Math.sin(theta);
       const bobY = pivotY + visualL * Math.cos(theta);
 
@@ -434,7 +531,9 @@ export function SimpleHarmonicMotionSimulation() {
         ctx.beginPath();
         if (mode === 'spring') {
           // Spring: project vertically to mass block Y coordinate
-          const blockCenterY = 160 + state.displacement * 50 + 20;
+          const springScale = showRefCircle ? 50 : 75;
+          const springEq = showRefCircle ? 160 : 240;
+          const blockCenterY = springEq + state.displacement * springScale + 20;
           ctx.moveTo(circleX + px, circleY + py);
           ctx.lineTo(centerX, blockCenterY);
         } else {
@@ -477,15 +576,16 @@ export function SimpleHarmonicMotionSimulation() {
 
     if (mode === 'spring') {
       // Spring mode dragging block vertical displacement
-      // Rest center block Y is around restLength = 120 + ceilingY (40) = 160 px
-      const currentBlockY = 40 + 120 + shmState.displacement * 50;
+      const springScale = showRefCircle ? 50 : 75;
+      const springEq = showRefCircle ? 160 : 240;
+      const currentBlockY = springEq + shmState.displacement * springScale + 20;
       if (Math.abs(x - centerX) < 40 && Math.abs(y - currentBlockY) < 40) {
         isDragging.current = true;
         setIsPlaying(false);
       }
     } else {
       // Pendulum bob dragging
-      const visualL = length * 60;
+      const visualL = length * (showRefCircle ? 60 : 110);
       const bobX = centerX + visualL * Math.sin(shmState.displacement);
       const bobY = 50 + visualL * Math.cos(shmState.displacement);
 
@@ -510,9 +610,11 @@ export function SimpleHarmonicMotionSimulation() {
     const centerX = rect.width / 2;
 
     if (mode === 'spring') {
-      // Map vertical coordinate offset relative to equilibrium Y = 160
-      const deltaY = y - 160;
-      const newAmp = Math.max(-2.0, Math.min(2.0, deltaY / 50));
+      // Map vertical coordinate offset relative to dynamic equilibrium Y
+      const springEq = showRefCircle ? 160 : 240;
+      const springScale = showRefCircle ? 50 : 75;
+      const deltaY = y - springEq;
+      const newAmp = Math.max(-2.0, Math.min(2.0, deltaY / springScale));
       setAmplitude(newAmp);
       timeRef.current = 0; // reset phase
       setHistory({ t: [], x: [], v: [], a: [], ek: [], ep: [], et: [] });
@@ -812,14 +914,50 @@ export function SimpleHarmonicMotionSimulation() {
             </div>
             
             <div className="w-full overflow-x-auto flex justify-center py-2">
-              <canvas
-                ref={canvasRef}
-                className="border border-slate-100 rounded-lg bg-white cursor-grab active:cursor-grabbing select-none shadow-sm"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              />
+              <div className="relative">
+                <canvas
+                  ref={canvasRef}
+                  className="border border-slate-100 rounded-lg bg-white cursor-grab active:cursor-grabbing select-none shadow-sm"
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                />
+
+                {/* Simulation Health Diagnostic Overlay */}
+                <div className="absolute top-4 right-4 bg-slate-900/90 text-white rounded-lg p-2.5 shadow-lg border border-slate-700/50 backdrop-blur-sm w-44 pointer-events-none select-none text-[10px] space-y-1.5 leading-tight font-medium">
+                  <div className="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">
+                    <span className="font-bold uppercase tracking-wider text-slate-400">Simulation Health</span>
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                      healthStatus.status === 'Optimal' ? 'bg-emerald-500/20 text-emerald-400' :
+                      healthStatus.status === 'Jittery' ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                      <span className={`w-1 h-1 rounded-full ${
+                        healthStatus.status === 'Optimal' ? 'bg-emerald-400 animate-ping' :
+                        healthStatus.status === 'Jittery' ? 'bg-amber-400' : 'bg-red-400'
+                      }`} />
+                      {healthStatus.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Render Rate:</span>
+                    <span className="font-mono font-bold text-slate-200">{healthStatus.fps} FPS</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Dropped Frames:</span>
+                    <span className="font-mono text-slate-200">{healthStatus.droppedFrames}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Timing Jitter:</span>
+                    <span className="font-mono text-slate-200">{healthStatus.jitter} ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Graph Integrity:</span>
+                    <span className="font-mono text-slate-200">{healthStatus.integrity}</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Energy conversion bar chart */}
