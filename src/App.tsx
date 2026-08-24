@@ -148,7 +148,7 @@ function App() {
               <GraduationCap className="w-5 h-5" />
             </div>
             <span className="font-extrabold text-sm text-slate-900 tracking-tight flex items-center gap-1">
-              Senath <span className="text-blue-600 font-black">Sethmika</span>
+              Physics <span className="text-blue-600 font-black">by Senath</span>
             </span>
           </div>
 
@@ -201,7 +201,7 @@ function App() {
               target="_blank" 
               rel="noreferrer"
               className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 block shrink-0"
-              title="Senath Sethmika Profile"
+              title="Physics by Senath Profile"
             >
               <img 
                 src="https://github.com/senath112.png" 
@@ -437,7 +437,7 @@ function App() {
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">Built by community</h4>
                       <p className="text-slate-400 text-xs leading-relaxed">
-                        Developed by Senath Sethmika to support G.C.E. Advanced Level students throughout Sri Lanka.
+                        Developed by Physics by Senath to support G.C.E. Advanced Level students throughout Sri Lanka.
                       </p>
                     </div>
                   </div>
@@ -660,7 +660,7 @@ function App() {
       {/* Global Footer (shown on all pages) */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto shrink-0 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
-          <p>© {new Date().getFullYear()} A/L Physics Simulations. Developed by Senath Sethmika. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} A/L Physics Simulations. Developed by Physics by Senath. All Rights Reserved.</p>
           <p>This educational software is developed for Advanced Level physics students in Sri Lanka.</p>
         </div>
       </footer>

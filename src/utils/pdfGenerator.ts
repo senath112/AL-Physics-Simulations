@@ -215,7 +215,7 @@ export function downloadReportAsPDF(
         <div class="notes-box">${notes || 'No notes compiled for this investigation.'}</div>
 
         <div class="footer">
-          Developed by Senath Sethmika • Published at senathsethmika.lk/physics
+          Developed by Physics by Senath • Published at senathsethmika.lk/physics
         </div>
 
         <script>
