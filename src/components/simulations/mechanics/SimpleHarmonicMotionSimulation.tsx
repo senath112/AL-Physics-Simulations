@@ -31,6 +31,7 @@ export function SimpleHarmonicMotionSimulation() {
   // Parameters
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
   const [explainMode, setExplainMode] = useState<boolean>(true);
+  const [activeGraphTab, setActiveGraphTab] = useState<'displacement' | 'velocity' | 'acceleration' | 'phase' | 'energy'>('displacement');
   
   // Controls
   const [mass, setMass] = useState<number>(1.0);        // kg
@@ -53,10 +54,14 @@ export function SimpleHarmonicMotionSimulation() {
   const isDragging = useRef<boolean>(false);
 
   // Chart data history
-  const [history, setHistory] = useState<{ t: number[]; x: number[]; v: number[] }>({
+  const [history, setHistory] = useState<{ t: number[]; x: number[]; v: number[]; a: number[]; ek: number[]; ep: number[]; et: number[] }>({
     t: [],
     x: [],
-    v: []
+    v: [],
+    a: [],
+    ek: [],
+    ep: [],
+    et: []
   });
 
   // DOM element refs for 60fps energy bar fluctuations
@@ -105,7 +110,7 @@ export function SimpleHarmonicMotionSimulation() {
   // Reset simulation timer
   const handleReset = () => {
     timeRef.current = 0;
-    setHistory({ t: [], x: [], v: [] });
+    setHistory({ t: [], x: [], v: [], a: [], ek: [], ep: [], et: [] });
     // Force re-draw by checking current params
   };
 
@@ -128,14 +133,22 @@ export function SimpleHarmonicMotionSimulation() {
           const nextT = [...prev.t, timeRef.current];
           const nextX = [...prev.x, state.displacement];
           const nextV = [...prev.v, state.velocity];
+          const nextA = [...prev.a, state.acceleration];
+          const nextEk = [...prev.ek, state.kineticEnergy];
+          const nextEp = [...prev.ep, state.potentialEnergy];
+          const nextEt = [...prev.et, state.totalEnergy];
 
           // Keep last 150 points for smooth scrolling
           if (nextT.length > 150) {
             nextT.shift();
             nextX.shift();
             nextV.shift();
+            nextA.shift();
+            nextEk.shift();
+            nextEp.shift();
+            nextEt.shift();
           }
-          return { t: nextT, x: nextX, v: nextV };
+          return { t: nextT, x: nextX, v: nextV, a: nextA, ek: nextEk, ep: nextEp, et: nextEt };
         });
       }
 
@@ -400,7 +413,7 @@ export function SimpleHarmonicMotionSimulation() {
       const newAmp = Math.max(-2.0, Math.min(2.0, deltaY / 50));
       setAmplitude(newAmp);
       timeRef.current = 0; // reset phase
-      setHistory({ t: [], x: [], v: [] });
+      setHistory({ t: [], x: [], v: [], a: [], ek: [], ep: [], et: [] });
     } else {
       // Map angle relative to pivot (centerX, 50)
       const dx = x - centerX;
@@ -410,7 +423,7 @@ export function SimpleHarmonicMotionSimulation() {
       const clampedAmpDeg = Math.max(-75, Math.min(75, newAmpDeg));
       setAmplitude(clampedAmpDeg);
       timeRef.current = 0;
-      setHistory({ t: [], x: [], v: [] });
+      setHistory({ t: [], x: [], v: [], a: [], ek: [], ep: [], et: [] });
     }
   };
 
@@ -783,11 +796,27 @@ export function SimpleHarmonicMotionSimulation() {
         
         {/* Plotly Graph Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Oscillation Curves & Phase Orbit</h3>
-          <div className="flex-1 min-h-[300px] grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            {/* Waveform displacement vs time */}
-            <div className="h-full">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Oscillation Curves</h3>
+            <div className="flex flex-wrap gap-1">
+              {(['displacement', 'velocity', 'acceleration', 'phase', 'energy'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveGraphTab(tab)}
+                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    activeGraphTab === tab 
+                      ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-transparent'
+                  }`}
+                >
+                  {tab === 'displacement' ? 'x-t' : tab === 'velocity' ? 'v-t' : tab === 'acceleration' ? 'a-t' : tab === 'phase' ? 'v-x Phase' : 'Energy'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-[300px] flex items-center justify-center">
+            {activeGraphTab === 'displacement' && (
               <PlotlyGraph
                 data={[
                   {
@@ -795,25 +824,74 @@ export function SimpleHarmonicMotionSimulation() {
                     y: history.x,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Displacement (m)',
-                    line: { color: '#3b82f6', width: 2 }
+                    name: 'Displacement (x)',
+                    line: { color: '#3b82f6', width: 2.5 }
                   }
                 ]}
                 layout={{
                   autosize: true,
-                  margin: { l: 35, r: 10, t: 10, b: 35 },
-                  xaxis: { title: { text: 'Time (t)' } },
-                  yaxis: { title: { text: 'Displacement (x)' } },
-                  legend: { orientation: 'h', y: -0.25 },
+                  margin: { l: 45, r: 15, t: 15, b: 40 },
+                  xaxis: { title: { text: 'Time t (s)' } },
+                  yaxis: { title: { text: 'Displacement x (m)' } },
+                  legend: { orientation: 'h', y: -0.2 },
                   paper_bgcolor: 'rgba(0,0,0,0)',
                   plot_bgcolor: 'rgba(0,0,0,0)'
                 }}
                 className="w-full h-full"
               />
-            </div>
+            )}
 
-            {/* Phase Orbit Velocity vs Displacement */}
-            <div className="h-full">
+            {activeGraphTab === 'velocity' && (
+              <PlotlyGraph
+                data={[
+                  {
+                    x: history.t,
+                    y: history.v,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Velocity (v)',
+                    line: { color: '#10b981', width: 2.5 }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 45, r: 15, t: 15, b: 40 },
+                  xaxis: { title: { text: 'Time t (s)' } },
+                  yaxis: { title: { text: 'Velocity v (m/s)' } },
+                  legend: { orientation: 'h', y: -0.2 },
+                  paper_bgcolor: 'rgba(0,0,0,0)',
+                  plot_bgcolor: 'rgba(0,0,0,0)'
+                }}
+                className="w-full h-full"
+              />
+            )}
+
+            {activeGraphTab === 'acceleration' && (
+              <PlotlyGraph
+                data={[
+                  {
+                    x: history.t,
+                    y: history.a,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Acceleration (a)',
+                    line: { color: '#ef4444', width: 2.5 }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 45, r: 15, t: 15, b: 40 },
+                  xaxis: { title: { text: 'Time t (s)' } },
+                  yaxis: { title: { text: 'Acceleration a (m/s²)' } },
+                  legend: { orientation: 'h', y: -0.2 },
+                  paper_bgcolor: 'rgba(0,0,0,0)',
+                  plot_bgcolor: 'rgba(0,0,0,0)'
+                }}
+                className="w-full h-full"
+              />
+            )}
+
+            {activeGraphTab === 'phase' && (
               <PlotlyGraph
                 data={[
                   {
@@ -821,23 +899,63 @@ export function SimpleHarmonicMotionSimulation() {
                     y: history.v,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Phase space orbit',
-                    line: { color: '#ef4444', width: 2 }
+                    name: 'Phase Space Space Orbit',
+                    line: { color: '#8b5cf6', width: 2.5 }
                   }
                 ]}
                 layout={{
                   autosize: true,
-                  margin: { l: 35, r: 10, t: 10, b: 35 },
-                  xaxis: { title: { text: 'Position (x)' } },
-                  yaxis: { title: { text: 'Velocity (v)' } },
-                  legend: { orientation: 'h', y: -0.25 },
+                  margin: { l: 45, r: 15, t: 15, b: 40 },
+                  xaxis: { title: { text: 'Displacement x (m)' } },
+                  yaxis: { title: { text: 'Velocity v (m/s)' } },
+                  legend: { orientation: 'h', y: -0.2 },
                   paper_bgcolor: 'rgba(0,0,0,0)',
                   plot_bgcolor: 'rgba(0,0,0,0)'
                 }}
                 className="w-full h-full"
               />
-            </div>
+            )}
 
+            {activeGraphTab === 'energy' && (
+              <PlotlyGraph
+                data={[
+                  {
+                    x: history.t,
+                    y: history.ek,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Kinetic (Ek)',
+                    line: { color: '#10b981', width: 2 }
+                  },
+                  {
+                    x: history.t,
+                    y: history.ep,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Potential (Ep)',
+                    line: { color: '#6366f1', width: 2 }
+                  },
+                  {
+                    x: history.t,
+                    y: history.et,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Total Energy (E)',
+                    line: { color: '#8b5cf6', width: 2.5, dash: 'dash' }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 45, r: 15, t: 15, b: 40 },
+                  xaxis: { title: { text: 'Time t (s)' } },
+                  yaxis: { title: { text: 'Energy (J)' } },
+                  legend: { orientation: 'h', y: -0.2 },
+                  paper_bgcolor: 'rgba(0,0,0,0)',
+                  plot_bgcolor: 'rgba(0,0,0,0)'
+                }}
+                className="w-full h-full"
+              />
+            )}
           </div>
         </div>
 
