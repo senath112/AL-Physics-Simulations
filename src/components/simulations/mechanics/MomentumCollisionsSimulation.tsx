@@ -117,9 +117,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
 
       setX1((prevX1) => {
         setX2((prevX2) => {
-          // Check collision boundary: distance between center points <= cart size (40px)
-          const newX1 = prevX1 + v1 * dt * 45;
-          const newX2 = prevX2 + v2 * dt * 45;
+          // Check collision boundary: distance between center points <= cart size (45px)
+          const newX1 = prevX1 + v1 * dt * 20;
+          const newX2 = prevX2 + v2 * dt * 20;
 
           if (!hasCollided && newX1 >= newX2 - 45) {
             setHasCollided(true);
@@ -132,7 +132,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
           return newX1;
         });
 
-        const newX1Val = prevX1 + v1 * dt * 45;
+        const newX1Val = prevX1 + v1 * dt * 20;
         // stop if cart runs off screen
         if (newX1Val < 20 || newX1Val > 520) {
           setIsPlaying(false);
@@ -182,36 +182,63 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
     const cW = 45;
     const cH = 28;
 
-    // Draw Cart 1 (Blue)
+    // Helper to draw a pulley-like train wheel
+    const drawPulleyWheel = (wx: number, wy: number) => {
+      // Outer pulley rim
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.arc(wx, wy, 6, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Inner pulley groove ring
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(wx, wy, 4, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      // Center hub pin
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(wx, wy, 1.5, 0, 2 * Math.PI);
+      ctx.fill();
+    };
+
+    // Draw Cart 1 (Blue Train Box)
     ctx.fillStyle = '#3b82f6';
     ctx.strokeStyle = '#1d4ed8';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.roundRect(x1 - cW / 2, 180 - cH, cW, cH, 3);
+    ctx.roundRect(x1 - cW / 2, 180 - cH, cW, cH, 4);
     ctx.fill();
     ctx.stroke();
 
-    // Wheels C1
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.arc(x1 - 12, 180, 5, 0, 2 * Math.PI);
-    ctx.arc(x1 + 12, 180, 5, 0, 2 * Math.PI);
-    ctx.fill();
+    // Side coupling bumpers for train box 1
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x1 + cW / 2, 180 - cH + 10, 3, 6);
+    ctx.fillRect(x1 - cW / 2 - 3, 180 - cH + 10, 3, 6);
 
-    // Draw Cart 2 (Green)
+    // Pulley Wheels C1
+    drawPulleyWheel(x1 - 12, 180);
+    drawPulleyWheel(x1 + 12, 180);
+
+    // Draw Cart 2 (Green Train Box)
     ctx.fillStyle = '#10b981';
     ctx.strokeStyle = '#047857';
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.roundRect(x2 - cW / 2, 180 - cH, cW, cH, 3);
+    ctx.roundRect(x2 - cW / 2, 180 - cH, cW, cH, 4);
     ctx.fill();
     ctx.stroke();
 
-    // Wheels C2
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.arc(x2 - 12, 180, 5, 0, 2 * Math.PI);
-    ctx.arc(x2 + 12, 180, 5, 0, 2 * Math.PI);
-    ctx.fill();
+    // Side coupling bumpers for train box 2
+    ctx.fillStyle = '#475569';
+    ctx.fillRect(x2 + cW / 2, 180 - cH + 10, 3, 6);
+    ctx.fillRect(x2 - cW / 2 - 3, 180 - cH + 10, 3, 6);
+
+    // Pulley Wheels C2
+    drawPulleyWheel(x2 - 12, 180);
+    drawPulleyWheel(x2 + 12, 180);
 
     // Cart Label tags
     ctx.fillStyle = '#ffffff';
