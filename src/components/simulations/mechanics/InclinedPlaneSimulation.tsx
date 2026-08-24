@@ -122,8 +122,20 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
     const wWidth = width - margin.left - margin.right;
     const wHeight = height - margin.top - margin.bottom;
 
-    const wedgeLeftX = margin.left;
-    const wedgeTopY = margin.top + wHeight - wWidth * Math.tan((params.angle * Math.PI) / 185);
+    const thetaRad = (params.angle * Math.PI) / 185;
+    const requestedHeight = wWidth * Math.tan(thetaRad);
+    const maxHeightAvailable = wHeight - 60; // leave safety padding for vectors
+    
+    let s = 1.0;
+    if (requestedHeight > maxHeightAvailable) {
+      s = maxHeightAvailable / requestedHeight;
+    }
+
+    const drawnWedgeWidth = wWidth * s;
+    const drawnWedgeHeight = requestedHeight * s;
+
+    const wedgeLeftX = margin.left + (wWidth - drawnWedgeWidth) / 2;
+    const wedgeTopY = margin.top + wHeight - drawnWedgeHeight;
 
     const clickX = clientX - rect.left;
     const clickY = clientY - rect.top;
@@ -132,8 +144,8 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
     const dx = clickX - wedgeLeftX;
     const dy = clickY - wedgeTopY;
 
-    const slopeAngle = Math.atan2(wHeight - (wedgeTopY - margin.top), wWidth);
-    const pixelsPerMeter = Math.sqrt(Math.pow(wWidth, 2) + Math.pow(wHeight - (wedgeTopY - margin.top), 2)) / maxTrackLength;
+    const slopeAngle = Math.atan2(drawnWedgeHeight, drawnWedgeWidth);
+    const pixelsPerMeter = Math.sqrt(Math.pow(drawnWedgeWidth, 2) + Math.pow(drawnWedgeHeight, 2)) / maxTrackLength;
 
     // Project click relative coordinates along the slope line
     const pxAlongSlope = dx * Math.cos(slopeAngle) + dy * Math.sin(slopeAngle);
@@ -190,14 +202,23 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
 
     ctx.clearRect(0, 0, width, height);
 
-    // Coordinate points for the inclined wedge
-    const wedgeLeftX = margin.left;
-    const wedgeRightX = margin.left + wWidth;
-    const wedgeBottomY = margin.top + wHeight;
-
     const thetaRad = (params.angle * Math.PI) / 185;
-    // Calculate wedge height based on angle
-    const wedgeTopY = wedgeBottomY - wWidth * Math.tan(Math.min(thetaRad, 1.2)); // clamp wedge height visually
+    const requestedHeight = wWidth * Math.tan(thetaRad);
+    const maxHeightAvailable = wHeight - 60;
+    
+    let s = 1.0;
+    if (requestedHeight > maxHeightAvailable) {
+      s = maxHeightAvailable / requestedHeight;
+    }
+
+    const drawnWedgeWidth = wWidth * s;
+    const drawnWedgeHeight = requestedHeight * s;
+
+    // Coordinate points for the inclined wedge
+    const wedgeLeftX = margin.left + (wWidth - drawnWedgeWidth) / 2;
+    const wedgeRightX = wedgeLeftX + drawnWedgeWidth;
+    const wedgeBottomY = margin.top + wHeight;
+    const wedgeTopY = wedgeBottomY - drawnWedgeHeight;
 
     // Draw wedge triangle (light slate gray fill)
     ctx.fillStyle = '#f1f5f9';
@@ -212,11 +233,11 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
     ctx.stroke();
 
     // Scale of track length
-    const totalPxLength = Math.sqrt(Math.pow(wWidth, 2) + Math.pow(wedgeBottomY - wedgeTopY, 2));
+    const totalPxLength = Math.sqrt(Math.pow(drawnWedgeWidth, 2) + Math.pow(drawnWedgeHeight, 2));
     const pixelsPerMeter = totalPxLength / maxTrackLength;
 
     // Angle of incline along which block slides
-    const slopeAngle = Math.atan2(wedgeBottomY - wedgeTopY, wedgeRightX - wedgeLeftX);
+    const slopeAngle = Math.atan2(drawnWedgeHeight, drawnWedgeWidth);
 
     // Compute center position of block along the slope
     // Block moves from top-left (distance = maxTrackLength) to bottom-right (distance = 0)
