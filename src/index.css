@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+/* Physics Lab Custom Styling */
+:root {
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color-scheme: light;
+  --color-lab-bg: #f8fafc;
+  --color-lab-panel: #ffffff;
+  --color-lab-border: #e2e8f0;
+  --color-lab-text: #0f172a;
+  --color-lab-text-secondary: #475569;
+  --color-lab-accent: #2563eb;
+  --color-lab-accent-hover: #1d4ed8;
+}
+
+body {
+  background-color: var(--color-lab-bg);
+  color: var(--color-lab-text);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Custom scrollbars for lab notes panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Grid drawing background for simulation canvas */
+.canvas-grid-bg {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(226, 232, 240, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
+}
+
+/* Hologram Text Shift Effect */
+.hologram-scroll {
+  background: linear-gradient(
+    120deg,
+    #ff007f 0%,
+    #7f00ff 20%,
+    #00e5ff 40%,
+    #00ff66 60%,
+    #ffea00 80%,
+    #ff007f 100%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 0.1s ease-out;
+  filter: drop-shadow(0 0 1px rgba(0, 229, 255, 0.15));
+}
+
+/* Tilted stacked cards for hero right panel */
+.tilted-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.tilted-card {
+  position: absolute;
+  width: 210px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tilted-card-1 {
+  top: 10px;
+  right: 15px;
+  transform: rotate(6deg);
+  z-index: 10;
+}
+
+.tilted-card-2 {
+  top: 110px;
+  left: 15px;
+  transform: rotate(-4deg);
+  z-index: 20;
+}
+
+.tilted-card-3 {
+  bottom: 10px;
+  right: 30px;
+  transform: rotate(3deg);
+  z-index: 30;
+}
+
+.tilted-card:hover {
+  transform: translateY(-8px) scale(1.05) rotate(0deg);
+  z-index: 50;
+  box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.16);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+/* General creative UI effects */
+.glow-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.glow-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -10px rgba(0, 0, 0, 0.06);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.hologram-gradient-text {
+  background: linear-gradient(90deg, #2563eb, #10b981, #f59e0b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
