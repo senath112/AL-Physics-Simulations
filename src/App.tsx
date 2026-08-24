@@ -7,6 +7,7 @@ import { SimpleHarmonicMotionSimulation } from './components/simulations/mechani
 import { PhotoelectricEffectSimulation } from './components/simulations/modern/PhotoelectricEffectSimulation';
 import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimulation';
 import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
+import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
 import { 
   Compass, 
   Activity, 
@@ -20,7 +21,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -152,6 +153,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'lenz_sim',
+    },
+    {
+      id: 'magnetic_field_wire',
+      title: 'Magnetic Field Around a Wire',
+      sinhalaTitle: "ධාරාවක් ගෙන යන සන්නායකයක් වටා චුම්බක ක්ෂේත්‍රය",
+      tamilTitle: "மின்னோட்ட கடத்தியைச் சுற்றியுள்ள காந்தப்புலம்",
+      unit: 'magnetism',
+      description: 'Observe the concentric magnetic field loops surrounding a current-carrying wire in interactive 3D, trace fields using compasses, and verify the Right-Hand Grip Rule.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'magnetic_field_wire',
     },
   ];
 
@@ -782,6 +794,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <LenzsLawSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE MAGNETIC FIELD WIRE 3D SIMULATION */}
+        {currentPage === 'magnetic_field_wire' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ධාරාවක් ගෙන යන සන්නායකයක් වටා චුම්බක ක්ෂේත්‍රය • மின்னோட்ட கடத்தியைச் சுற்றியுள்ள காந்தப்புலம்</span>
+                <span className="text-slate-900 font-semibold text-sm">3D Magnetic Field Around a Straight Wire</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <MagneticFieldWireSimulation lang={lang} />
             </div>
           </div>
         )}
