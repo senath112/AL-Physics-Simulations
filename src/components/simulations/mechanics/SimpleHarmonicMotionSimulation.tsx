@@ -188,7 +188,7 @@ export function SimpleHarmonicMotionSimulation() {
 
     const dpr = window.devicePixelRatio || 1;
     const rectWidth = 720;
-    const rectHeight = 420;
+    const rectHeight = 540;
 
     canvas.width = rectWidth * dpr;
     canvas.height = rectHeight * dpr;
@@ -312,8 +312,8 @@ export function SimpleHarmonicMotionSimulation() {
       // We scale amplitude to visual swing radians
       const theta = state.displacement; 
 
-      // Length scaling: 1 meter = 65 pixels
-      const visualL = length * 65;
+      // Length scaling: 1 meter = 60 pixels
+      const visualL = length * 60;
       const bobX = pivotX + visualL * Math.sin(theta);
       const bobY = pivotY + visualL * Math.cos(theta);
 
@@ -354,7 +354,7 @@ export function SimpleHarmonicMotionSimulation() {
 
       // Draw reference circle if requested
       if (showRefCircle) {
-        const visualL = length * 65;
+        const visualL = length * 60;
         // Radius of the circle equals the amplitude (scaled to pixels)
         const maxRadius = mode === 'spring' 
           ? Math.abs(amplitude * 50) 
@@ -362,9 +362,9 @@ export function SimpleHarmonicMotionSimulation() {
         
         // Align center of the circle exactly on the equilibrium lines:
         // - Spring: horizontal equilibrium level (Y = 160)
-        // - Pendulum: vertical equilibrium level (X = centerX) and rest position (Y = 50 + visualL)
+        // - Pendulum: vertical equilibrium level (X = centerX) and positioned under the bob (Y = 350)
         const circleX = mode === 'spring' ? (maxRadius + 25) : centerX;
-        const circleY = mode === 'spring' ? 160 : (50 + visualL);
+        const circleY = mode === 'spring' ? 160 : 350;
         
         // Damping decay factor
         const beta = damping / (2 * (mode === 'spring' ? mass : mass * length));
@@ -485,7 +485,7 @@ export function SimpleHarmonicMotionSimulation() {
       }
     } else {
       // Pendulum bob dragging
-      const visualL = length * 65;
+      const visualL = length * 60;
       const bobX = centerX + visualL * Math.sin(shmState.displacement);
       const bobY = 50 + visualL * Math.cos(shmState.displacement);
 
