@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath } from '../../Math';
 import { 
@@ -116,6 +116,40 @@ export function SimpleHarmonicMotionSimulation() {
     amplitude: mode === 'pendulum' ? (amplitude * Math.PI) / 180 : amplitude
   };
   const shmState = calculateSHMState(timeRef.current, currentParams);
+
+  // Memoize static theoretical phase space orbit curves
+  const staticPhaseOrbit = useMemo(() => {
+    const w0 = mode === 'spring' ? Math.sqrt(springK / mass) : Math.sqrt(10 / length);
+    const T = 2 * Math.PI / (w0 || 1);
+    
+    const xVals: (number | null)[] = [];
+    const vVals: (number | null)[] = [];
+    
+    // Damped vs undamped orbit duration
+    const duration = damping === 0 ? T : Math.min(5 * T, 20);
+    const steps = damping === 0 ? 150 : 500;
+    
+    const ampLimit = mode === 'pendulum' ? (amplitude * Math.PI) / 180 : amplitude;
+    
+    const params: SHMParameters = {
+      mode,
+      mass,
+      springK,
+      length,
+      gravity: 10,
+      damping,
+      amplitude: ampLimit
+    };
+
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * duration;
+      const state = calculateSHMState(t, params);
+      xVals.push(state.displacement);
+      vVals.push(state.velocity);
+    }
+    
+    return { x: xVals, y: vVals };
+  }, [mode, mass, springK, length, damping, amplitude]);
 
   // Handle Damping presets
   const applyPreset = (preset: 'none' | 'under' | 'critical' | 'over') => {
@@ -313,12 +347,13 @@ export function SimpleHarmonicMotionSimulation() {
 
     const state = calculateSHMState(timeRef.current, currentParams);
     const centerX = rectWidth / 2;
+    const springX = mode === 'spring' && showRefCircle ? (centerX + 115) : centerX;
 
     if (mode === 'spring') {
       // 1. Draw Mass-Spring System
       const ceilingY = 40;
-      const restLength = showRefCircle ? 120 : 200;
-      const springScale = showRefCircle ? 50 : 75;
+      const restLength = 200;
+      const springScale = 75;
       
       // Calculate spring stretching scaling
       const extension = state.displacement * springScale; // Scale meters to pixels
@@ -326,10 +361,10 @@ export function SimpleHarmonicMotionSimulation() {
 
       // Draw Ceiling support
       ctx.fillStyle = '#cbd5e1';
-      ctx.fillRect(centerX - 80, ceilingY - 10, 160, 10);
+      ctx.fillRect(springX - 80, ceilingY - 10, 160, 10);
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
-      for (let x = centerX - 75; x < centerX + 80; x += 10) {
+      for (let x = springX - 75; x < springX + 80; x += 10) {
         ctx.beginPath();
         ctx.moveTo(x, ceilingY - 10);
         ctx.lineTo(x - 5, ceilingY);
@@ -340,14 +375,14 @@ export function SimpleHarmonicMotionSimulation() {
       ctx.strokeStyle = '#64748b';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(centerX, ceilingY);
+      ctx.moveTo(springX, ceilingY);
 
       const coils = 18;
       const springWidth = 16;
       for (let i = 0; i <= coils; i++) {
         const fraction = i / coils;
         const currY = ceilingY + fraction * currentLength;
-        let currX = centerX;
+        let currX = springX;
         if (i > 0 && i < coils) {
           currX += (i % 2 === 0 ? 1 : -1) * springWidth;
         }
@@ -364,7 +399,7 @@ export function SimpleHarmonicMotionSimulation() {
       ctx.strokeStyle = '#1d4ed8';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(centerX - blockWidth / 2, blockY, blockWidth, blockHeight, 6);
+      ctx.roundRect(springX - blockWidth / 2, blockY, blockWidth, blockHeight, 6);
       ctx.fill();
       ctx.stroke();
 
@@ -372,21 +407,21 @@ export function SimpleHarmonicMotionSimulation() {
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 10px font-sans';
       ctx.textAlign = 'center';
-      ctx.fillText(`${mass.toFixed(1)} kg`, centerX, blockY + 24);
+      ctx.fillText(`${mass.toFixed(1)} kg`, springX, blockY + 24);
 
       // Draw equilibrium reference line
       ctx.strokeStyle = '#e2e8f0';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(centerX - 120, ceilingY + restLength + blockHeight/2);
-      ctx.lineTo(centerX + 120, ceilingY + restLength + blockHeight/2);
+      ctx.moveTo(springX - 120, ceilingY + restLength + blockHeight/2);
+      ctx.lineTo(springX + 120, ceilingY + restLength + blockHeight/2);
       ctx.stroke();
       ctx.setLineDash([]);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = 'bold 9px font-sans';
-      ctx.fillText('Equilibrium', centerX + 155, ceilingY + restLength + blockHeight/2 + 3);
+      ctx.fillText('Equilibrium', springX + 155, ceilingY + restLength + blockHeight/2 + 3);
 
     } else {
       // 2. Draw Simple Pendulum System
@@ -454,14 +489,14 @@ export function SimpleHarmonicMotionSimulation() {
         const visualL = length * 60;
         // Radius of the circle equals the amplitude (scaled to pixels)
         const maxRadius = mode === 'spring' 
-          ? Math.abs(amplitude * 50) 
+          ? Math.abs(amplitude * 75) 
           : Math.abs(visualL * Math.sin((amplitude * Math.PI) / 180));
         
         // Align center of the circle exactly on the equilibrium lines:
-        // - Spring: horizontal equilibrium level (Y = 160)
+        // - Spring: shift to the left side (X = 180) and centered vertically at spring equilibrium Y = 240
         // - Pendulum: vertical equilibrium level (X = centerX) and positioned under the bob (Y = 350)
-        const circleX = mode === 'spring' ? (maxRadius + 25) : centerX;
-        const circleY = mode === 'spring' ? 160 : 350;
+        const circleX = mode === 'spring' ? 180 : centerX;
+        const circleY = mode === 'spring' ? 240 : 350;
         
         // Damping decay factor
         const beta = damping / (2 * (mode === 'spring' ? mass : mass * length));
@@ -531,11 +566,11 @@ export function SimpleHarmonicMotionSimulation() {
         ctx.beginPath();
         if (mode === 'spring') {
           // Spring: project vertically to mass block Y coordinate
-          const springScale = showRefCircle ? 50 : 75;
-          const springEq = showRefCircle ? 160 : 240;
+          const springScale = 75;
+          const springEq = 240;
           const blockCenterY = springEq + state.displacement * springScale + 20;
           ctx.moveTo(circleX + px, circleY + py);
-          ctx.lineTo(centerX, blockCenterY);
+          ctx.lineTo(springX, blockCenterY);
         } else {
           // Pendulum: project horizontally/vertically to bob coordinate
           const bobX = centerX + visualL * Math.sin(state.displacement);
@@ -576,10 +611,11 @@ export function SimpleHarmonicMotionSimulation() {
 
     if (mode === 'spring') {
       // Spring mode dragging block vertical displacement
-      const springScale = showRefCircle ? 50 : 75;
-      const springEq = showRefCircle ? 160 : 240;
+      const springX = showRefCircle ? (centerX + 115) : centerX;
+      const springScale = 75;
+      const springEq = 240;
       const currentBlockY = springEq + shmState.displacement * springScale + 20;
-      if (Math.abs(x - centerX) < 40 && Math.abs(y - currentBlockY) < 40) {
+      if (Math.abs(x - springX) < 40 && Math.abs(y - currentBlockY) < 40) {
         isDragging.current = true;
         setIsPlaying(false);
       }
@@ -611,8 +647,8 @@ export function SimpleHarmonicMotionSimulation() {
 
     if (mode === 'spring') {
       // Map vertical coordinate offset relative to dynamic equilibrium Y
-      const springEq = showRefCircle ? 160 : 240;
-      const springScale = showRefCircle ? 50 : 75;
+      const springScale = 75;
+      const springEq = 240;
       const deltaY = y - springEq;
       const newAmp = Math.max(-2.0, Math.min(2.0, deltaY / springScale));
       setAmplitude(newAmp);
@@ -894,70 +930,72 @@ export function SimpleHarmonicMotionSimulation() {
             <div className="flex items-center justify-between w-full mb-2">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Visual Oscillator Viewport</h3>
               
-              {/* Play Pause Controls */}
-              <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-lg p-0.5">
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
-                  title={isPlaying ? 'Pause' : 'Play'}
-                >
-                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
-                  title="Reset variables"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
+              <div className="flex items-center gap-2">
+                {/* Expandable Simulation Health Indicator */}
+                <div className="relative group z-30">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200/80 text-[10px] font-bold uppercase tracking-wider text-slate-500 cursor-pointer select-none">
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      healthStatus.status === 'Optimal' ? 'bg-emerald-500 animate-ping' :
+                      healthStatus.status === 'Jittery' ? 'bg-amber-500' : 'bg-red-500'
+                    }`} />
+                    Health: {healthStatus.fps} FPS
+                  </div>
+
+                  <div className="absolute right-0 top-full mt-1 bg-slate-900/95 text-white rounded-lg p-2.5 shadow-xl border border-slate-700/50 backdrop-blur-sm w-44 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 ease-in-out text-[10px] space-y-1.5 leading-tight font-medium">
+                    <div className="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">
+                      <span className="font-bold uppercase tracking-wider text-slate-400">Diag Monitor</span>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                        healthStatus.status === 'Optimal' ? 'bg-emerald-500/20 text-emerald-400' :
+                        healthStatus.status === 'Jittery' ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {healthStatus.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Dropped Frames:</span>
+                      <span className="font-mono text-slate-200">{healthStatus.droppedFrames}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Timing Jitter:</span>
+                      <span className="font-mono text-slate-200">{healthStatus.jitter} ms</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Graph Integrity:</span>
+                      <span className="font-mono text-slate-200">{healthStatus.integrity}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Play Pause Controls */}
+                <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
+                    title={isPlaying ? 'Pause' : 'Play'}
+                  >
+                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
+                    title="Reset variables"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
             
             <div className="w-full overflow-x-auto flex justify-center py-2">
-              <div className="relative">
-                <canvas
-                  ref={canvasRef}
-                  className="border border-slate-100 rounded-lg bg-white cursor-grab active:cursor-grabbing select-none shadow-sm"
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                />
-
-                {/* Simulation Health Diagnostic Overlay */}
-                <div className="absolute top-4 right-4 bg-slate-900/90 text-white rounded-lg p-2.5 shadow-lg border border-slate-700/50 backdrop-blur-sm w-44 pointer-events-none select-none text-[10px] space-y-1.5 leading-tight font-medium">
-                  <div className="flex items-center justify-between border-b border-slate-700/60 pb-1.5 mb-1.5">
-                    <span className="font-bold uppercase tracking-wider text-slate-400">Simulation Health</span>
-                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                      healthStatus.status === 'Optimal' ? 'bg-emerald-500/20 text-emerald-400' :
-                      healthStatus.status === 'Jittery' ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
-                      <span className={`w-1 h-1 rounded-full ${
-                        healthStatus.status === 'Optimal' ? 'bg-emerald-400 animate-ping' :
-                        healthStatus.status === 'Jittery' ? 'bg-amber-400' : 'bg-red-400'
-                      }`} />
-                      {healthStatus.status}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Render Rate:</span>
-                    <span className="font-mono font-bold text-slate-200">{healthStatus.fps} FPS</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Dropped Frames:</span>
-                    <span className="font-mono text-slate-200">{healthStatus.droppedFrames}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Timing Jitter:</span>
-                    <span className="font-mono text-slate-200">{healthStatus.jitter} ms</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Graph Integrity:</span>
-                    <span className="font-mono text-slate-200">{healthStatus.integrity}</span>
-                  </div>
-                </div>
-              </div>
+              <canvas
+                ref={canvasRef}
+                className="border border-slate-100 rounded-lg bg-white cursor-grab active:cursor-grabbing select-none shadow-sm"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              />
             </div>
 
             {/* Energy conversion bar chart */}
@@ -1151,11 +1189,11 @@ export function SimpleHarmonicMotionSimulation() {
               <PlotlyGraph
                 data={[
                   {
-                    x: history.x,
-                    y: history.v,
+                    x: staticPhaseOrbit.x,
+                    y: staticPhaseOrbit.y,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Phase Space Space Orbit',
+                    name: 'Theoretical Phase space orbit',
                     line: { color: '#8b5cf6', width: 2.5 }
                   }
                 ]}

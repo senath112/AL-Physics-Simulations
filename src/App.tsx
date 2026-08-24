@@ -33,6 +33,7 @@ interface SimulationMetadata {
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchMinimized, setIsSearchMinimized] = useState<boolean>(false);
 
 
   // 1. Simulations Catalog Data
@@ -137,7 +138,7 @@ function App() {
       
       {/* Floating Header Navigation Bar */}
       <header className="sticky top-4 z-50 shrink-0 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-2">
-        <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.03)] px-6 py-2 flex justify-between items-center h-14">
+        <div className="bg-white/45 backdrop-blur-2xl border border-white/55 rounded-full shadow-[0_12px_40px_rgba(31,38,135,0.06)] px-6 py-2 flex justify-between items-center h-14">
           
           {/* Logo */}
           <div 
@@ -667,27 +668,47 @@ function App() {
 
       {/* Floating Bottom Search Bar */}
       {(currentPage === 'home' || currentPage === 'sims') && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] pointer-events-auto">
-          <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.06)] px-5 py-2.5 flex items-center gap-3">
-            <span className="text-[10px] font-black tracking-wider uppercase bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-100">
-              Search
-            </span>
-            <span className="h-4 w-px bg-slate-200"></span>
-            <div className="relative flex-1">
-              <Search className="absolute right-1 top-0.5 w-4 h-4 text-slate-400 cursor-pointer" onClick={() => { setCurrentPage('sims'); }} />
-              <input 
-                type="text"
-                placeholder="Search simulations, units, equations..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (currentPage !== 'sims') setCurrentPage('sims');
-                }}
-                className="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 outline-none pr-6 font-medium"
-              />
+        <>
+          {isSearchMinimized ? (
+            <button 
+              onClick={() => setIsSearchMinimized(false)}
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-11 h-11 bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors"
+              title="Expand search bar"
+            >
+              <Search className="w-4 h-4 text-blue-600 animate-pulse" />
+            </button>
+          ) : (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] pointer-events-auto">
+              <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.06)] px-5 py-2.5 flex items-center gap-3">
+                <span className="text-[10px] font-black tracking-wider uppercase bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-100">
+                  Search
+                </span>
+                <span className="h-4 w-px bg-slate-200"></span>
+                <div className="relative flex-1 flex items-center gap-2">
+                  <input 
+                    type="text"
+                    placeholder="Search simulations, units, equations..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (currentPage !== 'sims') setCurrentPage('sims');
+                    }}
+                    className="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 outline-none pr-6 font-medium"
+                  />
+                  <Search className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-650 transition-colors shrink-0" onClick={() => { setCurrentPage('sims'); }} />
+                  <span className="h-4 w-px bg-slate-200 shrink-0"></span>
+                  <button 
+                    onClick={() => setIsSearchMinimized(true)}
+                    className="text-slate-400 hover:text-slate-600 font-bold text-xs cursor-pointer px-1.5 shrink-0"
+                    title="Minimize search"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
 
     </div>
