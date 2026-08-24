@@ -59,6 +59,13 @@ export function SimpleHarmonicMotionSimulation() {
     v: []
   });
 
+  // DOM element refs for 60fps energy bar fluctuations
+  const ekValRef = useRef<HTMLSpanElement>(null);
+  const epValRef = useRef<HTMLSpanElement>(null);
+  const eTotalValRef = useRef<HTMLSpanElement>(null);
+  const ekBarRef = useRef<HTMLDivElement>(null);
+  const epBarRef = useRef<HTMLDivElement>(null);
+
   // Derived variables
   const omega0 = mode === 'spring' ? Math.sqrt(springK / mass) : Math.sqrt(10 / length);
   const period = 2 * Math.PI / omega0;
@@ -71,7 +78,7 @@ export function SimpleHarmonicMotionSimulation() {
     length,
     gravity: 10,
     damping,
-    amplitude
+    amplitude: mode === 'pendulum' ? (amplitude * Math.PI) / 180 : amplitude
   };
   const shmState = calculateSHMState(timeRef.current, currentParams);
 
@@ -131,6 +138,21 @@ export function SimpleHarmonicMotionSimulation() {
           return { t: nextT, x: nextX, v: nextV };
         });
       }
+
+      // Compute latest state (even if paused!)
+      const latestState = calculateSHMState(timeRef.current, currentParams);
+      
+      // Update DOM elements directly at 60fps
+      if (ekValRef.current) ekValRef.current.innerText = `${latestState.kineticEnergy.toFixed(3)} J`;
+      if (epValRef.current) epValRef.current.innerText = `${latestState.potentialEnergy.toFixed(3)} J`;
+      if (eTotalValRef.current) eTotalValRef.current.innerText = `${latestState.totalEnergy.toFixed(3)} J`;
+      
+      const totalE = latestState.totalEnergy || 1;
+      const ekPct = Math.min(100, (latestState.kineticEnergy / totalE) * 100);
+      const epPct = Math.min(100, (latestState.potentialEnergy / totalE) * 100);
+      
+      if (ekBarRef.current) ekBarRef.current.style.width = `${ekPct}%`;
+      if (epBarRef.current) epBarRef.current.style.width = `${epPct}%`;
 
       drawSimulation();
       animationFrameRef.current = requestAnimationFrame(loop);
@@ -375,7 +397,7 @@ export function SimpleHarmonicMotionSimulation() {
     if (mode === 'spring') {
       // Map vertical coordinate offset relative to equilibrium Y = 160
       const deltaY = y - 160;
-      const newAmp = Math.max(-2.5, Math.min(2.5, deltaY / 50));
+      const newAmp = Math.max(-2.0, Math.min(2.0, deltaY / 50));
       setAmplitude(newAmp);
       timeRef.current = 0; // reset phase
       setHistory({ t: [], x: [], v: [] });
@@ -384,8 +406,9 @@ export function SimpleHarmonicMotionSimulation() {
       const dx = x - centerX;
       const dy = y - 50;
       const angle = Math.atan2(dx, dy); // angle relative to vertical normal
-      const newAmp = Math.max(-1.4, Math.min(1.4, angle)); // Max displacement limit
-      setAmplitude(newAmp);
+      const newAmpDeg = angle * (180 / Math.PI);
+      const clampedAmpDeg = Math.max(-75, Math.min(75, newAmpDeg));
+      setAmplitude(clampedAmpDeg);
       timeRef.current = 0;
       setHistory({ t: [], x: [], v: [] });
     }
@@ -489,7 +512,7 @@ export function SimpleHarmonicMotionSimulation() {
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Select SHM System</h3>
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => { setMode('spring'); handleReset(); }}
+                onClick={() => { setMode('spring'); setAmplitude(1.2); handleReset(); }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   mode === 'spring' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
@@ -497,7 +520,7 @@ export function SimpleHarmonicMotionSimulation() {
                 Mass-Spring
               </button>
               <button
-                onClick={() => { setMode('pendulum'); handleReset(); }}
+                onClick={() => { setMode('pendulum'); setAmplitude(45); handleReset(); }}
                 className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   mode === 'pendulum' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
@@ -588,17 +611,21 @@ export function SimpleHarmonicMotionSimulation() {
               </div>
             </div>
 
-            {/* Amplitude slider */}
+            {/* Amplitude / Initial Angle slider */}
             <div className="space-y-1.5 border-t border-slate-100 pt-3">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Initial Amplitude (A)</span>
-                <span className="text-slate-800 font-mono">{amplitude.toFixed(2)} {mode === 'spring' ? 'm' : 'rad'}</span>
+                <span className="text-slate-600">
+                  {mode === 'spring' ? 'Initial Displacement (x₀)' : 'Initial Angle (θ₀)'}
+                </span>
+                <span className="text-slate-800 font-mono">
+                  {amplitude.toFixed(1)} {mode === 'spring' ? 'm' : '°'}
+                </span>
               </div>
               <input
                 type="range"
-                min={mode === 'spring' ? '-2.0' : '-1.3'}
-                max={mode === 'spring' ? '2.0' : '1.3'}
-                step="0.05"
+                min={mode === 'spring' ? '-2.0' : '-75'}
+                max={mode === 'spring' ? '2.0' : '75'}
+                step={mode === 'spring' ? '0.05' : '1'}
                 value={amplitude}
                 onChange={(e) => { setAmplitude(parseFloat(e.target.value)); handleReset(); }}
                 className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
@@ -672,10 +699,11 @@ export function SimpleHarmonicMotionSimulation() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-bold text-emerald-600">
                     <span>Kinetic Energy (Ek)</span>
-                    <span className="font-mono">{shmState.kineticEnergy.toFixed(3)} J</span>
+                    <span ref={ekValRef} className="font-mono">{shmState.kineticEnergy.toFixed(3)} J</span>
                   </div>
                   <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <div 
+                      ref={ekBarRef}
                       className="h-full bg-emerald-500 rounded-full transition-all duration-75"
                       style={{ width: `${Math.min(100, (shmState.kineticEnergy / (shmState.totalEnergy || 1)) * 100)}%` }}
                     />
@@ -686,10 +714,11 @@ export function SimpleHarmonicMotionSimulation() {
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-bold text-indigo-600">
                     <span>Potential Energy (Ep)</span>
-                    <span className="font-mono">{shmState.potentialEnergy.toFixed(3)} J</span>
+                    <span ref={epValRef} className="font-mono">{shmState.potentialEnergy.toFixed(3)} J</span>
                   </div>
                   <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <div 
+                      ref={epBarRef}
                       className="h-full bg-indigo-500 rounded-full transition-all duration-75"
                       style={{ width: `${Math.min(100, (shmState.potentialEnergy / (shmState.totalEnergy || 1)) * 100)}%` }}
                     />
@@ -698,13 +727,13 @@ export function SimpleHarmonicMotionSimulation() {
 
                 {/* Total Energy */}
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold text-slate-600">
+                  <div className="flex justify-between text-[10px] font-bold text-violet-600">
                     <span>Total Energy (E)</span>
-                    <span className="font-mono">{shmState.totalEnergy.toFixed(3)} J</span>
+                    <span ref={eTotalValRef} className="font-mono">{shmState.totalEnergy.toFixed(3)} J</span>
                   </div>
                   <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-slate-500 rounded-full transition-all duration-75"
+                      className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all duration-75"
                       style={{ width: '100%' }}
                     />
                   </div>
