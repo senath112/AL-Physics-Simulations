@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { ProjectileSimulation } from './components/simulations/mechanics/ProjectileSimulation';
 import { NewtonsLawsSimulation } from './components/simulations/mechanics/NewtonsLawsSimulation';
 import { InclinedPlaneSimulation } from './components/simulations/mechanics/InclinedPlaneSimulation';
+import { ConnectedParticlesSimulation } from './components/simulations/mechanics/ConnectedParticlesSimulation';
+import { PulleySystemsSimulation } from './components/simulations/mechanics/PulleySystemsSimulation';
+import { MomentumCollisionsSimulation } from './components/simulations/mechanics/MomentumCollisionsSimulation';
+import { CircularMotionSimulation } from './components/simulations/mechanics/CircularMotionSimulation';
+import { WorkEnergySimulation } from './components/simulations/mechanics/WorkEnergySimulation';
+import { CentreOfMassSimulation } from './components/simulations/mechanics/CentreOfMassSimulation';
+import { GravityOrbitsSimulation } from './components/simulations/mechanics/GravityOrbitsSimulation';
 import { GeometricalOpticsSimulation } from './components/simulations/optics/GeometricalOpticsSimulation';
 import { SimpleHarmonicMotionSimulation } from './components/simulations/mechanics/SimpleHarmonicMotionSimulation';
 import { PhotoelectricEffectSimulation } from './components/simulations/modern/PhotoelectricEffectSimulation';
@@ -23,7 +30,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'doppler_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -80,6 +87,83 @@ function App() {
       icon: Compass,
       status: 'active',
       pageLink: 'projectile_sim',
+    },
+    {
+      id: 'connected_particles',
+      title: 'Connected Particles',
+      sinhalaTitle: "සම්බන්ධිත අංශු",
+      tamilTitle: "இணைக்கப்பட்ட துகள்கள்",
+      unit: 'mechanics',
+      description: 'Analyze multi-body dynamics under tension, sliding surfaces, and friction bounds.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'connected_particles_sim',
+    },
+    {
+      id: 'pulleys',
+      title: 'Pulley Systems',
+      sinhalaTitle: "කප්පි පද්ධති",
+      tamilTitle: "கப்ப்பி தொகுதிகள்",
+      unit: 'mechanics',
+      description: 'Study hanging weights acceleration and tension using an interactive Atwood machine.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'pulleys_sim',
+    },
+    {
+      id: 'collisions',
+      title: 'Momentum & Collisions',
+      sinhalaTitle: "ගම්‍යතාවය සහ ගැටුම්",
+      tamilTitle: "உந்தம் & மோதல்",
+      unit: 'mechanics',
+      description: 'Study elastic and inelastic collisions between sliding carts with momentum conservation charts.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'collisions_sim',
+    },
+    {
+      id: 'circular_motion',
+      title: 'Circular Motion',
+      sinhalaTitle: "වෘත්ත චලිතය",
+      tamilTitle: "வட்ட இயக்கம்",
+      unit: 'mechanics',
+      description: 'Study centripetal acceleration, force, and slack variables in horizontal and vertical loops.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'circular_motion_sim',
+    },
+    {
+      id: 'energy_work',
+      title: 'Work, Energy & Power',
+      sinhalaTitle: "කාර්යය, ශක්තිය සහ බලය",
+      tamilTitle: "வேலை, ஆற்றல் & வலு",
+      unit: 'mechanics',
+      description: 'Verify the conservation of mechanical energy using block slides on rollercoaster hills.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'energy_sim',
+    },
+    {
+      id: 'centre_mass',
+      title: 'Centre of Mass',
+      sinhalaTitle: "ගුරුත්ව කේන්ද්‍රය",
+      tamilTitle: "திணிவு மையம்",
+      unit: 'mechanics',
+      description: 'Locate joint center coordinates and balance lines for placed custom point masses.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'centre_mass_sim',
+    },
+    {
+      id: 'orbits',
+      title: 'Gravitational Fields & Orbits',
+      sinhalaTitle: "ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර සහ කක්ෂ",
+      tamilTitle: "ஈர்ப்புப்புலமும் சுற்றுப்பாதையும்",
+      unit: 'mechanics',
+      description: 'Simulate planetary Keplerian orbits, circular speeds, and gravitational vectors.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'orbits_sim',
     },
     {
       id: 'optics',
@@ -911,6 +995,125 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <DopplerEffectSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE CONNECTED PARTICLES SIMULATION */}
+        {currentPage === 'connected_particles_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Connected Particles</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සම්බන්ධිත අංශු • இணைக்கப்பட்ட துகள்கள்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ConnectedParticlesSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE PULLEY SYSTEMS SIMULATION */}
+        {currentPage === 'pulleys_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Pulley Systems</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කප්පි පද්ධති • கப்ப்பி தொகுதிகள்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <PulleySystemsSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE COLLISIONS SIMULATION */}
+        {currentPage === 'collisions_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Momentum & Collisions</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගම්‍යතාවය සහ ගැටුම් • உந்தம் & மோதல்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <MomentumCollisionsSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE CIRCULAR MOTION SIMULATION */}
+        {currentPage === 'circular_motion_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Circular Motion</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">වෘත්ත චලිතය • வட்ட இயக்கம்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <CircularMotionSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE WORK ENERGY SIMULATION */}
+        {currentPage === 'energy_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Work, Energy & Power</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කාර්යය, ශක්තිය සහ බලය • வேலை, ஆற்றல் & வலு</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <WorkEnergySimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE CENTRE OF MASS SIMULATION */}
+        {currentPage === 'centre_mass_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Centre of Mass</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්ව කේන්ද්‍රය • திணிவு மையம்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <CentreOfMassSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE GRAVITY ORBITS SIMULATION */}
+        {currentPage === 'orbits_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Gravitational Fields & Orbits</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර සහ කක්ෂ • ஈர்ப்புப்புலமும் சுற்றுப்பாதையும்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <GravityOrbitsSimulation lang={lang} />
             </div>
           </div>
         )}
