@@ -288,16 +288,30 @@ function App() {
                 </div>
 
                 {/* Right stacked tilted widgets panel */}
-                <div className="lg:col-span-5 relative flex items-center justify-center min-h-[360px] select-none">
-                  <div className="tilted-container">
+                <div className="lg:col-span-5 relative flex items-center justify-center min-h-[380px] select-none">
+                  {/* Holographic Glowing Orbs & Tech Ring Backgrounds */}
+                  <div className="absolute w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none animate-pulse" />
+                  <div className="absolute w-60 h-60 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none animate-pulse delay-1000" />
+                  
+                  <div className="absolute w-[380px] h-[380px] rounded-full border border-blue-500/10 pointer-events-none animate-[spin_60s_linear_infinite] flex items-center justify-center">
+                    <div className="w-[300px] h-[300px] rounded-full border border-dashed border-emerald-500/10 flex items-center justify-center">
+                      <div className="w-[220px] h-[220px] rounded-full border border-dotted border-blue-500/20" />
+                    </div>
+                  </div>
+                  <div className="absolute w-[260px] h-[260px] rounded-full border border-double border-blue-600/10 pointer-events-none animate-[spin_30s_linear_infinite_reverse]" />
+                  
+                  {/* Scanner sweep line */}
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-500/20 shadow-[0_0_10px_2px_rgba(59,130,246,0.3)] pointer-events-none animate-[bounce_8s_infinite] w-[90%] mx-auto" />
+
+                  <div className="tilted-container relative z-10">
                     
                     {/* Projectile Card */}
                     <div 
                       onClick={() => setCurrentPage('projectile_sim')}
-                      className="tilted-card tilted-card-1 cursor-pointer border-emerald-100 hover:border-emerald-300"
+                      className="tilted-card tilted-card-1 cursor-pointer border-emerald-100/60 bg-white/70 backdrop-blur-md hover:border-emerald-300 hover:shadow-[0_12px_40px_rgba(16,185,129,0.15)] transition-all"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="bg-emerald-50 text-emerald-600 p-2 rounded-lg">
+                        <div className="bg-emerald-50/80 text-emerald-600 p-2 rounded-lg text-xs">
                           🚀
                         </div>
                         <h4 className="font-extrabold text-xs text-slate-800">Projectile Motion</h4>
@@ -306,14 +320,14 @@ function App() {
                         Simulate trajectory vector heights, ranges and velocity angles...
                       </p>
                     </div>
-
+ 
                     {/* Newton Card */}
                     <div 
                       onClick={() => setCurrentPage('newtons_sim')}
-                      className="tilted-card tilted-card-2 cursor-pointer border-blue-100 hover:border-blue-300"
+                      className="tilted-card tilted-card-2 cursor-pointer border-blue-100/60 bg-white/70 backdrop-blur-md hover:border-blue-300 hover:shadow-[0_12px_40px_rgba(37,99,235,0.15)] transition-all"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
+                        <div className="bg-blue-50/80 text-blue-600 p-2 rounded-lg text-xs">
                           ⚖️
                         </div>
                         <h4 className="font-extrabold text-xs text-slate-800">Newton's Laws</h4>
@@ -322,14 +336,14 @@ function App() {
                         Examine static friction limits, sliding kinetic friction, and mass acceleration...
                       </p>
                     </div>
-
+ 
                     {/* Inclined Plane Card */}
                     <div 
                       onClick={() => setCurrentPage('inclined_sim')}
-                      className="tilted-card tilted-card-3 cursor-pointer border-purple-100 hover:border-purple-300"
+                      className="tilted-card tilted-card-3 cursor-pointer border-purple-100/60 bg-white/70 backdrop-blur-md hover:border-purple-300 hover:shadow-[0_12px_40px_rgba(147,51,234,0.15)] transition-all"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="bg-purple-50 text-purple-600 p-2 rounded-lg">
+                        <div className="bg-purple-50/80 text-purple-600 p-2 rounded-lg text-xs">
                           📐
                         </div>
                         <h4 className="font-extrabold text-xs text-slate-800">Inclined Plane</h4>
@@ -338,7 +352,7 @@ function App() {
                         Resolve gravitational vectors down sloped planes and slide blocks...
                       </p>
                     </div>
-
+ 
                   </div>
                 </div>
 
