@@ -44,7 +44,12 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       velocity: 'Magnet Velocity',
       labNotes: 'Observational Lab Journal',
       trialHistory: 'Recorded Induction Trial History',
-      pdf: 'Export PDF'
+      pdf: 'Export PDF',
+      simMode: 'Simulation Mode',
+      autoDrop: 'Gravity Auto-Drop',
+      manualDrag: 'Interactive Manual Drag',
+      comesChart: 'Induced Current: Magnet Approaching (Comes)',
+      goesChart: 'Induced Current: Magnet Leaving (Goes)'
     },
     si: {
       controls: 'ප්‍රේරණ පාලන පුවරුව',
@@ -63,7 +68,12 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       velocity: 'චුම්බකයේ ප්‍රවේගය',
       labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
       trialHistory: 'පටිගත කළ ප්‍රේරණ අත්හදා බැලීම්',
-      pdf: 'PDF ලබාගන්න'
+      pdf: 'PDF ලබාගන්න',
+      simMode: 'සිමියුලේෂන් ක්‍රමය',
+      autoDrop: 'ගුරුත්වාකර්ෂණ වැටීම',
+      manualDrag: 'අන්තර්ක්‍රියාකාරී ඇදීම',
+      comesChart: 'ප්‍රේරිත ධාරාව: ඇතුල් වන විට (ප්‍රවේශය)',
+      goesChart: 'ප්‍රේරිත ධාරාව: පිටවන විට (නික්මීම)'
     },
     ta: {
       controls: 'மின்தூண்டல் கட்டுப்பாடு',
@@ -82,7 +92,12 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       velocity: 'காந்த வேகம்',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
       trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
-      pdf: 'PDF ஏற்றுமதி செய்'
+      pdf: 'PDF ஏற்றுமதி செய்',
+      simMode: 'சிமுலேஷன் முறை',
+      autoDrop: 'ஈர்ப்பு வீழ்ச்சி (தானியங்கி)',
+      manualDrag: 'ஊடாடும் இழுவை (கையால்)',
+      comesChart: 'மின்னோட்டம்: நுழையும் போது',
+      goesChart: 'மின்னோட்டம்: வெளியேறும் போது'
     }
   };
 
@@ -111,6 +126,17 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     current: [],
     force: []
   });
+
+  // Separate comes and goes histories
+  const [comesHistory, setComesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
+  const [goesHistory, setGoesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
+  const [isManualMode, setIsManualMode] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  // Dragging interaction refs
+  const isDraggingRef = useRef<boolean>(false);
+  const prevDragYRef = useRef<number>(40);
+  const prevDragTimeRef = useRef<number>(performance.now());
 
   // Lab Notes & logs
   const [notes, setNotes] = useState<string>('');
@@ -145,13 +171,15 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     setInducedEMF(0);
     setMagneticForce(0);
     setHistory({ t: [], emf: [], current: [], force: [] });
+    setComesHistory({ t: [], current: [] });
+    setGoesHistory({ t: [], current: [] });
     timeAccumulatorRef.current = 0;
   };
 
   // Falling Magnet Simulation Loop
   useEffect(() => {
     const loop = (time: number) => {
-      const dt = Math.min(0.03, (time - lastTimeRef.current) / 1000);
+      const actualDt = Math.min(0.03, (time - lastTimeRef.current) / 1000);
       lastTimeRef.current = time;
 
       const canvas = canvasRef.current;
@@ -185,17 +213,18 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       // Physics integration step
       let currentY = magnetY;
       let currentV = velocity;
-      let state = { magnetY: currentY, velocity: currentV, acceleration: 10, inducedEMF: 0, inducedCurrent: 0, magneticForce: 0, flux: 0 };
+      let state = { magnetY: currentY, velocity: currentV, acceleration: 10, inducedEMF: inducedEMF, inducedCurrent: inducedCurrent, magneticForce: magneticForce, flux: 0 };
 
-      if (isPlaying) {
+      if (!isManualMode && isPlaying) {
+        // Slow down physics speed to 0.25x
+        const dt = actualDt * 0.25;
         state = calculateLenzStep(currentY, currentV, currentParams, dt);
         
         // Loop magnet drop when it falls past screen
         if (state.magnetY > rectHeight + 50) {
           currentY = 40;
           currentV = 0;
-          setHistory({ t: [], emf: [], current: [], force: [] });
-          timeAccumulatorRef.current = 0;
+          setIsPlaying(false); // Stop dropping automatically (don't update again and again)
         } else {
           currentY = state.magnetY;
           currentV = state.velocity;
@@ -215,11 +244,27 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
           const nextI = [...prev.current, state.inducedCurrent];
           const nextF = [...prev.force, state.magneticForce];
 
-          if (nextT.length > 150) {
+          if (nextT.length > 250) {
             nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
           }
           return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
         });
+
+        if (currentY <= 220) {
+          setComesHistory(prev => {
+            const nextT = [...prev.t, timeAccumulatorRef.current];
+            const nextI = [...prev.current, state.inducedCurrent];
+            if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+            return { t: nextT, current: nextI };
+          });
+        } else {
+          setGoesHistory(prev => {
+            const nextT = [...prev.t, timeAccumulatorRef.current];
+            const nextI = [...prev.current, state.inducedCurrent];
+            if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+            return { t: nextT, current: nextI };
+          });
+        }
       }
 
       const centerX = rectWidth / 2;
@@ -327,7 +372,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isPlaying, magnetMass, magnetStrength, coilTurns, isClosedCircuit, coilResistance, magnetY, velocity, currentParams]);
+  }, [isPlaying, magnetMass, magnetStrength, coilTurns, isClosedCircuit, coilResistance, magnetY, velocity, currentParams, isManualMode, inducedEMF, inducedCurrent, magneticForce]);
 
   // Log trial log
   const logTrial = () => {
@@ -362,6 +407,187 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     downloadReportAsPDF('Lenzs_Law_Report', {}, [], content);
   };
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isManualMode) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const centerX = 270;
+    if (Math.abs(clickX - centerX) < 40 && Math.abs(clickY - magnetY) < 50) {
+      isDraggingRef.current = true;
+      setIsDragging(true);
+      prevDragYRef.current = clickY;
+      prevDragTimeRef.current = performance.now();
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isManualMode || !isDraggingRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+
+    const newY = Math.max(30, Math.min(300, clickY));
+    const now = performance.now();
+    const dt = (now - prevDragTimeRef.current) / 1000;
+
+    if (dt > 0.005) {
+      const dy = newY - prevDragYRef.current;
+      const scaleMetersPerPixel = 0.05;
+      const vy = (dy * scaleMetersPerPixel) / dt;
+
+      setVelocity(vy);
+      setMagnetY(newY);
+
+      // Perform induction physics calculation based on manual speed vy
+      const z_scale = 0.05;
+      const z = (newY - 220) * z_scale;
+      const R = 35 * z_scale;
+      const C_flux = 0.01;
+      const dist = Math.sqrt(R * R + z * z);
+      const dPhi_dz = -(C_flux * magnetStrength * z) / Math.pow(dist, 3);
+      const inducedEMF = -coilTurns * dPhi_dz * vy;
+      const inducedCurrent = actualResistance === Infinity ? 0 : (inducedEMF / actualResistance);
+      const magneticForce = coilTurns * inducedCurrent * dPhi_dz;
+
+      setInducedEMF(inducedEMF);
+      setInducedCurrent(inducedCurrent);
+      setMagneticForce(magneticForce);
+
+      // Record histories
+      timeAccumulatorRef.current += dt;
+      setHistory(prev => {
+        const nextT = [...prev.t, timeAccumulatorRef.current];
+        const nextEmf = [...prev.emf, inducedEMF];
+        const nextI = [...prev.current, inducedCurrent];
+        const nextF = [...prev.force, magneticForce];
+        if (nextT.length > 250) {
+          nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
+        }
+        return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
+      });
+
+      if (newY <= 220) {
+        setComesHistory(prev => {
+          const nextT = [...prev.t, timeAccumulatorRef.current];
+          const nextI = [...prev.current, inducedCurrent];
+          if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+          return { t: nextT, current: nextI };
+        });
+      } else {
+        setGoesHistory(prev => {
+          const nextT = [...prev.t, timeAccumulatorRef.current];
+          const nextI = [...prev.current, inducedCurrent];
+          if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+          return { t: nextT, current: nextI };
+        });
+      }
+
+      prevDragYRef.current = newY;
+      prevDragTimeRef.current = now;
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    setVelocity(0);
+    setInducedCurrent(0);
+    setInducedEMF(0);
+    setMagneticForce(0);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isManualMode || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = touch.clientX - rect.left;
+    const clickY = touch.clientY - rect.top;
+
+    const centerX = 270;
+    if (Math.abs(clickX - centerX) < 45 && Math.abs(clickY - magnetY) < 65) {
+      isDraggingRef.current = true;
+      setIsDragging(true);
+      prevDragYRef.current = clickY;
+      prevDragTimeRef.current = performance.now();
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isManualMode || !isDraggingRef.current || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickY = touch.clientY - rect.top;
+
+    const newY = Math.max(30, Math.min(300, clickY));
+    const now = performance.now();
+    const dt = (now - prevDragTimeRef.current) / 1000;
+
+    if (dt > 0.005) {
+      const dy = newY - prevDragYRef.current;
+      const scaleMetersPerPixel = 0.05;
+      const vy = (dy * scaleMetersPerPixel) / dt;
+
+      setVelocity(vy);
+      setMagnetY(newY);
+
+      // Perform induction physics calculation based on manual speed vy
+      const z_scale = 0.05;
+      const z = (newY - 220) * z_scale;
+      const R = 35 * z_scale;
+      const C_flux = 0.01;
+      const dist = Math.sqrt(R * R + z * z);
+      const dPhi_dz = -(C_flux * magnetStrength * z) / Math.pow(dist, 3);
+      const inducedEMF = -coilTurns * dPhi_dz * vy;
+      const inducedCurrent = actualResistance === Infinity ? 0 : (inducedEMF / actualResistance);
+      const magneticForce = coilTurns * inducedCurrent * dPhi_dz;
+
+      setInducedEMF(inducedEMF);
+      setInducedCurrent(inducedCurrent);
+      setMagneticForce(magneticForce);
+
+      // Record histories
+      timeAccumulatorRef.current += dt;
+      setHistory(prev => {
+        const nextT = [...prev.t, timeAccumulatorRef.current];
+        const nextEmf = [...prev.emf, inducedEMF];
+        const nextI = [...prev.current, inducedCurrent];
+        const nextF = [...prev.force, magneticForce];
+        if (nextT.length > 250) {
+          nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
+        }
+        return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
+      });
+
+      if (newY <= 220) {
+        setComesHistory(prev => {
+          const nextT = [...prev.t, timeAccumulatorRef.current];
+          const nextI = [...prev.current, inducedCurrent];
+          if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+          return { t: nextT, current: nextI };
+        });
+      } else {
+        setGoesHistory(prev => {
+          const nextT = [...prev.t, timeAccumulatorRef.current];
+          const nextI = [...prev.current, inducedCurrent];
+          if (nextT.length > 250) { nextT.shift(); nextI.shift(); }
+          return { t: nextT, current: nextI };
+        });
+      }
+
+      prevDragYRef.current = newY;
+      prevDragTimeRef.current = now;
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
       
@@ -377,6 +603,33 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
                 {t.controls}
               </h3>
               <span className="text-[9px] text-slate-450 font-bold uppercase">Lenz lab</span>
+            </div>
+
+            {/* Mode selection toggle */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 block">{t.simMode}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { setIsManualMode(false); handleReset(); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    !isManualMode 
+                      ? 'bg-blue-600 border-blue-650 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.autoDrop}
+                </button>
+                <button
+                  onClick={() => { setIsManualMode(true); handleReset(); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    isManualMode 
+                      ? 'bg-blue-600 border-blue-650 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.manualDrag}
+                </button>
+              </div>
             </div>
 
             {/* Coil open / closed loop circuit breaker */}
@@ -520,7 +773,16 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
             <div className="w-full overflow-x-auto flex justify-center py-2">
               <canvas
                 ref={canvasRef}
-                className="border border-slate-100 rounded-lg bg-white select-none shadow-sm"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUp}
+                className={`border border-slate-100 rounded-lg bg-white select-none shadow-sm transition-all ${
+                  isManualMode ? (isDragging ? 'cursor-grabbing border-blue-500 ring-2 ring-blue-500/10' : 'cursor-grab hover:border-slate-300') : ''
+                }`}
               />
             </div>
           </div>
@@ -555,38 +817,69 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               </div>
             </div>
 
-            {/* Plotly line chart (8 Cols) */}
-            <div className="md:col-span-8 bg-white border border-slate-200 rounded-xl p-5 shadow-sm h-72">
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.emf,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Induced EMF (V)',
-                    line: { color: '#3b82f6', width: 2 }
-                  },
-                  {
-                    x: history.t,
-                    y: history.current,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Induced Current (A)',
-                    line: { color: '#10b981', width: 2 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Time t (s)' } },
-                  yaxis: { title: { text: 'Amplitude' } },
-                  legend: { orientation: 'h', y: -0.25 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
+            {/* Two separate Plotly line charts (8 Cols) */}
+            <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Approaching (Comes) Chart */}
+              <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm h-72 flex flex-col">
+                <h5 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 text-center">
+                  {t.comesChart}
+                </h5>
+                <div className="flex-1 min-h-0">
+                  <PlotlyGraph
+                    data={[
+                      {
+                        x: comesHistory.t,
+                        y: comesHistory.current,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'I_in (A)',
+                        line: { color: '#3b82f6', width: 2.5 }
+                      }
+                    ]}
+                    layout={{
+                      autosize: true,
+                      margin: { l: 40, r: 10, t: 10, b: 30 },
+                      xaxis: { title: { text: 'Time (s)', font: { size: 9 } } },
+                      yaxis: { title: { text: 'Current (A)', font: { size: 9 } } },
+                      paper_bgcolor: 'rgba(0,0,0,0)',
+                      plot_bgcolor: 'rgba(0,0,0,0)'
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Receding (Goes) Chart */}
+              <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm h-72 flex flex-col">
+                <h5 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 text-center">
+                  {t.goesChart}
+                </h5>
+                <div className="flex-1 min-h-0">
+                  <PlotlyGraph
+                    data={[
+                      {
+                        x: goesHistory.t,
+                        y: goesHistory.current,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'I_out (A)',
+                        line: { color: '#ef4444', width: 2.5 }
+                      }
+                    ]}
+                    layout={{
+                      autosize: true,
+                      margin: { l: 40, r: 10, t: 10, b: 30 },
+                      xaxis: { title: { text: 'Time (s)', font: { size: 9 } } },
+                      yaxis: { title: { text: 'Current (A)', font: { size: 9 } } },
+                      paper_bgcolor: 'rgba(0,0,0,0)',
+                      plot_bgcolor: 'rgba(0,0,0,0)'
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+
             </div>
 
           </div>
