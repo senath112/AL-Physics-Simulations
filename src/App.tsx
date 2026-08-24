@@ -3,6 +3,7 @@ import { ProjectileSimulation } from './components/simulations/mechanics/Project
 import { NewtonsLawsSimulation } from './components/simulations/mechanics/NewtonsLawsSimulation';
 import { InclinedPlaneSimulation } from './components/simulations/mechanics/InclinedPlaneSimulation';
 import { GeometricalOpticsSimulation } from './components/simulations/optics/GeometricalOpticsSimulation';
+import { SimpleHarmonicMotionSimulation } from './components/simulations/mechanics/SimpleHarmonicMotionSimulation';
 import { 
   Compass, 
   Activity, 
@@ -16,7 +17,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -79,7 +80,8 @@ function App() {
       unit: 'mechanics',
       description: 'Explore dynamic displacement, velocity, acceleration phase vectors, and energy state relationships for spring-mass oscillators.',
       icon: Activity,
-      status: 'coming_soon',
+      status: 'active',
+      pageLink: 'shm_sim',
     },
     {
       id: 'dc_circuits',
@@ -627,6 +629,26 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <GeometricalOpticsSimulation />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE SIMPLE HARMONIC MOTION SIMULATION */}
+        {currentPage === 'shm_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <span className="text-slate-900 font-semibold">Simple Harmonic Motion Explainer</span>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <SimpleHarmonicMotionSimulation />
             </div>
           </div>
         )}
