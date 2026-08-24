@@ -9,6 +9,7 @@ import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimul
 import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
 import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
 import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
+import { DopplerEffectSimulation } from './components/simulations/waves/DopplerEffectSimulation';
 import { 
   Compass, 
   Activity, 
@@ -22,7 +23,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'doppler_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -176,6 +177,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'parallel_currents',
+    },
+    {
+      id: 'doppler_effect',
+      title: 'Doppler Effect & Sonic Boom',
+      sinhalaTitle: "ඩොප්ලර් ආචරණය සහ සුපිරිධ්වනි කම්පනය",
+      tamilTitle: "டாப்ளர் விளைவு மற்றும் ஒலி அதிர்வு",
+      unit: 'waves',
+      description: 'Observe wave crest compression and expansion from a moving source, calculate Doppler pitch shifts, toggle real-time synthesizer sound, and construct shockwave Mach cones.',
+      icon: Waves,
+      status: 'active',
+      pageLink: 'doppler_sim',
     },
   ];
 
@@ -852,6 +864,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <ParallelCurrentsSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE DOPPLER EFFECT SIMULATION */}
+        {currentPage === 'doppler_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ඩොප්ලර් ආචරණය සහ සුපිරිධ්වනි කම්පනය • டாப்ளர் விளைவு மற்றும் ஒலி அதிர்வு</span>
+                <span className="text-slate-900 font-semibold text-sm">Doppler Effect & Sonic Boom Explainer</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <DopplerEffectSimulation lang={lang} />
             </div>
           </div>
         )}
