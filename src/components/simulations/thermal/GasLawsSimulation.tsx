@@ -3,7 +3,6 @@ import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
-  Info, 
   Download,
   Plus,
   Trash2,
@@ -14,11 +13,7 @@ import {
   Snowflake
 } from 'lucide-react';
 import { 
-  calculateGasState, 
-  solveCalorimetry, 
-  solveThermalExpansion,
-  CalorimetryParameters,
-  ExpansionParameters
+  calculateGasState
 } from '../../../physics/thermalPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 
@@ -39,66 +34,48 @@ interface Molecule {
 export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
     en: {
-      gasLawsTab: 'Gas Laws & Kinetic Theory',
-      thermoTab: 'Thermodynamics (P-V Diagrams)',
-      calorimetryTab: 'Calorimetry & Expansion',
-      controls: 'Chamber Parameters',
-      experimentMode: 'Experiment Mode',
-      ideal: 'Ideal Gas Law',
-      boyles: "Boyle's Law (T Const)",
-      charles: "Charles' Law (P Const)",
-      pressureLaw: "Pressure Law (V Const)",
-      molecules: 'Number of Gas Molecules (N)',
+      title: 'Gas Laws & Molecular Motion Explainer',
+      controls: 'Simulation Parameters',
+      gasMode: 'Target Gas Law',
+      moleculesCount: 'Molecules Count (N)',
       volume: 'Volume (V)',
       temperature: 'Temperature (T)',
-      heatChamber: 'Heat Chamber',
-      coolChamber: 'Cool Chamber',
-      logTrial: 'Log Trial Snapshot',
+      heatChamber: 'Heat Chamber (+50K)',
+      coolChamber: 'Cool Chamber (-50K)',
+      logTrial: 'Record Parameters Log',
       physicsCalculations: 'Physics Calculations',
       pressure: 'Pressure (P)',
-      ratio: 'Constant Ratio (PV/T)',
-      labNotes: 'Thermodynamic Observation Notes',
-      trialHistory: 'Recorded Thermal Trial History',
+      ratio: 'Ratio (PV/T)',
+      labNotes: 'Observation Journal',
+      trialHistory: 'Logged Observations History',
       pdf: 'Export PDF'
     },
     si: {
-      gasLawsTab: 'වායු නියම සහ චාලක වාදය',
-      thermoTab: 'තාපගති විද්‍යාව (P-V ප්‍රස්ථාර)',
-      calorimetryTab: 'කලෝරිමිතිය සහ ප්‍රසාරණය',
-      controls: 'මැදිරි පරාමිතීන්',
-      experimentMode: 'අත්හදා බැලීමේ ක්‍රමය',
-      ideal: 'පරිපූර්ණ වායු නියමය',
-      boyles: 'බොයිල්ගේ නියමය (T නියත)',
-      charles: 'චාල්ස්ගේ නියමය (P නියත)',
-      pressureLaw: 'පීඩන නියමය (V නියත)',
-      molecules: 'වායු අණු සංඛ්‍යාව (N)',
+      title: 'වායු නියම සහ අණුක චලිතය පැහැදිලි කිරීම',
+      controls: 'සිමියුලේෂන් පරාමිතීන්',
+      gasMode: 'අදාල වායු නියමය',
+      moleculesCount: 'අණු ගණන (N)',
       volume: 'පරිමාව (V)',
       temperature: 'උෂ්ණත්වය (T)',
-      heatChamber: 'මැදිරිය රත් කරන්න',
-      coolChamber: 'මැදිරිය සිසිල් කරන්න',
-      logTrial: 'නිරීක්ෂණ සටහන් කරන්න',
+      heatChamber: 'කුටීරය රත් කරන්න (+50K)',
+      coolChamber: 'කුටීරය සිසිල් කරන්න (-50K)',
+      logTrial: 'නිරීක්ෂණ අගය සටහන් කරන්න',
       physicsCalculations: 'භෞතික විද්‍යාත්මක ගණනය කිරීම්',
       pressure: 'පීඩනය (P)',
-      ratio: 'නියත අනුපාතය (PV/T)',
-      labNotes: 'තාපගතික ලැබ් නිරීක්ෂණ සටහන්',
-      trialHistory: 'පටිගත කළ තාපජ අත්හදා බැලීම්',
+      ratio: 'අනුපාතය (PV/T)',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       pdf: 'PDF ලබාගන්න'
     },
     ta: {
-      gasLawsTab: 'வாயு விதிகளும் இயக்கக் கொள்கையும்',
-      thermoTab: 'வெப்ப இயக்கவியல் (P-V வரைபடங்கள்)',
-      calorimetryTab: 'கலோரிமானி & வெப்ப விரிவு',
-      controls: 'அறை அளவீடுகள்',
-      experimentMode: 'சோதனை முறை',
-      ideal: 'நல்லியல்பு வாயு விதி',
-      boyles: 'போயிலின் விதி (T மாறிலி)',
-      charles: 'சார்லசின் விதி (P மாறிலி)',
-      pressureLaw: 'அழுத்த விதி (V மாறிலி)',
-      molecules: 'வாயு மூலக்கூறுகளின் எண்ணிக்கை (N)',
-      volume: 'கனவளவு (V)',
+      title: 'வாயு விதிகள் மற்றும் மூலக்கூறு இயக்க விளக்கம்',
+      controls: 'சிமுலேஷன் அளவுருக்கள்',
+      gasMode: 'வாயு விதி இலக்கு',
+      moleculesCount: 'மூலக்கூறுகளின் எண்ணிக்கை (N)',
+      volume: 'கனஅளவு (V)',
       temperature: 'வெப்பநிலை (T)',
-      heatChamber: 'அறையை வெப்பப்படுத்து',
-      coolChamber: 'அறையைக் குளிரூட்டு',
+      heatChamber: 'அறையை வெப்பப்படுத்து (+50K)',
+      coolChamber: 'அறையைக் குளிரூட்டு (-50K)',
       logTrial: 'சோதனைப் பதிவைச் சேமி',
       physicsCalculations: 'பௌதிகவியல் கணிப்புகள்',
       pressure: 'அழுத்தம் (P)',
@@ -111,46 +88,22 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
-  // Navigation Tabs
-  const [subTab, setSubTab] = useState<'gas' | 'thermo' | 'calorimetry'>('gas');
   const [explainMode, setExplainMode] = useState<boolean>(true);
-
-  // Tab 1: Gas Laws State
   const [gasMode, setGasMode] = useState<'ideal' | 'boyle' | 'charles' | 'pressure'>('ideal');
   const [moleculesCount, setMoleculesCount] = useState<number>(60);
-  const [volume, setVolume] = useState<number>(4.0); // Liters or scaled
+  const [volume, setVolume] = useState<number>(4.0); // Liters
   const [temperature, setTemperature] = useState<number>(300); // Kelvin
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
 
-  // Tab 2: Thermodynamics State
-  const [thermoProcess, setThermoProcess] = useState<'isothermal' | 'isobaric' | 'isochoric'>('isothermal');
-  const [heatAdded, setHeatAdded] = useState<number>(200); // J
-  const [thermoVolumeInitial, setThermoVolumeInitial] = useState<number>(2.0);
-  const [thermoVolumeFinal, setThermoVolumeFinal] = useState<number>(4.0);
-  const [thermoTempInitial] = useState<number>(300);
-
-  // Tab 3: Calorimetry & Expansion State
-  const [solidMaterial, setSolidMaterial] = useState<'copper' | 'steel' | 'aluminum'>('copper');
-  const [solidMass, setSolidMass] = useState<number>(150); // g
-  const [solidTemp, setSolidTemp] = useState<number>(100); // °C
-  const [liquidMass] = useState<number>(200); // g
-  const [liquidTemp] = useState<number>(25); // °C
-  
-  const [expansionMaterial, setExpansionMaterial] = useState<'copper' | 'steel' | 'aluminum' | 'glass'>('copper');
-  const [initialLength] = useState<number>(1.0); // m
-  const [expansionTempChange, setExpansionTempChange] = useState<number>(80); // °C
-
-  // Shared Lab Logs
   const [notes, setNotes] = useState<string>('');
   const [logs, setLogs] = useState<TrialLog[]>([]);
 
-  // Canvas details
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const moleculesRef = useRef<Molecule[]>([]);
   const lastTimeRef = useRef<number>(performance.now());
   const animationFrameRef = useRef<number | null>(null);
 
-  // 1. Gas laws calculations
+  // Gas laws calculations
   const gasState = useMemo(() => {
     return calculateGasState(moleculesCount, volume, temperature);
   }, [moleculesCount, volume, temperature]);
@@ -158,103 +111,104 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
   // Handle Gas Laws constraints depending on active law
   useEffect(() => {
     if (gasMode === 'boyle') {
-      // T is constant
       setTemperature(300);
     } else if (gasMode === 'charles') {
-      // P is constant => V is proportional to T
-      // We lock V based on T: V = T * constant
       const nextV = (temperature / 300) * 4.0;
       setVolume(parseFloat(nextV.toFixed(2)));
     } else if (gasMode === 'pressure') {
-      // V is constant
       setVolume(4.0);
     }
   }, [gasMode, temperature]);
 
-  // Tab 2: Thermodynamics calculations
-  const thermoResults = useMemo(() => {
-    const n = 0.08; // moles
-    const R = 8.314; // J/mol K
-    const U_initial = 1.5 * n * R * thermoTempInitial;
-    
-    let work = 0;
-    let deltaTemp = 0;
-    let finalTemp = thermoTempInitial;
-    
-    if (thermoProcess === 'isothermal') {
-      // T is constant => dU = 0 => Q = W
-      work = n * R * thermoTempInitial * Math.log(thermoVolumeFinal / thermoVolumeInitial);
-      deltaTemp = 0;
-      finalTemp = thermoTempInitial;
-    } else if (thermoProcess === 'isobaric') {
-      // P is constant => W = P * dV
-      const pressure = (n * R * thermoTempInitial) / thermoVolumeInitial;
-      work = pressure * (thermoVolumeFinal - thermoVolumeInitial) * 100; // scaled
-      finalTemp = thermoTempInitial * (thermoVolumeFinal / thermoVolumeInitial);
-      deltaTemp = finalTemp - thermoTempInitial;
-    } else if (thermoProcess === 'isochoric') {
-      // V is constant => W = 0 => Q = dU
-      work = 0;
-      finalTemp = thermoTempInitial + (heatAdded / (1.5 * n * R));
-      deltaTemp = finalTemp - thermoTempInitial;
+  // Generate curves for Plotly visualization
+  const plotData = useMemo(() => {
+    const xData: number[] = [];
+    const yData: number[] = [];
+
+    if (gasMode === 'boyle') {
+      // P vs V curve (hyperbola: P = constant / V)
+      const k = 0.08 * 0.0821 * 300; // nRT constant
+      for (let vVal = 1.0; vVal <= 7.0; vVal += 0.25) {
+        xData.push(vVal);
+        yData.push(k / vVal);
+      }
+    } else if (gasMode === 'charles') {
+      // V vs T straight line
+      for (let tVal = 100; tVal <= 500; tVal += 20) {
+        xData.push(tVal);
+        yData.push((tVal / 300) * 4.0);
+      }
+    } else if (gasMode === 'pressure') {
+      // P vs T straight line (Gay-Lussac)
+      const vConst = 4.0;
+      for (let tVal = 100; tVal <= 500; tVal += 20) {
+        xData.push(tVal);
+        yData.push((0.08 * 0.0821 * tVal) / vConst);
+      }
     }
+    return { x: xData, y: yData };
+  }, [gasMode]);
 
-    const deltaU = 1.5 * n * R * deltaTemp;
-    const finalU = U_initial + deltaU;
-    const heat = thermoProcess === 'isochoric' ? heatAdded : (deltaU + work);
-
-    return {
-      work: parseFloat(work.toFixed(1)),
-      deltaU: parseFloat(deltaU.toFixed(1)),
-      heat: parseFloat(heat.toFixed(1)),
-      finalTemp: parseFloat(finalTemp.toFixed(1)),
-      finalU: parseFloat(finalU.toFixed(1))
-    };
-  }, [thermoProcess, thermoVolumeInitial, thermoVolumeFinal, thermoTempInitial, heatAdded]);
-
-  // Tab 3: Calorimetry & Expansion calculations
-  const specificHeats = {
-    copper: 0.385,
-    steel: 0.450,
-    aluminum: 0.900,
-    water: 4.184
+  // Reset simulation variables
+  const handleReset = () => {
+    setGasMode('ideal');
+    setMoleculesCount(60);
+    setVolume(4.0);
+    setTemperature(300);
+    setLogs([]);
+    setNotes('');
   };
 
-  const calorimetryResult = useMemo(() => {
-    const params: CalorimetryParameters = {
-      liquidMass,
-      liquidTemp,
-      liquidSpecificHeat: specificHeats.water,
-      solidMass,
-      solidTemp,
-      solidSpecificHeat: specificHeats[solidMaterial]
+  // Add Log Entry
+  const logReading = () => {
+    const timestamp = new Date().toLocaleTimeString();
+    const detail = `Law: ${gasMode.toUpperCase()} | N = ${moleculesCount} | V = ${volume.toFixed(2)} L | T = ${temperature} K => P = ${gasState.pressure.toFixed(3)} atm`;
+    const newLog: TrialLog = {
+      id: Math.random().toString(36).substring(2, 9),
+      timestamp,
+      tab: 'Gas Laws',
+      detail
     };
-    return solveCalorimetry(params);
-  }, [liquidMass, liquidTemp, solidMass, solidTemp, solidMaterial]);
+    setLogs([newLog, ...logs]);
+  };
 
-  const expansionResult = useMemo(() => {
-    const params: ExpansionParameters = {
-      material: expansionMaterial,
-      initialLength,
-      tempChange: expansionTempChange
-    };
-    return solveThermalExpansion(params);
-  }, [expansionMaterial, initialLength, expansionTempChange]);
+  const handleExportPDF = () => {
+    const content = [
+      `A/L Physics Laboratory - Gas Laws Scientific Report`,
+      `Institution: Physics by Senath\n`,
+      `Logged Parameters History:`,
+      ...logs.map(log => `[${log.timestamp}] ${log.detail}`),
+      `\nLab Instructor Journal Notes:\n${notes || 'No observations logged.'}`
+    ].join('\n');
+    downloadReportAsPDF('Gas_Laws_Report', {}, [], content);
+  };
 
-  // Simulation loop for Molecule bouncing chamber (Kinetic Theory)
+  // Chamber Visualizer rendering loop
   useEffect(() => {
-    if (subTab !== 'gas') return;
+    // Generate initial molecules
+    if (moleculesRef.current.length === 0) {
+      const initialMolecules: Molecule[] = [];
+      for (let i = 0; i < 200; i++) {
+        initialMolecules.push({
+          x: 40 + Math.random() * 200,
+          y: 30 + Math.random() * 100,
+          vx: (Math.random() - 0.5) * 160,
+          vy: (Math.random() - 0.5) * 160
+        });
+      }
+      moleculesRef.current = initialMolecules;
+    }
 
-    // Reset or resize molecules list if count mismatch
+    // Sync molecule array size with moleculesCount slider
     if (moleculesRef.current.length !== moleculesCount) {
-      const diff = moleculesCount - moleculesRef.current.length;
-      if (diff > 0) {
+      if (moleculesRef.current.length < moleculesCount) {
+        const diff = moleculesCount - moleculesRef.current.length;
         for (let i = 0; i < diff; i++) {
           moleculesRef.current.push({
-            x: 50 + Math.random() * 300,
-            y: 50 + Math.random() * 150,
-            vx: (Math.random() - 0.5) * 50,
-            vy: (Math.random() - 0.5) * 50
+            x: 40 + Math.random() * 120,
+            y: 30 + Math.random() * 120,
+            vx: (Math.random() - 0.5) * 160,
+            vy: (Math.random() - 0.5) * 160
           });
         }
       } else {
@@ -317,7 +271,6 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
         const speedMultiplier = Math.sqrt(temperature / 100) * 1.6;
 
         moleculesRef.current.forEach(m => {
-          // Update positions
           m.x += m.vx * speedMultiplier * dt;
           m.y += m.vy * speedMultiplier * dt;
 
@@ -361,582 +314,226 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [subTab, isPlaying, moleculesCount, volume, temperature, gasMode, gasState]);
-
-  const handleReset = () => {
-    setMoleculesCount(60);
-    setVolume(4.0);
-    setTemperature(300);
-    setGasMode('ideal');
-    setSolidMaterial('copper');
-    setSolidMass(150);
-    setSolidTemp(100);
-    setExpansionMaterial('copper');
-    setExpansionTempChange(80);
-    setNotes('');
-  };
-
-  // Log trial data
-  const logTrial = () => {
-    const timestamp = new Date().toLocaleTimeString();
-    let detail = '';
-    let tabName = '';
-
-    if (subTab === 'gas') {
-      tabName = 'Gas Laws';
-      detail = `Mode: ${gasMode.toUpperCase()} | N = ${moleculesCount} | V = ${volume} L | T = ${temperature} K => Pressure = ${gasState.pressure} atm`;
-    } else if (subTab === 'thermo') {
-      tabName = 'Thermodynamics';
-      detail = `Process: ${thermoProcess.toUpperCase()} | Q = ${thermoResults.heat} J | W = ${thermoResults.work} J | ΔU = ${thermoResults.deltaU} J`;
-    } else {
-      tabName = 'Calorimetry';
-      detail = `Mix: Liquid (${liquidMass}g, ${liquidTemp}°C) + Solid (${solidMass}g, ${solidTemp}°C) => Final Temp = ${calorimetryResult.finalTemp}°C`;
-    }
-
-    setLogs([{ id: Math.random().toString(36).substring(2, 9), timestamp, tab: tabName, detail }, ...logs]);
-  };
-
-  const handleExportPDF = () => {
-    const content = [
-      `A/L Physics Laboratory - Thermal Physics Report`,
-      `Institution: Physics by Senath\n`,
-      `Logged Parameters History:`,
-      ...logs.map(log => `[${log.timestamp}] [${log.tab}] ${log.detail}`),
-      `\nLab Journal Notes:\n${notes || 'No notes logged.'}`
-    ].join('\n');
-    downloadReportAsPDF('Thermal_Physics_Lab_Report', {}, [], content);
-  };
-
-  // Plotly chart coordinate calculations
-  const gasPlotData = useMemo(() => {
-    const xVals: number[] = [];
-    const yVals: number[] = [];
-    
-    if (gasMode === 'boyle') {
-      // Constant T => P vs V (Inverse curve)
-      for (let v = 1.0; v <= 8.0; v += 0.2) {
-        xVals.push(v);
-        yVals.push(calculateGasState(moleculesCount, v, temperature).pressure);
-      }
-    } else if (gasMode === 'charles') {
-      // Constant P => V vs T (Linear curve)
-      for (let t = 100; t <= 500; t += 10) {
-        xVals.push(t);
-        yVals.push((t / 300) * 4.0);
-      }
-    } else {
-      // Constant V => P vs T (Linear curve)
-      for (let t = 100; t <= 500; t += 10) {
-        xVals.push(t);
-        yVals.push(calculateGasState(moleculesCount, volume, t).pressure);
-      }
-    }
-    return { x: xVals, y: yVals };
-  }, [gasMode, moleculesCount, volume, temperature]);
+  }, [isPlaying, moleculesCount, volume, temperature, gasMode, gasState]);
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
       
-      {/* Tab selection toolbar */}
-      <div className="flex border-b border-slate-200 gap-1.5 shrink-0">
-        <button
-          onClick={() => setSubTab('gas')}
-          className={`px-4 py-2 border-b-2 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer ${
-            subTab === 'gas' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          {t.gasLawsTab}
-        </button>
-        <button
-          onClick={() => setSubTab('thermo')}
-          className={`px-4 py-2 border-b-2 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer ${
-            subTab === 'thermo' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          {t.thermoTab}
-        </button>
-        <button
-          onClick={() => setSubTab('calorimetry')}
-          className={`px-4 py-2 border-b-2 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer ${
-            subTab === 'calorimetry' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          {t.calorimetryTab}
-        </button>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
         
-        {/* Left Column Controls */}
+        {/* Left Column Controls (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          
-          {/* TAB 1 CONTROLS: GAS LAWS */}
-          {subTab === 'gas' && (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider">
-                  {t.controls}
-                </h3>
-                <span className="text-[9px] text-slate-450 font-bold uppercase">Gas Labs</span>
-              </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                {t.controls}
+              </h3>
+              <span className="text-[9px] text-slate-450 font-bold uppercase">Gas Lab</span>
+            </div>
 
-              {/* Mode Select */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-655 block">{t.experimentMode}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setGasMode('ideal')}
-                    className={`py-1.5 px-2.5 text-xs font-bold rounded-lg border text-left transition-colors ${
-                      gasMode === 'ideal' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {t.ideal}
-                  </button>
-                  <button
-                    onClick={() => setGasMode('boyle')}
-                    className={`py-1.5 px-2.5 text-xs font-bold rounded-lg border text-left transition-colors ${
-                      gasMode === 'boyle' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {t.boyles}
-                  </button>
-                  <button
-                    onClick={() => setGasMode('charles')}
-                    className={`py-1.5 px-2.5 text-xs font-bold rounded-lg border text-left transition-colors ${
-                      gasMode === 'charles' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {t.charles}
-                  </button>
-                  <button
-                    onClick={() => setGasMode('pressure')}
-                    className={`py-1.5 px-2.5 text-xs font-bold rounded-lg border text-left transition-colors ${
-                      gasMode === 'pressure' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {t.pressureLaw}
-                  </button>
-                </div>
-              </div>
-
-              {/* Molecule count */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">{t.molecules}</span>
-                  <span className="text-slate-800 font-mono">{moleculesCount}</span>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="120"
-                  step="5"
-                  value={moleculesCount}
-                  onChange={(e) => setMoleculesCount(parseInt(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-
-              {/* Volume */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">{t.volume}</span>
-                  <span className="text-slate-800 font-mono">{volume.toFixed(1)} L</span>
-                </div>
-                <input
-                  type="range"
-                  min="1.0"
-                  max="7.0"
-                  step="0.1"
-                  value={volume}
-                  disabled={gasMode === 'charles' || gasMode === 'pressure'}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
-                />
-              </div>
-
-              {/* Temperature */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">{t.temperature}</span>
-                  <span className="text-slate-800 font-mono">{temperature} K</span>
-                </div>
-                <input
-                  type="range"
-                  min="100"
-                  max="500"
-                  step="10"
-                  value={temperature}
-                  disabled={gasMode === 'boyle'}
-                  onChange={(e) => setTemperature(parseInt(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
-                />
-              </div>
-
-              {/* Quick Heat / Cool handles */}
-              <div className="flex gap-2 pt-2 border-t border-slate-100">
+            {/* Target Gas Law Toggle */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-650 block">{t.gasMode}</label>
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
-                  onClick={() => setTemperature(Math.min(500, temperature + 40))}
-                  disabled={gasMode === 'boyle'}
-                  className="flex-1 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+                  onClick={() => { setGasMode('ideal'); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    gasMode === 'ideal' 
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
                 >
-                  <Flame className="w-3.5 h-3.5" />
-                  {t.heatChamber}
+                  Ideal Gas Law
                 </button>
                 <button
-                  onClick={() => setTemperature(Math.max(100, temperature - 40))}
-                  disabled={gasMode === 'boyle'}
-                  className="flex-1 py-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+                  onClick={() => { setGasMode('boyle'); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    gasMode === 'boyle' 
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
                 >
-                  <Snowflake className="w-3.5 h-3.5" />
-                  {t.coolChamber}
+                  Boyle's Law (T Const)
+                </button>
+                <button
+                  onClick={() => { setGasMode('charles'); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    gasMode === 'charles' 
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  Charles' Law (P Const)
+                </button>
+                <button
+                  onClick={() => { setGasMode('pressure'); }}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                    gasMode === 'pressure' 
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  Pressure Law (V Const)
                 </button>
               </div>
             </div>
-          )}
 
-          {/* TAB 2 CONTROLS: THERMODYNAMICS */}
-          {subTab === 'thermo' && (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider">
-                  Thermodynamic Controls
-                </h3>
-                <span className="text-[9px] text-slate-450 font-bold uppercase">1st Law Labs</span>
+            {/* Molecule Count slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold">
+                <span className="text-slate-600">{t.moleculesCount}</span>
+                <span className="text-slate-800 font-mono">{moleculesCount}</span>
               </div>
-
-              {/* Process Select */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-655 block">Process Type</label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    onClick={() => setThermoProcess('isothermal')}
-                    className={`py-1.5 text-[10px] font-black uppercase rounded-lg border text-center transition-colors ${
-                      thermoProcess === 'isothermal' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    Isothermal
-                  </button>
-                  <button
-                    onClick={() => setThermoProcess('isobaric')}
-                    className={`py-1.5 text-[10px] font-black uppercase rounded-lg border text-center transition-colors ${
-                      thermoProcess === 'isobaric' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    Isobaric
-                  </button>
-                  <button
-                    onClick={() => setThermoProcess('isochoric')}
-                    className={`py-1.5 text-[10px] font-black uppercase rounded-lg border text-center transition-colors ${
-                      thermoProcess === 'isochoric' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    Isochoric
-                  </button>
-                </div>
-              </div>
-
-              {/* Volume Initial / Final */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Initial Volume (V₁)</span>
-                  <span className="text-slate-800 font-mono">{thermoVolumeInitial.toFixed(1)} L</span>
-                </div>
-                <input
-                  type="range"
-                  min="1.0"
-                  max="3.0"
-                  step="0.1"
-                  value={thermoVolumeInitial}
-                  disabled={thermoProcess === 'isochoric'}
-                  onChange={(e) => setThermoVolumeInitial(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Final Volume (V₂)</span>
-                  <span className="text-slate-800 font-mono">{thermoVolumeFinal.toFixed(1)} L</span>
-                </div>
-                <input
-                  type="range"
-                  min="3.1"
-                  max="6.0"
-                  step="0.1"
-                  value={thermoVolumeFinal}
-                  disabled={thermoProcess === 'isochoric'}
-                  onChange={(e) => setThermoVolumeFinal(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
-                />
-              </div>
-
-              {/* Heat added slider for isochoric */}
-              {thermoProcess === 'isochoric' && (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-600">Heat Added (Q)</span>
-                    <span className="text-slate-800 font-mono">{heatAdded} J</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="50"
-                    max="600"
-                    step="10"
-                    value={heatAdded}
-                    onChange={(e) => setHeatAdded(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-              )}
+              <input
+                type="range"
+                min="10"
+                max="180"
+                value={moleculesCount}
+                onChange={(e) => setMoleculesCount(parseInt(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              />
             </div>
-          )}
 
-          {/* TAB 3 CONTROLS: CALORIMETRY & EXPANSION */}
-          {subTab === 'calorimetry' && (
-            <div className="space-y-6">
-              {/* Calorimetry parameters */}
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-                <h3 className="font-extrabold text-sm text-slate-850 uppercase tracking-wider border-b border-slate-100 pb-2">
-                  Calorimetry Mixer
-                </h3>
-                
-                {/* Solid Preset Selector */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600">Solid Block Material</label>
-                  <select
-                    value={solidMaterial}
-                    onChange={(e) => setSolidMaterial(e.target.value as any)}
-                    className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 font-medium"
-                  >
-                    <option value="copper">Copper Block (c = 0.385 J/g°C)</option>
-                    <option value="steel">Steel Block (c = 0.450 J/g°C)</option>
-                    <option value="aluminum">Aluminum Block (c = 0.900 J/g°C)</option>
-                  </select>
-                </div>
-
-                {/* Solid Mass */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-500">Solid Mass</span>
-                    <span className="text-slate-850 font-mono">{solidMass} g</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="50"
-                    max="300"
-                    step="10"
-                    value={solidMass}
-                    onChange={(e) => setSolidMass(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-
-                {/* Solid Temp */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-500">Solid Temp (T_s)</span>
-                    <span className="text-slate-850 font-mono">{solidTemp} °C</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="50"
-                    max="150"
-                    step="5"
-                    value={solidTemp}
-                    onChange={(e) => setSolidTemp(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
+            {/* Volume slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold">
+                <span className="text-slate-600">{t.volume}</span>
+                <span className="text-slate-800 font-mono">{volume.toFixed(1)} L</span>
               </div>
-
-              {/* Expansion parameters */}
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-                <h3 className="font-extrabold text-sm text-slate-850 uppercase tracking-wider border-b border-slate-100 pb-2">
-                  Thermal Expansion Rod
-                </h3>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600">Rod Material</label>
-                  <select
-                    value={expansionMaterial}
-                    onChange={(e) => setExpansionMaterial(e.target.value as any)}
-                    className="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 font-medium"
-                  >
-                    <option value="copper">Copper (α = 1.65e-5 /°C)</option>
-                    <option value="steel">Steel (α = 1.20e-5 /°C)</option>
-                    <option value="aluminum">Aluminum (α = 2.31e-5 /°C)</option>
-                    <option value="glass">Glass (α = 8.50e-6 /°C)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-500">Temperature Increase (ΔT)</span>
-                    <span className="text-slate-850 font-mono">+{expansionTempChange} °C</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="200"
-                    step="5"
-                    value={expansionTempChange}
-                    onChange={(e) => setExpansionTempChange(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-              </div>
+              <input
+                type="range"
+                min="1.0"
+                max="7.0"
+                step="0.1"
+                value={volume}
+                disabled={gasMode === 'charles' || gasMode === 'pressure'}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40"
+              />
             </div>
-          )}
 
-          {/* Action Log button */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <button
-              onClick={logTrial}
-              className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              {t.logTrial}
-            </button>
+            {/* Temperature slider */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold">
+                <span className="text-slate-600">{t.temperature}</span>
+                <span className="text-slate-800 font-mono">{temperature} K</span>
+              </div>
+              <input
+                type="range"
+                min="100"
+                max="500"
+                step="10"
+                value={temperature}
+                disabled={gasMode === 'boyle'}
+                onChange={(e) => setTemperature(parseInt(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40"
+              />
+            </div>
+
+            {/* Chamber heating cooling triggers */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => setTemperature(prev => Math.min(500, prev + 50))}
+                disabled={gasMode === 'boyle'}
+                className="py-1.5 px-2 bg-orange-50 border border-orange-100 hover:bg-orange-100/60 text-orange-700 text-[10px] font-black uppercase rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-40"
+              >
+                <Flame className="w-3.5 h-3.5" />
+                {t.heatChamber}
+              </button>
+              <button
+                onClick={() => setTemperature(prev => Math.max(100, prev - 50))}
+                disabled={gasMode === 'boyle'}
+                className="py-1.5 px-2 bg-blue-50 border border-blue-100 hover:bg-blue-100/60 text-blue-700 text-[10px] font-black uppercase rounded-lg flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:opacity-40"
+              >
+                <Snowflake className="w-3.5 h-3.5" />
+                {t.coolChamber}
+              </button>
+            </div>
+
+            {/* Logging and resets */}
+            <div className="flex gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={logReading}
+                className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
+              >
+                <Plus className="w-3 h-3" />
+                {t.logTrial}
+              </button>
+              <button
+                onClick={handleReset}
+                className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-650 rounded-lg transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
-
         </div>
 
-        {/* Right Column: Visualizer Viewport / Graph */}
+        {/* Right Column visualizer and plot (8 Cols) */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           
-          {/* TAB 1 VIEWPORT: GAS MOLECULES CHAMBER */}
-          {subTab === 'gas' && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center">
-              <div className="flex items-center justify-between w-full mb-2">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Molecular Motion Containment Chamber</h3>
-                
-                {/* Play Pause Controls */}
-                <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
-                    title={isPlaying ? 'Pause' : 'Play'}
-                  >
-                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
-                    title="Reset variables"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center">
+            <div className="flex items-center justify-between w-full mb-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Molecular Motion Containment Chamber</h3>
               
-              <div className="w-full overflow-x-auto flex justify-center py-2">
-                <canvas
-                  ref={canvasRef}
-                  className="border border-slate-100 rounded-lg bg-white select-none shadow-sm"
-                />
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className="p-1 hover:bg-slate-200/60 rounded text-slate-700 transition-colors cursor-pointer"
+                >
+                  {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                </button>
               </div>
             </div>
-          )}
 
-          {/* TAB 2 & 3 VIEWPORTS / PLOTS */}
+            <div className="w-full overflow-x-auto flex justify-center py-2">
+              <canvas
+                ref={canvasRef}
+                className="border border-slate-100 rounded-lg bg-white select-none shadow-sm"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
-            {/* Math Readings (4 Cols) */}
+            {/* Readings */}
             <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
                 {t.physicsCalculations}
               </h4>
               
-              {subTab === 'gas' && (
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">{t.pressure}:</span>
-                    <span className="font-mono text-blue-650 font-extrabold">{gasState.pressure.toFixed(2)} atm</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">{t.volume}:</span>
-                    <span className="font-mono text-slate-800 font-bold">{gasState.volume.toFixed(1)} L</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">{t.temperature}:</span>
-                    <span className="font-mono text-red-650 font-bold">{gasState.temperature} K</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">{t.ratio}:</span>
-                    <span className="font-mono text-slate-850">
-                      {((gasState.pressure * gasState.volume) / gasState.temperature).toFixed(4)}
-                    </span>
-                  </div>
-                  <div className="border-t border-slate-100 pt-2 flex items-center justify-between text-[10px] font-bold text-slate-450">
-                    <span>Target Law:</span>
-                    <span className="uppercase text-slate-600">{gasMode} law</span>
-                  </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between font-medium">
+                  <span className="text-slate-500">{t.pressure}:</span>
+                  <span className="font-mono text-blue-600 font-extrabold">{gasState.pressure.toFixed(3)} atm</span>
                 </div>
-              )}
-
-              {subTab === 'thermo' && (
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Heat Supplied (Q):</span>
-                    <span className="font-mono text-blue-600 font-extrabold">{thermoResults.heat} J</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Work Done (W):</span>
-                    <span className="font-mono text-slate-850 font-bold">{thermoResults.work} J</span>
-                  </div>
-                  <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Internal Energy (ΔU):</span>
-                    <span className="font-mono text-red-600 font-bold">{thermoResults.deltaU} J</span>
-                  </div>
-                  <div className="flex justify-between font-medium border-t border-slate-100 pt-2">
-                    <span className="text-slate-500">Final Temp (T₂):</span>
-                    <span className="font-mono text-slate-800 font-bold">{thermoResults.finalTemp} K</span>
-                  </div>
-                  <p className="text-[9px] text-slate-400 font-bold mt-2">
-                    Matches 1st Law: Q = ΔU + W
-                  </p>
+                <div className="flex justify-between font-medium">
+                  <span className="text-slate-500">{t.ratio}:</span>
+                  <span className="font-mono text-emerald-600 font-bold">
+                    {((gasState.pressure * gasState.volume) / gasState.temperature).toFixed(5)}
+                  </span>
                 </div>
-              )}
-
-              {subTab === 'calorimetry' && (
-                <div className="space-y-3.5 text-xs">
-                  <div className="border-b border-slate-50 pb-1.5">
-                    <div className="flex justify-between font-medium">
-                      <span className="text-slate-500">Final Liquid Temp:</span>
-                      <span className="font-mono text-blue-600 font-extrabold">{calorimetryResult.finalTemp} °C</span>
-                    </div>
-                    <div className="flex justify-between text-[9px] text-slate-400 font-medium">
-                      <span>Heat Gained/Lost:</span>
-                      <span className="font-mono">{calorimetryResult.liquidHeatChange} J</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between font-medium">
-                      <span className="text-slate-500">Expansion (ΔL):</span>
-                      <span className="font-mono text-emerald-600 font-bold">{expansionResult.deltaLength.toFixed(5)} m</span>
-                    </div>
-                    <div className="flex justify-between text-[9px] text-slate-400 font-medium">
-                      <span>Final Length:</span>
-                      <span className="font-mono">{expansionResult.finalLength.toFixed(5)} m</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
-            {/* Graphs (8 Cols) */}
+            {/* Plotly Chart (8 Cols) */}
             <div className="md:col-span-8 bg-white border border-slate-200 rounded-xl p-5 shadow-sm h-72">
-              {subTab === 'gas' && (
+              {gasMode === 'ideal' ? (
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  Select a specific Gas Law to view curves
+                </div>
+              ) : (
                 <PlotlyGraph
                   data={[
                     {
-                      x: gasPlotData.x,
-                      y: gasPlotData.y,
+                      x: plotData.x,
+                      y: plotData.y,
                       type: 'scatter',
                       mode: 'lines',
-                      name: 'Gas Curve boundary',
-                      line: { color: '#3b82f6', width: 2 }
+                      name: gasMode === 'boyle' ? "Boyle's Curve" : gasMode === 'charles' ? "Charles' Line" : "Gay-Lussac Line",
+                      line: { color: '#3b82f6', width: 2.5 }
                     },
                     {
                       x: [gasMode === 'boyle' ? volume : temperature],
@@ -959,67 +556,6 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                   className="w-full h-full"
                 />
               )}
-
-              {subTab === 'thermo' && (
-                <PlotlyGraph
-                  data={[
-                    {
-                      x: [thermoVolumeInitial, thermoVolumeFinal],
-                      y: [
-                        (0.08 * 8.314 * thermoTempInitial) / thermoVolumeInitial,
-                        (0.08 * 8.314 * thermoResults.finalTemp) / thermoVolumeFinal
-                      ],
-                      type: 'scatter',
-                      mode: 'lines+markers',
-                      name: 'P-V Path',
-                      line: { color: '#8b5cf6', width: 2.5 }
-                    }
-                  ]}
-                  layout={{
-                    autosize: true,
-                    margin: { l: 45, r: 15, t: 15, b: 40 },
-                    xaxis: { title: { text: 'Volume V (L)' } },
-                    yaxis: { title: { text: 'Pressure P (atm)' } },
-                    legend: { orientation: 'h', y: -0.25 },
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)'
-                  }}
-                  className="w-full h-full"
-                />
-              )}
-
-              {subTab === 'calorimetry' && (
-                <PlotlyGraph
-                  data={[
-                    {
-                      x: [0, solidMass],
-                      y: [solidTemp, calorimetryResult.finalTemp],
-                      type: 'scatter',
-                      mode: 'lines+markers',
-                      name: 'Solid Temp drop',
-                      line: { color: '#ea580c' }
-                    },
-                    {
-                      x: [0, liquidMass],
-                      y: [liquidTemp, calorimetryResult.finalTemp],
-                      type: 'scatter',
-                      mode: 'lines+markers',
-                      name: 'Liquid Temp rise',
-                      line: { color: '#3b82f6' }
-                    }
-                  ]}
-                  layout={{
-                    autosize: true,
-                    margin: { l: 45, r: 15, t: 15, b: 40 },
-                    xaxis: { title: { text: 'Mass (g)' } },
-                    yaxis: { title: { text: 'Temperature (°C)' } },
-                    legend: { orientation: 'h', y: -0.25 },
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)'
-                  }}
-                  className="w-full h-full"
-                />
-              )}
             </div>
 
           </div>
@@ -1030,31 +566,37 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
 
       {/* Explainer Block */}
       {explainMode && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-sm space-y-3 shrink-0">
-          <div className="flex items-center gap-1.5 text-blue-800 font-extrabold text-sm border-b border-blue-150 pb-2">
-            <Info className="w-4.5 h-4.5" />
-            THERMODYNAMICS & GAS KINETICS SCIENTIFIC FOUNDATION
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-blue-600" />
+              Gas Laws Equations & Theory
+            </h3>
+            <button
+              onClick={() => setExplainMode(false)}
+              className="text-xs font-bold text-slate-400 hover:text-slate-600"
+            >
+              Hide Theory
+            </button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-blue-900 leading-relaxed font-medium">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-650 leading-relaxed font-medium">
             <div className="space-y-2">
               <p>
-                <strong>Ideal Gas Equations & Kinetic Theory:</strong> Gas particles collide elastically with the chamber walls. The momentum transfer per unit area creates the macroscopically measurable gas pressure:
+                <strong>Ideal Gas Law (පරිපූර්ණ වායු සමීකරණය):</strong> Combines Boyle's, Charles's, and Avogadro's laws to define the thermodynamic state of an ideal gas:
               </p>
-              <BlockMath math="P V = n R T" />
+              <BlockMath math="PV = nRT" />
               <p>
-                Where <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="P" /></span> is pressure, <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="V" /></span> is volume, and <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="T" /></span> is temperature. In Boyle's Law ($T$ Const), $P \propto 1/V$. In Charles' Law ($P$ Const), $V \propto T$. In Pressure Law ($V$ Const), $P \propto T$.
+                Where <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="P" /></span> is pressure, <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="V" /></span> is volume, <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="n" /></span> is moles, <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="R" /></span> is the universal gas constant, and <span className="font-mono bg-blue-100/60 px-1 py-0.5 rounded"><InlineMath math="T" /></span> is temperature.
               </p>
             </div>
             <div className="space-y-2">
               <p>
-                <strong>First Law of Thermodynamics (තාපගති විද්‍යාවේ පළමු නියමය):</strong> Energy is conserved. Heat supplied ($Q$) goes into doing external work ($W$) and altering internal energy ($\Delta U$):
+                <strong>Boyle's Law (බොයිල්ගේ නියමය):</strong> The volume of a fixed mass of gas is inversely proportional to its pressure at constant temperature:
               </p>
-              <BlockMath math="Q = \Delta U + W" />
+              <BlockMath math="P_1 V_1 = P_2 V_2 \quad (\text{Const } T)" />
               <p>
-                - Isothermal ($T$ Const): $\Delta U = 0 \implies Q = W$.<br/>
-                - Isochoric ($V$ Const): $W = 0 \implies Q = \Delta U$.<br/>
-                - Isobaric ($P$ Const): Heat increases both temperature ($\Delta U$) and drives external work ($W = P\Delta V$).
+                Decreasing container volume forces molecules into a smaller area, increasing collisions with the walls and multiplying pressure.
               </p>
             </div>
           </div>
@@ -1072,7 +614,6 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
               {t.labNotes}
             </h3>
             
-            {/* Show Theory Toggle */}
             <div className="flex items-center gap-1.5">
               <input
                 type="checkbox"
@@ -1090,7 +631,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Document gas law pressure transitions, isothermal P-V curve observations, or calorimetry equilibrium temperature mixtures..."
+            placeholder="Record observations for PV relationships, temperature proportionality, or constant ratios..."
             className="w-full h-36 p-3 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar font-medium bg-slate-50/20"
           />
         </div>
@@ -1128,19 +669,17 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                   <div key={log.id} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-[10px]">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-800">{log.tab}</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="font-medium text-slate-600">{log.detail}</span>
+                        <span className="font-extrabold text-slate-400">{log.tab}</span>
+                        <span className="text-slate-350">•</span>
+                        <span className="text-slate-800 font-extrabold">{log.detail}</span>
                       </div>
                     </div>
-                    <span className="text-[9px] text-slate-400 font-mono font-bold">{log.timestamp}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs py-8">
-                <Info className="w-8 h-8 text-slate-200 mb-2" />
-                No logged records. Click "Log Trial Snapshot" above.
+              <div className="text-center py-6 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                No trial observations logged
               </div>
             )}
           </div>
@@ -1149,5 +688,27 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       </div>
 
     </div>
+  );
+}
+
+// Dummy Info Icon placeholder for inline visual header safety
+function Info(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
   );
 }
