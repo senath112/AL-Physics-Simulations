@@ -297,6 +297,50 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
             ctx.font = 'black 9px font-sans';
             ctx.textAlign = 'center';
             ctx.fillText('I', centerX + 10, arrowY + 3);
+
+            // Draw end-cap cross-section indicators based on view direction
+            const drawEndcapSymbol = (proj: { x: number; y: number }, isDot: boolean) => {
+              ctx.save();
+              ctx.fillStyle = '#ffffff';
+              ctx.strokeStyle = '#334155';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(proj.x, proj.y, 7, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.stroke();
+
+              if (isDot) {
+                // (.) Dot (Current pointing out of the plane)
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, 2, 0, 2 * Math.PI);
+                ctx.fill();
+              } else {
+                // (X) Cross (Current pointing into the plane)
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(proj.x - 2.5, proj.y - 2.5);
+                ctx.lineTo(proj.x + 2.5, proj.y + 2.5);
+                ctx.moveTo(proj.x + 2.5, proj.y - 2.5);
+                ctx.lineTo(proj.x - 2.5, proj.y + 2.5);
+                ctx.stroke();
+              }
+              ctx.restore();
+            };
+
+            const projTop = project({ x: 0, y: -120, z: 0 }, centerX, centerY);
+            const projBottom = project({ x: 0, y: 120, z: 0 }, centerX, centerY);
+
+            // If current > 0 (flows up/towards -Y), it emerges at top (.) and enters at bottom (X)
+            // If current < 0 (flows down/towards +Y), it enters at top (X) and emerges at bottom (.)
+            if (current > 0) {
+              drawEndcapSymbol(projTop, true); // emerging top
+              drawEndcapSymbol(projBottom, false); // entering bottom
+            } else {
+              drawEndcapSymbol(projTop, false); // entering top
+              drawEndcapSymbol(projBottom, true); // emerging bottom
+            }
           }
         }
       });
@@ -330,16 +374,18 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
 
       // 3. Concentric magnetic field loops at different radii
       const loopRadii = [30, 60, 95];
+      // Flow animation offset based on current
+      const flowOffset = (Date.now() / 1000) * (current > 0 ? 1 : -1) * 1.5;
+
       loopRadii.forEach(radius => {
-        // Draw circles in the horizontal X-Z plane (y = 0 or custom height offsets)
-        // We segment the circle into points to project them correctly
+        // Draw circles in the horizontal X-Z plane
         const circlePoints: Point3D[] = [];
         const numSegments = 64;
         for (let i = 0; i <= numSegments; i++) {
           const angle = (i * 2 * Math.PI) / numSegments;
           circlePoints.push({
             x: radius * Math.cos(angle),
-            y: 0, // centered on horizontal plane
+            y: 0,
             z: radius * Math.sin(angle)
           });
         }
@@ -347,14 +393,17 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
         drawQueue.push({
           depth: 10 + radius,
           draw: () => {
-            // Draw circle path
+            // Draw circle path with dash animation flow
             ctx.strokeStyle = radius === probeDistance ? 'rgba(59, 130, 246, 0.95)' : 'rgba(16, 185, 129, 0.45)';
             ctx.lineWidth = radius === probeDistance ? 2.5 : 1.5;
-            if (radius === probeDistance) {
-              ctx.setLineDash([4, 2]); // dash target active loop
+            
+            if (current !== 0) {
+              ctx.setLineDash([5, 4]);
+              ctx.lineDashOffset = -flowOffset * 8;
             } else {
               ctx.setLineDash([]);
             }
+
             ctx.beginPath();
             circlePoints.forEach((pt, index) => {
               const proj = project(pt, centerX, centerY);
@@ -364,10 +413,12 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Draw field direction arrows on circle segments based on Right-Hand Grip Rule direction
+            // Draw field direction arrows moving along circle segments
             if (current !== 0) {
               const dir = current > 0 ? 1 : -1; // Grip direction
-              const arrowAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+              const baseAngles = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+              // Slide the arrowheads around the loop dynamically
+              const arrowAngles = baseAngles.map(ang => ang + (flowOffset * 0.15 * dir) % (2 * Math.PI));
               
               arrowAngles.forEach(ang => {
                 const pt = {
@@ -376,7 +427,6 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                   z: radius * Math.sin(ang)
                 };
                 
-                // tangent vector representing direction of B
                 const tangent = {
                   x: -Math.sin(ang) * dir,
                   y: 0,
@@ -391,7 +441,6 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                 };
                 const projAhead = project(ptAhead, centerX, centerY);
 
-                // Draw arrowhead on screen space pointing along projected tangent
                 const dx = projAhead.x - projPt.x;
                 const dy = projAhead.y - projPt.y;
                 const headAngle = Math.atan2(dy, dx);

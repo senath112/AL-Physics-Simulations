@@ -230,15 +230,42 @@ function App() {
 
           {/* Right Action buttons */}
           <div className="flex items-center gap-3">
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as any)}
-              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-350 rounded-full text-[11px] font-bold text-slate-700 outline-none cursor-pointer transition-colors"
-            >
-              <option value="en">English</option>
-              <option value="si">සිංහල</option>
-              <option value="ta">தமிழ்</option>
-            </select>
+            {/* Visual Segmented Pill Language Switcher */}
+            <div className="flex items-center gap-0.5 bg-slate-100/80 border border-slate-200 p-0.5 rounded-full shadow-sm">
+              <button
+                onClick={() => setLang('en')}
+                className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                  lang === 'en' 
+                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+                title="Switch to English"
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLang('si')}
+                className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                  lang === 'si' 
+                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+                title="සිංහල භාෂාවට මාරු වන්න"
+              >
+                සිං
+              </button>
+              <button
+                onClick={() => setLang('ta')}
+                className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
+                  lang === 'ta' 
+                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+                title="தமிழ் மொழிக்கு மாறவும்"
+              >
+                தமிழ்
+              </button>
+            </div>
             <button 
               onClick={() => setCurrentPage('sims')}
               className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
@@ -336,9 +363,6 @@ function App() {
                   </div>
                   <div className="absolute w-[260px] h-[260px] rounded-full border border-double border-blue-600/10 pointer-events-none animate-[spin_30s_linear_infinite_reverse]" />
                   
-                  {/* Scanner sweep line */}
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-500/20 shadow-[0_0_10px_2px_rgba(59,130,246,0.3)] pointer-events-none animate-[bounce_8s_infinite] w-[90%] mx-auto" />
-
                   <div className="tilted-container relative z-10">
                     
                     {/* Projectile Card */}

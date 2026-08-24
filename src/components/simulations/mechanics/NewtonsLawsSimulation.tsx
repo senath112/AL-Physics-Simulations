@@ -10,7 +10,80 @@ import {
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
 
-export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      paramsTitle: 'Parameters',
+      appliedForce: 'Applied Force (F)',
+      mass: 'Block Mass (m)',
+      staticFriction: 'Static Friction (μₛ)',
+      kineticFriction: 'Kinetic Friction (μₖ)',
+      gravity: 'Gravity (g)',
+      vectors: 'Show Vector Force Arrows',
+      theoryOutput: 'Theoretical Kinematics',
+      acceleration: 'Acceleration (a)',
+      fricForce: 'Friction Force (f)',
+      normalForce: 'Normal Force (R)',
+      staticThreshold: 'Friction Threshold',
+      play: 'Play',
+      pause: 'Pause',
+      step: 'Step Forward',
+      reset: 'Reset',
+      logData: 'Record Data Point',
+      downloadPDF: 'Download PDF Report',
+      labNotes: 'Observation Notebook',
+      trialHistory: 'Logged Trials History',
+      clearLogs: 'Clear Logs'
+    },
+    si: {
+      paramsTitle: 'පරාමිතීන්',
+      appliedForce: 'යොදනු ලබන බලය (F)',
+      mass: 'ස්කන්ධය (m)',
+      staticFriction: 'ස්ථිතික ඝර්ෂණ සංගුණකය (μₛ)',
+      kineticFriction: 'ගතික ඝර්ෂණ සංගුණකය (μₖ)',
+      gravity: 'ගුරුත්වාකර්ෂණය (g)',
+      vectors: 'බල දෛශික ඊතල පෙන්වන්න',
+      theoryOutput: 'න්‍යායාත්මක චලිතය',
+      acceleration: 'ත්වරණය (a)',
+      fricForce: 'ඝර්ෂණ බලය (f)',
+      normalForce: 'අභිලම්භ ප්‍රතික්‍රියාව (R)',
+      staticThreshold: 'උපරිම සීමාකාරී ඝර්ෂණය',
+      play: 'ධාවනය කරන්න',
+      pause: 'නවත්වා තබන්න',
+      step: 'ඉදිරියට පියවරක්',
+      reset: 'නැවත මුලට',
+      logData: 'දත්ත සටහන් කරන්න',
+      downloadPDF: 'PDF ලබාගන්න',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
+      clearLogs: 'සියල්ල මකන්න'
+    },
+    ta: {
+      paramsTitle: 'அளவுருக்கள்',
+      appliedForce: 'செலுத்தப்படும் விசை (F)',
+      mass: 'நிறை (m)',
+      staticFriction: 'நிலை உராய்வு குணகம் (μₛ)',
+      kineticFriction: 'இயக்க உராய்வு குணகம் (μₖ)',
+      gravity: 'ஈர்ப்பு முடுக்கம் (g)',
+      vectors: 'விசை திசையன்களைக் காட்டு',
+      theoryOutput: 'கோட்பாட்டு இயக்கவியல்',
+      acceleration: 'முடுக்கம் (a)',
+      fricForce: 'உராய்வு விசை (f)',
+      normalForce: 'செங்குத்து விசை (R)',
+      staticThreshold: 'உராய்வு வரம்பு',
+      play: 'இயக்கு',
+      pause: 'நிறுத்து',
+      step: 'முன்னோக்கிச் செல்',
+      reset: 'மீட்டமை',
+      logData: 'பதிவைச் சேமி',
+      downloadPDF: 'PDF தரவிறக்கம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'சோதனைப் பதிவுகள்',
+      clearLogs: 'அனைத்தையும் நீக்கு'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
   // 1. Parameters & State
   const [params, setParams] = useState<NewtonsLawsParameters>({
     force: 20,
@@ -438,13 +511,13 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            Parameters
+            {t.paramsTitle}
           </h3>
 
           {/* Applied Force */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Applied Force (F)</span>
+              <span className="text-slate-600">{t.appliedForce}</span>
               <span className="text-blue-600 font-mono">{params.force.toFixed(1)} N</span>
             </div>
             <input
@@ -461,7 +534,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
           {/* Block Mass */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Mass (m)</span>
+              <span className="text-slate-600">{t.mass}</span>
               <span className="text-blue-600 font-mono">{params.mass.toFixed(1)} kg</span>
             </div>
             <input
@@ -478,7 +551,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
           {/* Static Friction */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Static Friction (μs)</span>
+              <span className="text-slate-600">{t.staticFriction}</span>
               <span className="text-blue-600 font-mono">{params.muStatic.toFixed(2)}</span>
             </div>
             <input
@@ -495,7 +568,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
           {/* Kinetic Friction */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Kinetic Friction (μk)</span>
+              <span className="text-slate-600">{t.kineticFriction}</span>
               <span className="text-blue-600 font-mono">{params.muKinetic.toFixed(2)}</span>
             </div>
             <input
@@ -519,7 +592,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
               className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
             />
             <label htmlFor="newtons-vectors-toggle" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
-              Show Force Vectors (F, f, Fn, Fg)
+              {t.vectors}
             </label>
           </div>
         </div>
@@ -529,7 +602,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 min-h-[220px] flex flex-col">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
             <ClipboardList className="w-4 h-4 text-blue-600" />
-            Lab Notebook
+            {t.labNotes}
           </h3>
 
           <textarea
@@ -544,7 +617,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
               onClick={handleLogDataPoint}
               className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
             >
-              Log State
+              {t.logData}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -552,7 +625,7 @@ export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 's
               title="Download full lab report as PDF"
             >
               <FileDown className="w-3.5 h-3.5" />
-              PDF Report
+              {t.downloadPDF}
             </button>
             <button
               onClick={handleClearLogs}

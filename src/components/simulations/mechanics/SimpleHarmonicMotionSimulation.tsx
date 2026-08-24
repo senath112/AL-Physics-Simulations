@@ -27,7 +27,80 @@ interface TrialLog {
   maxEnergy: number;
 }
 
-export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      paramsTitle: 'Parameters',
+      systemMode: 'Oscillator Type',
+      mass: 'Mass (m)',
+      springConst: 'Spring Constant (k)',
+      pendulumLen: 'Pendulum Length (L)',
+      damping: 'Damping Factor (b)',
+      amplitude: 'Initial Amplitude (A)',
+      showRef: 'Show Reference Circle',
+      calculations: 'Oscillation Analysis',
+      period: 'Period (T)',
+      frequency: 'Frequency (f)',
+      energy: 'Total Energy (E)',
+      phase: 'Phase Angle (φ)',
+      play: 'Play',
+      pause: 'Pause',
+      reset: 'Reset',
+      logData: 'Record Trial',
+      downloadPDF: 'Export PDF Report',
+      labNotes: 'Observation Journal',
+      trialHistory: 'SHM Logged History',
+      clearLogs: 'Clear Logs'
+    },
+    si: {
+      paramsTitle: 'පරාමිතීන්',
+      systemMode: 'දෝලක වර්ගය',
+      mass: 'ස්කන්ධය (m)',
+      springConst: 'දුන්නෙහි නියතය (k)',
+      pendulumLen: 'ලෝලකයේ දිග (L)',
+      damping: 'අවපාතන සාධකය (b)',
+      amplitude: 'ආරම්භක විස්තාරය (A)',
+      showRef: 'සන්සන්දන වෘත්තය පෙන්වන්න',
+      calculations: 'දෝලන විශ්ලේෂණය',
+      period: 'ආවර්ත කාලය (T)',
+      frequency: 'සංඛ්‍යාතය (f)',
+      energy: 'මුළු ශක්තිය (E)',
+      phase: 'කලා කෝණය (φ)',
+      play: 'ධාවනය කරන්න',
+      pause: 'නවත්වා තබන්න',
+      reset: 'නැවත මුලට',
+      logData: 'දත්ත සටහන් කරන්න',
+      downloadPDF: 'PDF ලබාගන්න',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත දෝලන ඉතිහාසය',
+      clearLogs: 'සියල්ල මකන්න'
+    },
+    ta: {
+      paramsTitle: 'அளவுருக்கள்',
+      systemMode: 'அலைவு வகை',
+      mass: 'திணிவு (m)',
+      springConst: 'வில் மாறிலி (k)',
+      pendulumLen: 'ஊசல் நீளம் (L)',
+      damping: 'தணிப்பு காரணி (b)',
+      amplitude: 'ஆரம்ப வீச்சு (A)',
+      showRef: 'குறிப்பு வட்டத்தைக் காட்டு',
+      calculations: 'அலைவு பகுப்பாய்வு',
+      period: 'அலைவுக் காலம் (T)',
+      frequency: 'அதிர்வெண் (f)',
+      energy: 'மொத்த ஆற்றல் (E)',
+      phase: 'கட்டக் கோணம் (φ)',
+      play: 'இயக்கு',
+      pause: 'நிறுத்து',
+      reset: 'மீட்டமை',
+      logData: 'பதிவைச் சேமி',
+      downloadPDF: 'PDF தரவிறக்கம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'சோதனைப் பதிவுகள்',
+      clearLogs: 'அனைத்தையும் நீக்கு'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
   // Parameters
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
   const [explainMode, setExplainMode] = useState<boolean>(true);
@@ -785,12 +858,12 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
 
           {/* Interactive Parameters Sliders */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-4 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Configure Oscillator Parameters</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.paramsTitle}</h3>
 
             {/* Mass parameter */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Mass (m)</span>
+                <span className="text-slate-600">{t.mass}</span>
                 <span className="text-slate-800 font-mono">{mass.toFixed(1)} kg</span>
               </div>
               <input
@@ -808,7 +881,7 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
             {mode === 'spring' ? (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Spring Constant (k)</span>
+                  <span className="text-slate-600">{t.springConst}</span>
                   <span className="text-slate-800 font-mono">{springK} N/m</span>
                 </div>
                 <input
@@ -824,7 +897,7 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
             ) : (
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">String Length (L)</span>
+                  <span className="text-slate-600">{t.pendulumLen}</span>
                   <span className="text-slate-800 font-mono">{length.toFixed(1)} m</span>
                 </div>
                 <input
@@ -842,7 +915,7 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
             {/* Damping Coefficient */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Damping Factor (b)</span>
+                <span className="text-slate-600">{t.damping}</span>
                 <span className="text-slate-800 font-mono">{damping.toFixed(2)} N s/m</span>
               </div>
               <input
@@ -1256,7 +1329,7 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
         {/* Lab Notes Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lab Notebook Notes</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.labNotes}</h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={clearLogs}
@@ -1264,14 +1337,14 @@ export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 
                 title="Clear notebook logs"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Clear Logs
+                {t.clearLogs}
               </button>
               <button
                 onClick={downloadPDFReport}
                 className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                PDF Report
+                {t.downloadPDF}
               </button>
             </div>
           </div>

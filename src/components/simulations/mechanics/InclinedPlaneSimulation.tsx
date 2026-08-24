@@ -10,8 +10,81 @@ import {
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
 
-export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
-  const maxTrackLength = 30; // meters
+export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      paramsTitle: 'Parameters',
+      inclineAngle: 'Incline Angle (θ)',
+      mass: 'Block Mass (m)',
+      staticFriction: 'Static Friction (μₛ)',
+      kineticFriction: 'Kinetic Friction (μₖ)',
+      gravity: 'Gravity (g)',
+      vectors: 'Show Vector Force Arrows',
+      theoryOutput: 'Theoretical Kinematics',
+      acceleration: 'Acceleration (a)',
+      fricForce: 'Friction Force (f)',
+      normalForce: 'Normal Force (R)',
+      staticThreshold: 'Friction Threshold',
+      play: 'Play',
+      pause: 'Pause',
+      step: 'Step Forward',
+      reset: 'Reset',
+      logData: 'Record Data Point',
+      downloadPDF: 'Download PDF Report',
+      labNotes: 'Observation Notebook',
+      trialHistory: 'Logged Trials History',
+      clearLogs: 'Clear Logs'
+    },
+    si: {
+      paramsTitle: 'පරාමිතීන්',
+      inclineAngle: 'ඇලවීම් කෝණය (θ)',
+      mass: 'ස්කන්ධය (m)',
+      staticFriction: 'ස්ථිතික ඝර්ෂණ සංගුණකය (μₛ)',
+      kineticFriction: 'ගතික ඝර්ෂණ සංගුණකය (μₖ)',
+      gravity: 'ගුරුත්වාකර්ෂණය (g)',
+      vectors: 'බල දෛශික ඊතල පෙන්වන්න',
+      theoryOutput: 'න්‍යායාත්මක චලිතය',
+      acceleration: 'ත්වරණය (a)',
+      fricForce: 'ඝර්ෂණ බලය (f)',
+      normalForce: 'අභิලම්භ ප්‍රතික්‍රියාව (R)',
+      staticThreshold: 'සීමාකාරී ඝර්ෂණය',
+      play: 'ධාවනය කරන්න',
+      pause: 'නවත්වා තබන්න',
+      step: 'ඉදිරියට පියවරක්',
+      reset: 'නැවත මුලට',
+      logData: 'දත්ත සටහන් කරන්න',
+      downloadPDF: 'PDF ලබාගන්න',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
+      clearLogs: 'සියල්ල මකන්න'
+    },
+    ta: {
+      paramsTitle: 'அளவுருக்கள்',
+      inclineAngle: 'சாய்வுக் கோணம் (θ)',
+      mass: 'நிறை (m)',
+      staticFriction: 'நிலை உராய்வு குணகம் (μₛ)',
+      kineticFriction: 'இயக்க உராய்வு குணகம் (μₖ)',
+      gravity: 'ஈர்ப்பு முடுக்கம் (g)',
+      vectors: 'விசை திசையன்களைக் காட்டு',
+      theoryOutput: 'கோட்பாட்டு இயக்கவியல்',
+      acceleration: 'முடுக்கம் (a)',
+      fricForce: 'உராய்வு விசை (f)',
+      normalForce: 'செங்குத்து விசை (R)',
+      staticThreshold: 'உராய்வு வரம்பு',
+      play: 'இயக்கு',
+      pause: 'நிறுத்து',
+      step: 'முன்னோக்கிச் செல்',
+      reset: 'மீட்டமை',
+      logData: 'பதிவைச் சேமி',
+      downloadPDF: 'PDF தரவிறக்கம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'சோதனைப் பதிவுகள்',
+      clearLogs: 'அனைத்தையும் நீக்கு'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const maxTrackLength = 15; // meters
 
   // 1. Parameters & State
   const [params, setParams] = useState<InclinedPlaneParameters>({
@@ -23,7 +96,7 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
   });
 
   const [dynamics, setDynamics] = useState<{ distance: number; velocity: number }>({
-    distance: 15, // start in the middle (meters)
+    distance: 7.5, // start in the middle (meters)
     velocity: 0,
   });
 
@@ -122,17 +195,21 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
     const wWidth = width - margin.left - margin.right;
     const wHeight = height - margin.top - margin.bottom;
 
-    const thetaRad = (params.angle * Math.PI) / 185;
-    const requestedHeight = wWidth * Math.tan(thetaRad);
+    const thetaRad = (params.angle * Math.PI) / 180;
     const maxHeightAvailable = wHeight - 60; // leave safety padding for vectors
-    
-    let s = 1.0;
-    if (requestedHeight > maxHeightAvailable) {
-      s = maxHeightAvailable / requestedHeight;
+
+    let drawnWedgeHeight = maxHeightAvailable;
+    let drawnWedgeWidth = drawnWedgeHeight / Math.max(0.08, Math.tan(thetaRad));
+
+    if (drawnWedgeWidth > wWidth) {
+      drawnWedgeWidth = wWidth;
+      drawnWedgeHeight = drawnWedgeWidth * Math.tan(thetaRad);
     }
 
-    const drawnWedgeWidth = wWidth * s;
-    const drawnWedgeHeight = requestedHeight * s;
+    if (drawnWedgeWidth < 185) {
+      drawnWedgeWidth = 185;
+      drawnWedgeHeight = maxHeightAvailable;
+    }
 
     const wedgeLeftX = margin.left + (wWidth - drawnWedgeWidth) / 2;
     const wedgeTopY = margin.top + wHeight - drawnWedgeHeight;
@@ -202,17 +279,21 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
 
     ctx.clearRect(0, 0, width, height);
 
-    const thetaRad = (params.angle * Math.PI) / 185;
-    const requestedHeight = wWidth * Math.tan(thetaRad);
+    const thetaRad = (params.angle * Math.PI) / 180;
     const maxHeightAvailable = wHeight - 60;
     
-    let s = 1.0;
-    if (requestedHeight > maxHeightAvailable) {
-      s = maxHeightAvailable / requestedHeight;
+    let drawnWedgeHeight = maxHeightAvailable;
+    let drawnWedgeWidth = drawnWedgeHeight / Math.max(0.08, Math.tan(thetaRad));
+
+    if (drawnWedgeWidth > wWidth) {
+      drawnWedgeWidth = wWidth;
+      drawnWedgeHeight = drawnWedgeWidth * Math.tan(thetaRad);
     }
 
-    const drawnWedgeWidth = wWidth * s;
-    const drawnWedgeHeight = requestedHeight * s;
+    if (drawnWedgeWidth < 185) {
+      drawnWedgeWidth = 185;
+      drawnWedgeHeight = maxHeightAvailable;
+    }
 
     // Coordinate points for the inclined wedge
     const wedgeLeftX = margin.left + (wWidth - drawnWedgeWidth) / 2;
@@ -252,8 +333,8 @@ export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 
     const blockCenterY = wedgeTopY + blockDistPx * Math.sin(slopeAngle);
 
     // Draw block aligned with slope
-    const blockWidthM = 4.5;
-    const blockHeightM = 3.0;
+    const blockWidthM = 3.0;
+    const blockHeightM = 2.2;
     const blockW = blockWidthM * pixelsPerMeter;
     const blockH = blockHeightM * pixelsPerMeter;
 
@@ -476,13 +557,13 @@ Hence, the critical angle is 30°.`,
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            Parameters
+            {t.paramsTitle}
           </h3>
 
           {/* Incline Angle */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Slope Angle (θ)</span>
+              <span className="text-slate-600">{t.inclineAngle}</span>
               <span className="text-blue-600 font-mono">{params.angle.toFixed(1)}°</span>
             </div>
             <input
@@ -499,7 +580,7 @@ Hence, the critical angle is 30°.`,
           {/* Block Mass */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Block Mass (m)</span>
+              <span className="text-slate-600">{t.mass}</span>
               <span className="text-blue-600 font-mono">{params.mass.toFixed(1)} kg</span>
             </div>
             <input
@@ -516,7 +597,7 @@ Hence, the critical angle is 30°.`,
           {/* Static Friction */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Static Friction (μs)</span>
+              <span className="text-slate-600">{t.staticFriction}</span>
               <span className="text-blue-600 font-mono">{params.muStatic.toFixed(2)}</span>
             </div>
             <input
@@ -533,7 +614,7 @@ Hence, the critical angle is 30°.`,
           {/* Kinetic Friction */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Kinetic Friction (μk)</span>
+              <span className="text-slate-600">{t.kineticFriction}</span>
               <span className="text-blue-600 font-mono">{params.muKinetic.toFixed(2)}</span>
             </div>
             <input
@@ -557,7 +638,7 @@ Hence, the critical angle is 30°.`,
               className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
             />
             <label htmlFor="inclined-vectors-toggle" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
-              Show Force Vectors (Fn, Fg, Fp, f)
+              {t.vectors}
             </label>
           </div>
         </div>
@@ -566,7 +647,7 @@ Hence, the critical angle is 30°.`,
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 min-h-[220px] flex flex-col">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
             <ClipboardList className="w-4 h-4 text-blue-600" />
-            Lab Notebook
+            {t.labNotes}
           </h3>
 
           <textarea
@@ -581,7 +662,7 @@ Hence, the critical angle is 30°.`,
               onClick={handleLogDataPoint}
               className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
             >
-              Log State
+              {t.logData}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -589,7 +670,7 @@ Hence, the critical angle is 30°.`,
               title="Download PDF Lab Report"
             >
               <FileDown className="w-3.5 h-3.5" />
-              PDF Report
+              {t.downloadPDF}
             </button>
             <button
               onClick={handleClearLogs}

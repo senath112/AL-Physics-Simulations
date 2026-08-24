@@ -13,7 +13,75 @@ import {
 import { Play, Pause, RotateCcw, SkipForward, Info, Maximize2, ChevronLeft, ChevronRight, BookOpen, ClipboardList, Trash2, FileDown } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 
-export function ProjectileSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      paramsTitle: 'Parameters',
+      velocity: 'Velocity (v₀)',
+      angle: 'Angle (θ)',
+      height: 'Height (h₀)',
+      gravity: 'Gravity (g)',
+      vectors: 'Show Vector Arrows (v, vx, vy)',
+      theoryOutput: 'Theoretical Output',
+      flightTime: 'Flight Time',
+      maxHeight: 'Max Height',
+      range: 'Horizontal Range',
+      play: 'Play',
+      pause: 'Pause',
+      step: 'Step Forward',
+      reset: 'Reset',
+      logData: 'Record Data Point',
+      downloadPDF: 'Download PDF Report',
+      labNotes: 'Observation Notebook',
+      trialHistory: 'Observation History Log',
+      clearLogs: 'Clear Logs'
+    },
+    si: {
+      paramsTitle: 'පරාමිතීන්',
+      velocity: 'ප්‍රවේගය (v₀)',
+      angle: 'කෝණය (θ)',
+      height: 'උස (h₀)',
+      gravity: 'ගුරුත්වාකර්ෂණය (g)',
+      vectors: 'වේග දෛශික පෙන්වන්න (v, vx, vy)',
+      theoryOutput: 'න්‍යායාත්මක අගයන්',
+      flightTime: 'පියාසර කාලය',
+      maxHeight: 'උපරිම උස',
+      range: 'තිරස් පරාසය',
+      play: 'ධාවනය කරන්න',
+      pause: 'නවත්වා තබන්න',
+      step: 'ඉදිරියට පියවරක්',
+      reset: 'නැවත මුලට',
+      logData: 'දත්ත සටහන් කරන්න',
+      downloadPDF: 'PDF ලබාගන්න',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
+      clearLogs: 'සියල්ල මකන්න'
+    },
+    ta: {
+      paramsTitle: 'அளவுருக்கள்',
+      velocity: 'வேகம் (v₀)',
+      angle: 'கோணம் (θ)',
+      height: 'உயரம் (h₀)',
+      gravity: 'ஈர்ப்பு (g)',
+      vectors: 'திசையன் அம்புகளைக் காட்டு (v, vx, vy)',
+      theoryOutput: 'கோட்பாட்டு கணிப்புகள்',
+      flightTime: 'பறக்கும் நேரம்',
+      maxHeight: 'அதிகபட்ச உயரம்',
+      range: 'கிடை வீச்சு',
+      play: 'இயக்கு',
+      pause: 'நிறுத்து',
+      step: 'முன்னோக்கிச் செல்',
+      reset: 'மீட்டமை',
+      logData: 'பதிவைச் சேமி',
+      downloadPDF: 'PDF தரவிறக்கம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'சோதனைப் பதிவுகள்',
+      clearLogs: 'அனைத்தையும் நீக்கு'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
   // 1. Simulation Parameters
   const [params, setParams] = useState<ProjectileParameters>({
     v0: 20,
@@ -544,13 +612,13 @@ Hence, the maximum height reached is 5.0 m.`,
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            Parameters
+            {t.paramsTitle}
           </h3>
 
           {/* Initial Velocity */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Velocity (v₀)</span>
+              <span className="text-slate-600">{t.velocity}</span>
               <span className="text-blue-600 font-mono">{params.v0.toFixed(1)} m/s</span>
             </div>
             <input
@@ -567,7 +635,7 @@ Hence, the maximum height reached is 5.0 m.`,
           {/* Launch Angle */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Angle (θ)</span>
+              <span className="text-slate-600">{t.angle}</span>
               <span className="text-blue-600 font-mono">{params.angle.toFixed(1)}°</span>
             </div>
             <input
@@ -584,7 +652,7 @@ Hence, the maximum height reached is 5.0 m.`,
           {/* Initial Height */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Height (h₀)</span>
+              <span className="text-slate-600">{t.height}</span>
               <span className="text-blue-600 font-mono">{params.h0.toFixed(1)} m</span>
             </div>
             <input
@@ -601,7 +669,7 @@ Hence, the maximum height reached is 5.0 m.`,
           {/* Gravity */}
           <div className="space-y-1">
             <div className="flex justify-between text-xs font-medium">
-              <span className="text-slate-600">Gravity (g)</span>
+              <span className="text-slate-600">{t.gravity}</span>
               <span className="text-blue-600 font-mono">{params.g.toFixed(2)} m/s²</span>
             </div>
             <input
@@ -625,7 +693,7 @@ Hence, the maximum height reached is 5.0 m.`,
               className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
             />
             <label htmlFor="vectors-toggle" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
-              Show Vector Arrows (v, vx, vy)
+              {t.vectors}
             </label>
           </div>
         </div>
@@ -633,19 +701,19 @@ Hence, the maximum height reached is 5.0 m.`,
         {/* Global analytical values / calculations */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            Theoretical Output
+            {t.theoryOutput}
           </h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
-              <span className="text-slate-500 block">Flight Time</span>
+              <span className="text-slate-500 block">{t.flightTime}</span>
               <span className="font-bold text-slate-800 font-mono text-sm">{tFlight.toFixed(3)} s</span>
             </div>
             <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
-              <span className="text-slate-500 block">Max Height</span>
+              <span className="text-slate-500 block">{t.maxHeight}</span>
               <span className="font-bold text-slate-800 font-mono text-sm">{maxH.toFixed(2)} m</span>
             </div>
             <div className="bg-slate-50 p-2.5 rounded border border-slate-100 col-span-2">
-              <span className="text-slate-500 block">Horizontal Range</span>
+              <span className="text-slate-500 block">{t.range}</span>
               <span className="font-bold text-slate-800 font-mono text-sm">{range.toFixed(2)} m</span>
             </div>
           </div>
@@ -688,7 +756,7 @@ Hence, the maximum height reached is 5.0 m.`,
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 min-h-[220px] flex flex-col">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
             <ClipboardList className="w-4 h-4 text-blue-600" />
-            Lab Notebook
+            {t.labNotes}
           </h3>
 
           <textarea
@@ -703,7 +771,7 @@ Hence, the maximum height reached is 5.0 m.`,
               onClick={handleLogDataPoint}
               className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
             >
-              Log State
+              {t.logData}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -711,7 +779,7 @@ Hence, the maximum height reached is 5.0 m.`,
               title="Download full lab report as PDF"
             >
               <FileDown className="w-3.5 h-3.5" />
-              PDF Report
+              {t.downloadPDF}
             </button>
             <button
               onClick={handleClearLogs}
