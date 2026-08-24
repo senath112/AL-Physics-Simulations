@@ -5,6 +5,8 @@ import { InclinedPlaneSimulation } from './components/simulations/mechanics/Incl
 import { GeometricalOpticsSimulation } from './components/simulations/optics/GeometricalOpticsSimulation';
 import { SimpleHarmonicMotionSimulation } from './components/simulations/mechanics/SimpleHarmonicMotionSimulation';
 import { PhotoelectricEffectSimulation } from './components/simulations/modern/PhotoelectricEffectSimulation';
+import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimulation';
+import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
 import { 
   Compass, 
   Activity, 
@@ -18,7 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -119,13 +121,14 @@ function App() {
     },
     {
       id: 'gas_laws',
-      title: 'Kinetic Theory of Gases',
-      sinhalaTitle: "වායුවල චාලක වාදය",
-      tamilTitle: "வாயுக்களின் இயக்கவிசைக் கொள்கை",
+      title: 'Thermal Physics & Gas Laws',
+      sinhalaTitle: "තාප භෞතික විද්‍යාව සහ වායු නියම",
+      tamilTitle: "வெப்பப் பௌதிகவியலும் வாயு விதிகளும்",
       unit: 'thermal',
-      description: 'Simulate thermodynamic gas molecule collisions in a chamber to visualize Boyles, Charles, and pressure laws.',
+      description: 'Explore kinetic theory molecular chambers, 1st law piston thermodynamics, PV diagrams, calorimetry mixes, and thermal expansion.',
       icon: Thermometer,
-      status: 'coming_soon',
+      status: 'active',
+      pageLink: 'gas_sim',
     },
     {
       id: 'photoelectric',
@@ -137,6 +140,17 @@ function App() {
       icon: Atom,
       status: 'active',
       pageLink: 'photoelectric_sim',
+    },
+    {
+      id: 'lenzs_law',
+      title: "Lenz's Law & Faraday Induction",
+      sinhalaTitle: "ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය",
+      tamilTitle: "லென்சின் விதியும் மின்காந்தத் தூண்டலும்",
+      unit: 'magnetism',
+      description: 'Drop a magnet through copper coils, measure induced EMF and currents, adjust resistances, and observe terminal electromagnetic braking forces.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'lenz_sim',
     },
   ];
 
@@ -698,6 +712,52 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <PhotoelectricEffectSimulation />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE THERMAL PHYSICS & GAS LAWS SIMULATION */}
+        {currentPage === 'gas_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">තාප භෞතික විද්‍යාව සහ වායු නියම • வெப்பப் பௌதிகவியலும் வாயு விதிகளும்</span>
+                <span className="text-slate-900 font-semibold text-sm">Thermal Physics & Gas Laws Explainer</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <GasLawsSimulation />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE LENZ'S LAW SIMULATION */}
+        {currentPage === 'lenz_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය • லென்சின் விதியும் மின்காந்தத் தூண்டலும்</span>
+                <span className="text-slate-900 font-semibold text-sm">Lenz's Law & Faraday Induction Explainer</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <LenzsLawSimulation />
             </div>
           </div>
         )}
