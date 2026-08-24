@@ -272,8 +272,8 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       if (!ctx) return;
 
       const dpr = window.devicePixelRatio || 1;
-      const rectWidth = 540;
-      const rectHeight = 220;
+      const rectWidth = 600;
+      const rectHeight = 280;
 
       canvas.width = rectWidth * dpr;
       canvas.height = rectHeight * dpr;
@@ -285,11 +285,11 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       ctx.scale(dpr, dpr);
 
       // Box coordinates based on Volume slider (varies the width of the box)
-      const borderLeft = 30;
-      const borderWidth = 120 + volume * 55; // box width scales with Volume
+      const borderLeft = 35;
+      const borderWidth = 100 + volume * 55; // box width scales with Volume
       const borderRight = borderLeft + borderWidth;
-      const borderTop = 20;
-      const borderBottom = 200;
+      const borderTop = 25;
+      const borderBottom = 255;
 
       // Draw Chamber boundary (piston cylinder representation)
       ctx.fillStyle = '#f8fafc';
