@@ -67,7 +67,78 @@ function wavelengthToColor(wavelength: number): string {
   }
 }
 
-export function PhotoelectricEffectSimulation() {
+export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      controls: 'Parameters Control Board',
+      metal: 'Emitter Target Metal',
+      wavelength: 'Light Wavelength (λ)',
+      intensity: 'Light Intensity',
+      voltage: 'Tube Voltage (V)',
+      thresholdWavelength: 'Threshold Wavelength',
+      logTrial: 'Log Trial Snapshot',
+      physicsCalculations: 'Physics Calculations',
+      photonEnergy: 'Photon Energy (E)',
+      workFunction: 'Work Function (Φ)',
+      maxKE: 'Max Electron K.E.',
+      stoppingPotential: 'Stopping Potential (Vs)',
+      lightFrequency: 'Light Frequency',
+      thresholdFrequency: 'Threshold Frequency',
+      emissionStatus: 'Emission Status',
+      theoryFormulas: 'Show Theory & Formulas',
+      labNotes: 'Interactive Lab Journal',
+      trialHistory: 'Recorded Trial Parameters History',
+      clear: 'Clear',
+      pdf: 'Export PDF',
+    },
+    si: {
+      controls: 'පරාමිති පාලන පුවරුව',
+      metal: 'විමෝචක ඉලක්ක ලෝහය',
+      wavelength: 'ආලෝක තරංග ආයාමය (λ)',
+      intensity: 'ආලෝක තීව්‍රතාවය',
+      voltage: 'නල වෝල්ටීයතාවය (V)',
+      thresholdWavelength: 'කඩඉම් තරංග ආයාමය',
+      logTrial: 'නිරීක්ෂණ සටහන් කරන්න',
+      physicsCalculations: 'භෞතික විද්‍යාත්මක ගණනය කිරීම්',
+      photonEnergy: 'ෆෝටෝන ශක්තිය (E)',
+      workFunction: 'කාර්ය ශ්‍රිතය (Φ)',
+      maxKE: 'උපරිම චාලක ශක්තිය (Kmax)',
+      stoppingPotential: 'නැවැතුම් විභවය (Vs)',
+      lightFrequency: 'ආලෝක සංඛ්‍යාතය',
+      thresholdFrequency: 'කඩඉම් සංඛ්‍යාතය',
+      emissionStatus: 'විමෝචන තත්ත්වය',
+      theoryFormulas: 'න්‍යාය සහ සමීකරණ පෙන්වන්න',
+      labNotes: 'ලැබ් සටහන් පොත',
+      trialHistory: 'පටිගත කරන ලද අත්හදා බැලීම් ඉතිහාසය',
+      clear: 'මකන්න',
+      pdf: 'PDF ලබාගන්න',
+    },
+    ta: {
+      controls: 'அளவீட்டு கட்டுப்பாட்டு பலகை',
+      metal: 'உமிழ்ப்பான் இலக்கு உலோகம்',
+      wavelength: 'ஒளி அலைநீளம் (λ)',
+      intensity: 'ஒளிச் செறிவு',
+      voltage: 'குழாய் மின்னழுத்தம் (V)',
+      thresholdWavelength: 'அலைநீள எல்லை',
+      logTrial: 'சோதனைப் பதிவைச் சேமி',
+      physicsCalculations: 'பௌதிகவியல் கணிப்புகள்',
+      photonEnergy: 'போட்டோன் சக்தி (E)',
+      workFunction: 'வேலைச் சார்பு (Φ)',
+      maxKE: 'அதிகபட்ச இயக்கச் சக்தி (Kmax)',
+      stoppingPotential: 'நிறுத்து மின்னழுத்தம் (Vs)',
+      lightFrequency: 'ஒளி அதிர்வெண்',
+      thresholdFrequency: 'அதிர்வெண் எல்லை',
+      emissionStatus: 'உமிழ்வு நிலை',
+      theoryFormulas: 'கோட்பாடு & சூத்திரங்களைக் காட்டு',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
+      clear: 'அழி',
+      pdf: 'PDF ஏற்றுமதி செய்',
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
   // Parameters
   const [metalId, setMetalId] = useState<string>('sodium');
   const [wavelength, setWavelength] = useState<number>(350); // nm
@@ -464,14 +535,14 @@ export function PhotoelectricEffectSimulation() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-blue-600" />
-                Parameters Control Board
+                {t.controls}
               </h3>
               <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">A/L physics</span>
             </div>
 
             {/* Target Metal Selection */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 block">Emitter Target Metal</label>
+              <label className="text-xs font-bold text-slate-600 block">{t.metal}</label>
               <div className="grid grid-cols-2 gap-2">
                 {METAL_PRESETS.map((metal) => (
                   <button
@@ -495,7 +566,7 @@ export function PhotoelectricEffectSimulation() {
             {/* Light Wavelength */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Light Wavelength (λ)</span>
+                <span className="text-slate-600">{t.wavelength}</span>
                 <span className="text-slate-800 font-mono">{wavelength} nm</span>
               </div>
               <input
@@ -517,7 +588,7 @@ export function PhotoelectricEffectSimulation() {
             {/* Light Intensity */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Light Intensity</span>
+                <span className="text-slate-600">{t.intensity}</span>
                 <span className="text-slate-800 font-mono">{intensity} %</span>
               </div>
               <input
@@ -534,7 +605,7 @@ export function PhotoelectricEffectSimulation() {
             {/* Tube Voltage */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Tube Voltage (V)</span>
+                <span className="text-slate-600">{t.voltage}</span>
                 <span className="text-slate-800 font-mono">{voltage >= 0 ? `+${voltage.toFixed(2)}` : `${voltage.toFixed(2)}`} V</span>
               </div>
               <input
@@ -550,7 +621,7 @@ export function PhotoelectricEffectSimulation() {
 
             {/* Simulated environmental parameters info */}
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500">
-              <span>Threshold Wavelength</span>
+              <span>{t.thresholdWavelength}</span>
               <span className="font-mono text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
                 {physicsState.thresholdWavelength.toFixed(1)} nm
               </span>
@@ -566,7 +637,7 @@ export function PhotoelectricEffectSimulation() {
                 className="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
               />
               <label htmlFor="explainMode" className="text-xs font-bold text-slate-655 select-none cursor-pointer">
-                Show Theory & Formulas
+                {t.theoryFormulas}
               </label>
             </div>
           </div>
@@ -578,7 +649,7 @@ export function PhotoelectricEffectSimulation() {
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              Log Trial Snapshot
+              {t.logTrial}
             </button>
           </div>
 
@@ -625,41 +696,41 @@ export function PhotoelectricEffectSimulation() {
             {/* Real-time parameters reading panel (4 Cols) */}
             <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3.5">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-                Physics Calculations
+                {t.physicsCalculations}
               </h4>
               
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Photon Energy (E):</span>
+                  <span className="text-slate-500">{t.photonEnergy}:</span>
                   <span className="font-mono text-slate-850 font-bold">{physicsState.photonEnergy.toFixed(3)} eV</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Work Function (Φ):</span>
+                  <span className="text-slate-500">{t.workFunction}:</span>
                   <span className="font-mono text-slate-850 font-bold">{activeMetal.workFunction.toFixed(2)} eV</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Max Electron K.E.:</span>
+                  <span className="text-slate-500">{t.maxKE}:</span>
                   <span className="font-mono text-blue-600 font-extrabold">
                     {physicsState.maxKineticEnergy.toFixed(3)} eV
                   </span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Stopping Potential (Vs):</span>
+                  <span className="text-slate-500">{t.stoppingPotential}:</span>
                   <span className="font-mono text-red-650 font-bold">
                     {physicsState.stoppingPotential > 0 ? `-${physicsState.stoppingPotential.toFixed(2)} V` : '0.00 V'}
                   </span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Light Frequency:</span>
+                  <span className="text-slate-500">{t.lightFrequency}:</span>
                   <span className="font-mono text-slate-850">{frequency14.toFixed(2)} x10¹⁴ Hz</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Threshold Frequency:</span>
+                  <span className="text-slate-500">{t.thresholdFrequency}:</span>
                   <span className="font-mono text-slate-850">{(physicsState.thresholdFrequency / 1e14).toFixed(2)} x10¹⁴ Hz</span>
                 </div>
                 
                 <div className="border-t border-slate-100 pt-2.5 flex items-center justify-between font-extrabold">
-                  <span className="text-slate-600">Emission Status:</span>
+                  <span className="text-slate-600">{t.emissionStatus}:</span>
                   <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${
                     physicsState.hasEmission ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                   }`}>
@@ -837,7 +908,7 @@ export function PhotoelectricEffectSimulation() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-blue-600" />
-              Interactive Lab Journal
+              {t.labNotes}
             </h3>
             <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Observational entries</span>
           </div>
@@ -854,7 +925,7 @@ export function PhotoelectricEffectSimulation() {
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
-              Recorded Trial Parameters History
+              {t.trialHistory}
             </h3>
             
             <div className="flex items-center gap-2">
@@ -873,7 +944,7 @@ export function PhotoelectricEffectSimulation() {
                 title="Export report to PDF"
               >
                 <Download className="w-3 h-3" />
-                Export PDF
+                {t.pdf}
               </button>
             </div>
           </div>

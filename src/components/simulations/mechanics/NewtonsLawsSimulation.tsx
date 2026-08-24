@@ -10,7 +10,7 @@ import {
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
 
-export function NewtonsLawsSimulation() {
+export function NewtonsLawsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   // 1. Parameters & State
   const [params, setParams] = useState<NewtonsLawsParameters>({
     force: 20,

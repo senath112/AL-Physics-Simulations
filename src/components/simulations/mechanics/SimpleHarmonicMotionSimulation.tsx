@@ -27,7 +27,7 @@ interface TrialLog {
   maxEnergy: number;
 }
 
-export function SimpleHarmonicMotionSimulation() {
+export function SimpleHarmonicMotionSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   // Parameters
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
   const [explainMode, setExplainMode] = useState<boolean>(true);

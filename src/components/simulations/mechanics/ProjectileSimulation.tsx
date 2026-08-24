@@ -13,7 +13,7 @@ import {
 import { Play, Pause, RotateCcw, SkipForward, Info, Maximize2, ChevronLeft, ChevronRight, BookOpen, ClipboardList, Trash2, FileDown } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 
-export function ProjectileSimulation() {
+export function ProjectileSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   // 1. Simulation Parameters
   const [params, setParams] = useState<ProjectileParameters>({
     v0: 20,

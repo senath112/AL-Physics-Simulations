@@ -36,7 +36,81 @@ interface Molecule {
   vy: number;
 }
 
-export function GasLawsSimulation() {
+export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      gasLawsTab: 'Gas Laws & Kinetic Theory',
+      thermoTab: 'Thermodynamics (P-V Diagrams)',
+      calorimetryTab: 'Calorimetry & Expansion',
+      controls: 'Chamber Parameters',
+      experimentMode: 'Experiment Mode',
+      ideal: 'Ideal Gas Law',
+      boyles: "Boyle's Law (T Const)",
+      charles: "Charles' Law (P Const)",
+      pressureLaw: "Pressure Law (V Const)",
+      molecules: 'Number of Gas Molecules (N)',
+      volume: 'Volume (V)',
+      temperature: 'Temperature (T)',
+      heatChamber: 'Heat Chamber',
+      coolChamber: 'Cool Chamber',
+      logTrial: 'Log Trial Snapshot',
+      physicsCalculations: 'Physics Calculations',
+      pressure: 'Pressure (P)',
+      ratio: 'Constant Ratio (PV/T)',
+      labNotes: 'Thermodynamic Observation Notes',
+      trialHistory: 'Recorded Thermal Trial History',
+      pdf: 'Export PDF'
+    },
+    si: {
+      gasLawsTab: 'වායු නියම සහ චාලක වාදය',
+      thermoTab: 'තාපගති විද්‍යාව (P-V ප්‍රස්ථාර)',
+      calorimetryTab: 'කලෝරිමිතිය සහ ප්‍රසාරණය',
+      controls: 'මැදිරි පරාමිතීන්',
+      experimentMode: 'අත්හදා බැලීමේ ක්‍රමය',
+      ideal: 'පරිපූර්ණ වායු නියමය',
+      boyles: 'බොයිල්ගේ නියමය (T නියත)',
+      charles: 'චාල්ස්ගේ නියමය (P නියත)',
+      pressureLaw: 'පීඩන නියමය (V නියත)',
+      molecules: 'වායු අණු සංඛ්‍යාව (N)',
+      volume: 'පරිමාව (V)',
+      temperature: 'උෂ්ණත්වය (T)',
+      heatChamber: 'මැදිරිය රත් කරන්න',
+      coolChamber: 'මැදිරිය සිසිල් කරන්න',
+      logTrial: 'නිරීක්ෂණ සටහන් කරන්න',
+      physicsCalculations: 'භෞතික විද්‍යාත්මක ගණනය කිරීම්',
+      pressure: 'පීඩනය (P)',
+      ratio: 'නියත අනුපාතය (PV/T)',
+      labNotes: 'තාපගතික ලැබ් නිරීක්ෂණ සටහන්',
+      trialHistory: 'පටිගත කළ තාපජ අත්හදා බැලීම්',
+      pdf: 'PDF ලබාගන්න'
+    },
+    ta: {
+      gasLawsTab: 'வாயு விதிகளும் இயக்கக் கொள்கையும்',
+      thermoTab: 'வெப்ப இயக்கவியல் (P-V வரைபடங்கள்)',
+      calorimetryTab: 'கலோரிமானி & வெப்ப விரிவு',
+      controls: 'அறை அளவீடுகள்',
+      experimentMode: 'சோதனை முறை',
+      ideal: 'நல்லியல்பு வாயு விதி',
+      boyles: 'போயிலின் விதி (T மாறிலி)',
+      charles: 'சார்லசின் விதி (P மாறிலி)',
+      pressureLaw: 'அழுத்த விதி (V மாறிலி)',
+      molecules: 'வாயு மூலக்கூறுகளின் எண்ணிக்கை (N)',
+      volume: 'கனவளவு (V)',
+      temperature: 'வெப்பநிலை (T)',
+      heatChamber: 'அறையை வெப்பப்படுத்து',
+      coolChamber: 'அறையைக் குளிரூட்டு',
+      logTrial: 'சோதனைப் பதிவைச் சேமி',
+      physicsCalculations: 'பௌதிகவியல் கணிப்புகள்',
+      pressure: 'அழுத்தம் (P)',
+      ratio: 'மாறிலி விகிதம் (PV/T)',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
+      pdf: 'PDF ஏற்றுமதி செய்'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
   // Navigation Tabs
   const [subTab, setSubTab] = useState<'gas' | 'thermo' | 'calorimetry'>('gas');
   const [explainMode, setExplainMode] = useState<boolean>(true);
@@ -371,7 +445,7 @@ export function GasLawsSimulation() {
             subTab === 'gas' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
-          Gas Laws & Kinetic Theory
+          {t.gasLawsTab}
         </button>
         <button
           onClick={() => setSubTab('thermo')}
@@ -379,7 +453,7 @@ export function GasLawsSimulation() {
             subTab === 'thermo' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
-          Thermodynamics (P-V Diagrams)
+          {t.thermoTab}
         </button>
         <button
           onClick={() => setSubTab('calorimetry')}
@@ -387,7 +461,7 @@ export function GasLawsSimulation() {
             subTab === 'calorimetry' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'
           }`}
         >
-          Calorimetry & Expansion
+          {t.calorimetryTab}
         </button>
       </div>
 
@@ -401,14 +475,14 @@ export function GasLawsSimulation() {
             <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider">
-                  Chamber Parameters
+                  {t.controls}
                 </h3>
                 <span className="text-[9px] text-slate-450 font-bold uppercase">Gas Labs</span>
               </div>
 
               {/* Mode Select */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-655 block">Experiment Mode</label>
+                <label className="text-xs font-bold text-slate-655 block">{t.experimentMode}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setGasMode('ideal')}
@@ -416,7 +490,7 @@ export function GasLawsSimulation() {
                       gasMode === 'ideal' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    Ideal Gas Law
+                    {t.ideal}
                   </button>
                   <button
                     onClick={() => setGasMode('boyle')}
@@ -424,7 +498,7 @@ export function GasLawsSimulation() {
                       gasMode === 'boyle' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    Boyle's Law (T Const)
+                    {t.boyles}
                   </button>
                   <button
                     onClick={() => setGasMode('charles')}
@@ -432,7 +506,7 @@ export function GasLawsSimulation() {
                       gasMode === 'charles' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    Charles' Law (P Const)
+                    {t.charles}
                   </button>
                   <button
                     onClick={() => setGasMode('pressure')}
@@ -440,7 +514,7 @@ export function GasLawsSimulation() {
                       gasMode === 'pressure' ? 'bg-slate-900 border-slate-900 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    Pressure Law (V Const)
+                    {t.pressureLaw}
                   </button>
                 </div>
               </div>
@@ -448,7 +522,7 @@ export function GasLawsSimulation() {
               {/* Molecule count */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Number of Gas Molecules (N)</span>
+                  <span className="text-slate-600">{t.molecules}</span>
                   <span className="text-slate-800 font-mono">{moleculesCount}</span>
                 </div>
                 <input
@@ -465,7 +539,7 @@ export function GasLawsSimulation() {
               {/* Volume */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Volume (V)</span>
+                  <span className="text-slate-600">{t.volume}</span>
                   <span className="text-slate-800 font-mono">{volume.toFixed(1)} L</span>
                 </div>
                 <input
@@ -483,7 +557,7 @@ export function GasLawsSimulation() {
               {/* Temperature */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-600">Temperature (T)</span>
+                  <span className="text-slate-600">{t.temperature}</span>
                   <span className="text-slate-800 font-mono">{temperature} K</span>
                 </div>
                 <input
@@ -506,7 +580,7 @@ export function GasLawsSimulation() {
                   className="flex-1 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <Flame className="w-3.5 h-3.5" />
-                  Heat Chamber
+                  {t.heatChamber}
                 </button>
                 <button
                   onClick={() => setTemperature(Math.max(100, temperature - 40))}
@@ -514,7 +588,7 @@ export function GasLawsSimulation() {
                   className="flex-1 py-1.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <Snowflake className="w-3.5 h-3.5" />
-                  Cool Chamber
+                  {t.coolChamber}
                 </button>
               </div>
             </div>
@@ -721,7 +795,7 @@ export function GasLawsSimulation() {
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              Log Trial Snapshot
+              {t.logTrial}
             </button>
           </div>
 
@@ -770,25 +844,25 @@ export function GasLawsSimulation() {
             {/* Math Readings (4 Cols) */}
             <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-                Physics Calculations
+                {t.physicsCalculations}
               </h4>
               
               {subTab === 'gas' && (
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Pressure (P):</span>
+                    <span className="text-slate-500">{t.pressure}:</span>
                     <span className="font-mono text-blue-650 font-extrabold">{gasState.pressure.toFixed(2)} atm</span>
                   </div>
                   <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Volume (V):</span>
+                    <span className="text-slate-500">{t.volume}:</span>
                     <span className="font-mono text-slate-800 font-bold">{gasState.volume.toFixed(1)} L</span>
                   </div>
                   <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Temperature (T):</span>
+                    <span className="text-slate-500">{t.temperature}:</span>
                     <span className="font-mono text-red-650 font-bold">{gasState.temperature} K</span>
                   </div>
                   <div className="flex justify-between font-medium">
-                    <span className="text-slate-500">Constant Ratio (PV/T):</span>
+                    <span className="text-slate-500">{t.ratio}:</span>
                     <span className="font-mono text-slate-850">
                       {((gasState.pressure * gasState.volume) / gasState.temperature).toFixed(4)}
                     </span>
@@ -995,7 +1069,7 @@ export function GasLawsSimulation() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-blue-600" />
-              Thermodynamic Observation Notes
+              {t.labNotes}
             </h3>
             
             {/* Show Theory Toggle */}
@@ -1025,7 +1099,7 @@ export function GasLawsSimulation() {
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
-              Recorded Thermal Trial History
+              {t.trialHistory}
             </h3>
             
             <div className="flex items-center gap-2">
@@ -1042,7 +1116,7 @@ export function GasLawsSimulation() {
                 className="py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 <Download className="w-3 h-3" />
-                Export PDF
+                {t.pdf}
               </button>
             </div>
           </div>

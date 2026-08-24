@@ -39,6 +39,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchMinimized, setIsSearchMinimized] = useState<boolean>(false);
+  const [lang, setLang] = useState<'en' | 'si' | 'ta'>('en');
 
 
   // 1. Simulations Catalog Data
@@ -193,6 +194,15 @@ function App() {
 
           {/* Right Action buttons */}
           <div className="flex items-center gap-3">
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as any)}
+              className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-350 rounded-full text-[11px] font-bold text-slate-700 outline-none cursor-pointer transition-colors"
+            >
+              <option value="en">English</option>
+              <option value="si">සිංහල</option>
+              <option value="ta">தமிழ்</option>
+            </select>
             <button 
               onClick={() => setCurrentPage('sims')}
               className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
@@ -600,7 +610,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <ProjectileSimulation />
+              <ProjectileSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -619,7 +629,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <NewtonsLawsSimulation />
+              <NewtonsLawsSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -642,7 +652,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <InclinedPlaneSimulation />
+              <InclinedPlaneSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -665,7 +675,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <GeometricalOpticsSimulation />
+              <GeometricalOpticsSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -688,7 +698,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <SimpleHarmonicMotionSimulation />
+              <SimpleHarmonicMotionSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -711,7 +721,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <PhotoelectricEffectSimulation />
+              <PhotoelectricEffectSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -734,7 +744,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <GasLawsSimulation />
+              <GasLawsSimulation lang={lang} />
             </div>
           </div>
         )}
@@ -757,7 +767,7 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <LenzsLawSimulation />
+              <LenzsLawSimulation lang={lang} />
             </div>
           </div>
         )}

@@ -22,7 +22,7 @@ interface TrialLog {
   status: string;
 }
 
-export function GeometricalOpticsSimulation() {
+export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   // Parameters
   // parameters
   const [mode, setMode] = useState<'reflection' | 'refraction' | 'tir' | 'fibre'>('refraction');

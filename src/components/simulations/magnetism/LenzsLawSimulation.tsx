@@ -25,7 +25,69 @@ interface TrialLog {
   maxCurrent: number;
 }
 
-export function LenzsLawSimulation() {
+export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      controls: 'Induction Controls',
+      circuitState: 'Coil Circuit State',
+      closed: 'Closed Circuit (Load)',
+      open: 'Open Circuit (Infinite R)',
+      strength: 'Magnet Strength (B₀)',
+      mass: 'Magnet Mass (m)',
+      turns: 'Coil Turns (N)',
+      resistance: 'Coil Resistance (R)',
+      logTrial: 'Log Trial Snapshot',
+      physicsCalculations: 'Physics Calculations',
+      emf: 'Induced EMF',
+      current: 'Induced Current (I)',
+      braking: 'Magnetic Braking Force',
+      velocity: 'Magnet Velocity',
+      labNotes: 'Observational Lab Journal',
+      trialHistory: 'Recorded Induction Trial History',
+      pdf: 'Export PDF'
+    },
+    si: {
+      controls: 'ප්‍රේරණ පාලන පුවරුව',
+      circuitState: 'දඟරයේ පරිපථ තත්ත්වය',
+      closed: 'සංවෘත පරිපථය (භාරය)',
+      open: 'විවෘත පරිපථය (නිරන්ත R)',
+      strength: 'චුම්බක ප්‍රබලතාවය (B₀)',
+      mass: 'චුම්බක ස්කන්ධය (m)',
+      turns: 'දඟර වට සංඛ්‍යාව (N)',
+      resistance: 'දඟර ප්‍රතිරෝධය (R)',
+      logTrial: 'නිරීක්ෂණ සටහන් කරන්න',
+      physicsCalculations: 'භෞතික විද්‍යාත්මක ගණනය කිරීම්',
+      emf: 'ප්‍රේරිත වි.ගා.බ. (EMF)',
+      current: 'ප්‍රේරිත ධාරාව (I)',
+      braking: 'චුම්බක තිරිංග බලය',
+      velocity: 'චුම්බකයේ ප්‍රවේගය',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'පටිගත කළ ප්‍රේරණ අත්හදා බැලීම්',
+      pdf: 'PDF ලබාගන්න'
+    },
+    ta: {
+      controls: 'மின்தூண்டல் கட்டுப்பாடு',
+      circuitState: 'சுருள் சுற்று நிலை',
+      closed: 'மூடிய சுற்று (பளு)',
+      open: 'திறந்த சுற்று (அளவிலா R)',
+      strength: 'காந்த வலிமை (B₀)',
+      mass: 'காந்த நிறை (m)',
+      turns: 'சுருள் சுற்றுகள் (N)',
+      resistance: 'சுருள் மின்தடை (R)',
+      logTrial: 'சோதனைப் பதிவைச் சேமி',
+      physicsCalculations: 'பௌதிகவியல் கணிப்புகள்',
+      emf: 'தூண்டப்பட்ட மின்னியக்க விசை',
+      current: 'தூண்டப்பட்ட மின்னோட்டம் (I)',
+      braking: 'காந்த பிரேக்கிங் விசை',
+      velocity: 'காந்த வேகம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
+      pdf: 'PDF ஏற்றுமதி செய்'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
   // Parameters
   const [magnetMass, setMagnetMass] = useState<number>(0.2); // kg
   const [magnetStrength, setMagnetStrength] = useState<number>(1.5); // Tesla scale
@@ -312,14 +374,14 @@ export function LenzsLawSimulation() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 className="font-extrabold text-sm text-slate-800 tracking-tight uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-blue-600" />
-                Induction Controls
+                {t.controls}
               </h3>
               <span className="text-[9px] text-slate-450 font-bold uppercase">Lenz lab</span>
             </div>
 
             {/* Coil open / closed loop circuit breaker */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 block">Coil Circuit State</label>
+              <label className="text-xs font-bold text-slate-600 block">{t.circuitState}</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setIsClosedCircuit(true)}
@@ -329,7 +391,7 @@ export function LenzsLawSimulation() {
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
                   }`}
                 >
-                  Closed Circuit (Load)
+                  {t.closed}
                 </button>
                 <button
                   onClick={() => setIsClosedCircuit(false)}
@@ -339,7 +401,7 @@ export function LenzsLawSimulation() {
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
                   }`}
                 >
-                  Open Circuit (Infinite R)
+                  {t.open}
                 </button>
               </div>
             </div>
@@ -347,7 +409,7 @@ export function LenzsLawSimulation() {
             {/* Magnet strength */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Magnet Strength (B₀)</span>
+                <span className="text-slate-600">{t.strength}</span>
                 <span className="text-slate-800 font-mono">{magnetStrength.toFixed(1)} T</span>
               </div>
               <input
@@ -364,7 +426,7 @@ export function LenzsLawSimulation() {
             {/* Magnet mass */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Magnet Mass (m)</span>
+                <span className="text-slate-600">{t.mass}</span>
                 <span className="text-slate-800 font-mono">{magnetMass.toFixed(2)} kg</span>
               </div>
               <input
@@ -381,7 +443,7 @@ export function LenzsLawSimulation() {
             {/* Coil turns */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Coil Turns (N)</span>
+                <span className="text-slate-600">{t.turns}</span>
                 <span className="text-slate-800 font-mono">{coilTurns} turns</span>
               </div>
               <input
@@ -391,14 +453,14 @@ export function LenzsLawSimulation() {
                 step="25"
                 value={coilTurns}
                 onChange={(e) => setCoilTurns(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-250 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
             {/* Coil resistance */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">Coil Resistance (R)</span>
+                <span className="text-slate-600">{t.resistance}</span>
                 <span className="text-slate-800 font-mono">{isClosedCircuit ? `${coilResistance.toFixed(1)} Ω` : '∞ (Open)'}</span>
               </div>
               <input
@@ -422,7 +484,7 @@ export function LenzsLawSimulation() {
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              Log Trial Snapshot
+              {t.logTrial}
             </button>
           </div>
 
@@ -468,26 +530,26 @@ export function LenzsLawSimulation() {
             {/* Calculation readings (4 Cols) */}
             <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-                Physics Calculations
+                {t.physicsCalculations}
               </h4>
               
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Induced EMF:</span>
+                  <span className="text-slate-500">{t.emf}:</span>
                   <span className="font-mono text-blue-600 font-extrabold">{inducedEMF.toFixed(3)} V</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Induced Current (I):</span>
+                  <span className="text-slate-500">{t.current}:</span>
                   <span className="font-mono text-emerald-600 font-bold">{inducedCurrent.toFixed(3)} A</span>
                 </div>
                 <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">Magnetic Braking Force:</span>
+                  <span className="text-slate-500">{t.braking}:</span>
                   <span className="font-mono text-red-650 font-bold">
                     {magneticForce !== 0 ? `${Math.abs(magneticForce).toFixed(3)} N (Up)` : '0.000 N'}
                   </span>
                 </div>
                 <div className="flex justify-between font-medium border-t border-slate-100 pt-2">
-                  <span className="text-slate-500">Magnet Velocity:</span>
+                  <span className="text-slate-500">{t.velocity}:</span>
                   <span className="font-mono text-slate-850 font-bold">{velocity.toFixed(2)} m/s</span>
                 </div>
               </div>
@@ -572,7 +634,7 @@ export function LenzsLawSimulation() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-blue-600" />
-              Observational Lab Journal
+              {t.labNotes}
             </h3>
             
             {/* Show Theory Toggle */}
@@ -602,7 +664,7 @@ export function LenzsLawSimulation() {
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
-              Recorded Induction Trial History
+              {t.trialHistory}
             </h3>
             
             <div className="flex items-center gap-2">
@@ -619,7 +681,7 @@ export function LenzsLawSimulation() {
                 className="py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 <Download className="w-3 h-3" />
-                Export PDF
+                {t.pdf}
               </button>
             </div>
           </div>

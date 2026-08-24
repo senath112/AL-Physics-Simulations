@@ -10,7 +10,7 @@ import {
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
 
-export function InclinedPlaneSimulation() {
+export function InclinedPlaneSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const maxTrackLength = 30; // meters
 
   // 1. Parameters & State
