@@ -487,59 +487,73 @@ function App() {
                 </div>
               </div>
 
-              {/* Simulation cards grid */}
-              <div className="lg:col-span-3 overflow-y-auto pr-1 custom-scrollbar">
-                {filteredSims.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredSims.map((sim) => {
-                      const isActive = sim.status === 'active';
-                      return (
-                        <div 
-                          key={sim.id}
-                          className={`bg-white border rounded-xl p-5 flex flex-col justify-between transition-all glow-card ${
-                            isActive 
-                              ? 'border-slate-200 hover:border-blue-400 hover:shadow-md cursor-pointer' 
-                              : 'border-slate-100 opacity-70'
-                          }`}
-
-                          onClick={() => isActive && sim.pageLink && setCurrentPage(sim.pageLink)}
-                        >
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className={`p-2.5 rounded-lg ${isActive ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
-                                <sim.icon className="w-5 h-5" />
-                              </div>
-                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                isActive 
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                                  : 'bg-slate-100 text-slate-500'
-                              }`}>
-                                {isActive ? 'Launch Simulator' : 'Coming Soon'}
-                              </span>
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-slate-900 text-base">{sim.title}</h4>
-                              {sim.sinhalaTitle && sim.tamilTitle && (
-                                <div className="text-[10px] font-semibold text-slate-400 space-x-1 mt-0.5 font-sans leading-none flex items-center gap-1">
-                                  <span>{sim.sinhalaTitle}</span>
-                                  <span className="text-[8px] text-slate-350">•</span>
-                                  <span>{sim.tamilTitle}</span>
-                                </div>
-                              )}
-                              <p className="text-slate-600 text-xs mt-1.5 leading-relaxed">{sim.description}</p>
-                            </div>
+              {/* Simulation cards grouped by unit */}
+              <div className="lg:col-span-3 overflow-y-auto pr-1 custom-scrollbar space-y-8">
+                {unitsList.some(unit => filteredSims.some(s => s.unit === unit.id)) ? (
+                  unitsList.map((unit) => {
+                    const unitSims = filteredSims.filter(s => s.unit === unit.id);
+                    if (unitSims.length === 0) return null;
+                    return (
+                      <div key={unit.id} className="space-y-3">
+                        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                          <div className={`p-1.5 rounded-lg ${unit.color}`}>
+                            <unit.icon className="w-4 h-4" />
                           </div>
-                          
-                          {isActive && (
-                            <div className="pt-4 border-t border-slate-50 mt-4 flex items-center justify-between text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                              <span>Enter Laboratory</span>
-                              <ArrowRight className="w-4 h-4" />
-                            </div>
-                          )}
+                          <h3 className="font-extrabold text-xs text-slate-400 uppercase tracking-wider">{unit.name}</h3>
+                          <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold font-mono text-[9px]">{unitSims.length}</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {unitSims.map((sim) => {
+                            const isActive = sim.status === 'active';
+                            return (
+                              <div 
+                                key={sim.id}
+                                className={`bg-white border rounded-xl p-5 flex flex-col justify-between transition-all glow-card ${
+                                  isActive 
+                                    ? 'border-slate-200 hover:border-blue-400 hover:shadow-md cursor-pointer' 
+                                    : 'border-slate-100 opacity-70'
+                                }`}
+                                onClick={() => isActive && sim.pageLink && setCurrentPage(sim.pageLink)}
+                              >
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className={`p-2.5 rounded-lg ${isActive ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
+                                      <sim.icon className="w-5 h-5" />
+                                    </div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                      isActive 
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                        : 'bg-slate-100 text-slate-500'
+                                    }`}>
+                                      {isActive ? 'Launch Simulator' : 'Coming Soon'}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-bold text-slate-900 text-base">{sim.title}</h4>
+                                    {sim.sinhalaTitle && sim.tamilTitle && (
+                                      <div className="text-[10px] font-semibold text-slate-400 space-x-1 mt-0.5 font-sans leading-none flex items-center gap-1">
+                                        <span>{sim.sinhalaTitle}</span>
+                                        <span className="text-[8px] text-slate-350">•</span>
+                                        <span>{sim.tamilTitle}</span>
+                                      </div>
+                                    )}
+                                    <p className="text-slate-600 text-xs mt-1.5 leading-relaxed">{sim.description}</p>
+                                  </div>
+                                </div>
+                                
+                                {isActive && (
+                                  <div className="pt-4 border-t border-slate-50 mt-4 flex items-center justify-between text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                                    <span>Enter Laboratory</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm max-w-md mx-auto my-12">
                     <Search className="w-10 h-10 text-slate-300 mx-auto mb-3" />
