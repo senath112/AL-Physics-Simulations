@@ -17,7 +17,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -654,15 +654,206 @@ function App() {
           </div>
         )}
 
+        {/* TERMS AND CONDITIONS PAGE */}
+        {currentPage === 'terms' && (
+          <div className="flex-1 bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 overflow-y-auto">
+            <div className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-10 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h1 className="text-2xl font-black text-slate-950">Terms and Conditions</h1>
+                <button 
+                  onClick={() => setCurrentPage('home')}
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer transition-colors"
+                >
+                  ← Return Home
+                </button>
+              </div>
+              <p className="text-xs text-slate-450 font-bold">Last updated: 24 August 2026</p>
+              
+              <div className="text-slate-700 text-sm leading-relaxed space-y-4 font-medium">
+                <p>Welcome to A/L Physics Simulations, an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk/physics</a>.</p>
+                <p>By accessing or using the website, you agree to these Terms and Conditions. If you do not agree with these terms, please do not use the website.</p>
+                
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">1. Purpose of the Website</h2>
+                <p>A/L Physics Simulations is an educational resource intended to help students explore and understand physics concepts through interactive simulations.</p>
+                <p className="font-bold text-slate-800">The Project is not intended to replace:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                  <li>A qualified teacher</li>
+                  <li>School laboratory work</li>
+                  <li>Official textbooks</li>
+                  <li>Official examination materials</li>
+                  <li>Professional scientific advice</li>
+                </ul>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">2. Educational Information</h2>
+                <p>We make reasonable efforts to ensure that equations, simulations, explanations, and calculated results are scientifically accurate. However, the simulations are educational models. Results may depend on assumptions, approximations, numerical methods, physical constants, and user-selected parameters.</p>
+                <p>The Project does not guarantee that every simulation or educational explanation will always be completely free from errors. Students should verify important academic information against their teachers, textbooks, and official educational resources.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">3. Use of Simulations</h2>
+                <p>You may use the simulations for personal educational purposes.</p>
+                <p className="font-bold text-slate-800">You may:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                  <li>Explore simulations</li>
+                  <li>Conduct virtual experiments</li>
+                  <li>Record your own observations</li>
+                  <li>Create Lab Notes</li>
+                  <li>Generate and download your own reports</li>
+                  <li>Use the results for learning and personal study</li>
+                </ul>
+                <p className="font-bold text-slate-850 pt-1">You must not use the website to:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                  <li>Attempt to damage or disrupt the service</li>
+                  <li>Circumvent security measures</li>
+                  <li>Introduce malicious code</li>
+                  <li>Abuse automated systems</li>
+                  <li>Interfere with other users</li>
+                  <li>Misrepresent the Project as an official government, school, examination-board, or university service</li>
+                </ul>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">4. Lab Notes</h2>
+                <p>Lab Notes are intended to help users document their own virtual experiments and observations. Users are responsible for the accuracy and originality of information they enter into their Lab Notes.</p>
+                <p>Generated reports should not be represented as official laboratory records unless they have been independently verified and accepted by the relevant educational institution or teacher.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">5. Generated Results</h2>
+                <p>Simulation results are generated according to the mathematical and physical models implemented by the Project. Users should understand the assumptions used by each simulation.</p>
+                <p>The Project is not responsible for academic, scientific, financial, professional, or other decisions made solely on the basis of simulation results.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">6. Intellectual Property</h2>
+                <p>Unless otherwise stated, the website’s original software, interface design, graphics, text, educational content, branding, and original simulation implementations are owned by or licensed to the Project and may not be reproduced or redistributed without appropriate permission.</p>
+                <p>Open-source libraries used by the Project remain subject to their respective licenses.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">7. Educational and Personal Use</h2>
+                <p>You may use the Project for personal learning and educational activities. If you are a teacher or educational institution and would like to reproduce substantial portions of the Project’s content, please contact the Project owner first.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">8. Availability</h2>
+                <p>We aim to keep the website available and functional, but we do not guarantee uninterrupted availability. The website may occasionally be unavailable because of maintenance, hosting problems, software updates, technical failures, network problems, security incidents, or other circumstances beyond our control.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">9. Changes to the Project</h2>
+                <p>Features, simulations, educational content, technologies, and availability may change over time. We may add, modify, suspend, or remove features when necessary.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">10. Third-Party Services</h2>
+                <p>The Project may use third-party services or open-source software. Those services may have their own terms, licenses, and privacy policies. The Project is not responsible for the independent operation or policies of third-party services.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">11. Disclaimer</h2>
+                <p>The Project is provided for educational purposes on an “as available” basis. To the extent permitted by applicable law, we make no guarantee that the website will always be available, every simulation will be error-free, every result will be suitable for every educational purpose, or the website will operate correctly on every device or browser.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">12. Limitation of Liability</h2>
+                <p>To the extent permitted by applicable law, the Project owner shall not be responsible for losses or damages arising from reliance on the website, its simulations, generated results, or educational materials.</p>
+                <p>Nothing in these Terms is intended to exclude or limit rights that cannot legally be excluded or limited under applicable law.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">13. Changes to These Terms</h2>
+                <p>These Terms may be updated as the Project develops. The current version will be published on this page with an updated “Last updated” date. Continued use of the website after changes are published constitutes acceptance of the updated Terms.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">14. Contact</h2>
+                <p>For questions about these Terms or the A/L Physics Simulations project, contact:</p>
+                <p className="font-bold text-slate-800">Senath Sethmika</p>
+                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk</a></p>
+
+                <div className="border-t border-slate-100 pt-6 text-center space-y-1">
+                  <p className="font-extrabold text-slate-800">A/L Physics Simulations</p>
+                  <p className="text-xs text-slate-450 italic">Interactive physics for deeper understanding.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PRIVACY POLICY PAGE */}
+        {currentPage === 'privacy' && (
+          <div className="flex-1 bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 overflow-y-auto">
+            <div className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-10 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h1 className="text-2xl font-black text-slate-950">Privacy Policy</h1>
+                <button 
+                  onClick={() => setCurrentPage('home')}
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer transition-colors"
+                >
+                  ← Return Home
+                </button>
+              </div>
+              <p className="text-xs text-slate-450 font-bold">Last updated: 24 August 2026</p>
+              
+              <div className="text-slate-700 text-sm leading-relaxed space-y-4 font-medium">
+                <p>A/L Physics Simulations (“the Project”, “we”, “us”, or “our”) is an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk/physics</a>.</p>
+                <p>We are committed to keeping the platform simple, transparent, and privacy-conscious.</p>
+                
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">1. Information We Collect</h2>
+                <p>A/L Physics Simulations is designed to work primarily in your web browser. We aim to collect as little personal information as reasonably possible.</p>
+                <p className="font-bold text-slate-800">Depending on the features available at a particular time, the website may process:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                  <li>Simulation settings and parameters</li>
+                  <li>Measurements generated during simulations</li>
+                  <li>Lab Notes entered by the user</li>
+                  <li>Locally generated graphs and reports</li>
+                  <li>Technical information required for the website to function</li>
+                </ul>
+                <p>Unless a feature explicitly states otherwise, simulation data and Lab Notes are intended to remain on your device and are not transmitted to us.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">2. Lab Notes and PDF Reports</h2>
+                <p>The Lab Notes feature may allow you to record experimental observations, measurements, calculations, and conclusions.</p>
+                <p className="font-bold text-slate-800">Where technically implemented as a local feature:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                  <li>Lab Notes remain in your browser or device.</li>
+                  <li>We do not receive the contents of your Lab Notes.</li>
+                  <li>PDF reports are generated on your device.</li>
+                  <li>We do not receive a copy of generated PDF reports.</li>
+                </ul>
+                <p>Clearing browser data, using private browsing, changing devices, or certain browser settings may cause locally stored information to be lost. Users should save or download important reports themselves.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">3. Real-Time Performance Monitoring</h2>
+                <p>The simulations may measure browser performance locally using browser timing mechanisms such as performance.now() and requestAnimationFrame(). This may be used to determine frame timing, rendering delays, dropped frames, simulation timing integrity, and graph sampling integrity.</p>
+                <p>This functionality is intended to operate locally on your device. It is not intended to transmit your computer’s performance information to the project owner.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">4. Cookies and Local Storage</h2>
+                <p>The website may use browser storage technologies such as Local Storage, Session Storage, IndexedDB, and Cookies, where necessary. These technologies may be used to remember settings, simulation preferences, Lab Notes, or other locally useful information.</p>
+                <p>If third-party services are introduced in the future, their use of cookies or similar technologies may be governed by their own privacy policies.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">5. Analytics</h2>
+                <p>If analytics services are introduced, we will aim to use privacy-conscious analytics and disclose their use in this Privacy Policy. We will not intentionally use analytics to collect unnecessary personal information.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">6. Third-Party Services</h2>
+                <p>The website may use third-party technologies or services for functions such as website hosting, content delivery, fonts, libraries, security, and analytics. These services may process technical information necessary to provide their functionality. Their own privacy policies may also apply.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">7. Children’s Privacy</h2>
+                <p>The Project is intended as an educational resource for students. We do not intentionally require students to provide sensitive personal information merely to use the core simulations. If an account-based feature is introduced in the future, additional privacy and age-appropriate safeguards may be implemented where appropriate.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">8. Personal Information</h2>
+                <p>We do not ask users to submit sensitive personal information for the core simulation experience. Please do not enter passwords, identity-card numbers, financial information, medical information, or other highly sensitive personal information into Lab Notes or other free-text fields.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">9. Security</h2>
+                <p>We take reasonable measures to protect the website and minimize unnecessary collection of information. However, no website or Internet transmission can be guaranteed to be completely secure.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">10. Changes to This Privacy Policy</h2>
+                <p>This Privacy Policy may be updated when the Project’s features, technology, or data practices change. The latest version will be published on this page with an updated “Last updated” date.</p>
+
+                <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">11. Contact</h2>
+                <p>For questions regarding this Privacy Policy or the A/L Physics Simulations project, contact:</p>
+                <p className="font-bold text-slate-800">Senath Sethmika</p>
+                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk</a></p>
+
+                <div className="border-t border-slate-100 pt-6 text-center space-y-1">
+                  <p className="font-extrabold text-slate-800">A/L Physics Simulations</p>
+                  <p className="text-xs text-slate-450 italic">Learn the equation. See the equation. Use the equation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
 
 
       </main>
 
       {/* Global Footer (shown on all pages) */}
-      <footer className="bg-white border-t border-slate-200 py-6 mt-auto shrink-0 w-full">
+      <footer className="bg-white border-t border-slate-200 py-6 mt-auto shrink-0 w-full font-medium">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
           <p>© {new Date().getFullYear()} A/L Physics Simulations. Developed by Physics by Senath. All Rights Reserved.</p>
-          <p>This educational software is developed for Advanced Level physics students in Sri Lanka.</p>
+          <p>
+            This educational software is developed for Advanced Level physics students in Sri Lanka.
+            <span className="mx-2">•</span>
+            <button onClick={() => setCurrentPage('terms')} className="text-blue-600 hover:underline cursor-pointer">Terms & Conditions</button>
+            <span className="mx-2">•</span>
+            <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">Privacy Policy</button>
+          </p>
         </div>
       </footer>
 
