@@ -8,6 +8,7 @@ import { PhotoelectricEffectSimulation } from './components/simulations/modern/P
 import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimulation';
 import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
 import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
+import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
 import { 
   Compass, 
   Activity, 
@@ -21,7 +22,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -164,6 +165,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'magnetic_field_wire',
+    },
+    {
+      id: 'parallel_currents',
+      title: 'Force Between Parallel Currents',
+      sinhalaTitle: "සමාන්තර ධාරා සන්නායක අතර බලය",
+      tamilTitle: "இணை கடத்திகளுக்கு இடையேயான விசை",
+      unit: 'magnetism',
+      description: 'Interact with two parallel current-carrying conductors in 3D, observe physical bendings for attractive and repulsive forces, and verify force metrics.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'parallel_currents',
     },
   ];
 
@@ -817,6 +829,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <MagneticFieldWireSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE PARALLEL CURRENTS 3D SIMULATION */}
+        {currentPage === 'parallel_currents' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සමාන්තර ධාරා සන්නායක අතර බලය • இணை கடத்திகளுக்கு இடையேயான விசை</span>
+                <span className="text-slate-900 font-semibold text-sm">3D Force Between Parallel Currents</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <ParallelCurrentsSimulation lang={lang} />
             </div>
           </div>
         )}
