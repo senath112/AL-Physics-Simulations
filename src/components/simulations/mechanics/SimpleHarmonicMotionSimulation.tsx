@@ -177,7 +177,7 @@ export function SimpleHarmonicMotionSimulation() {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isPlaying, mode, mass, springK, length, damping, amplitude]);
+  }, [isPlaying, mode, mass, springK, length, damping, amplitude, showRefCircle]);
 
   // Canvas Drawer
   const drawSimulation = () => {
@@ -354,11 +354,19 @@ export function SimpleHarmonicMotionSimulation() {
 
       // Draw reference circle if requested
       if (showRefCircle) {
-        const circleX = 90;
-        const circleY = 220;
-        const maxRadius = 55;
+        const visualL = length * 85;
+        // Radius of the circle equals the amplitude (scaled to pixels)
+        const maxRadius = mode === 'spring' 
+          ? Math.abs(amplitude * 50) 
+          : Math.abs(visualL * Math.sin((amplitude * Math.PI) / 180));
         
-        // Damping decay
+        // Align center of the circle exactly on the equilibrium lines:
+        // - Spring: horizontal equilibrium level (Y = 160)
+        // - Pendulum: vertical equilibrium level (X = centerX)
+        const circleX = mode === 'spring' ? (maxRadius + 25) : centerX;
+        const circleY = mode === 'spring' ? 160 : 220;
+        
+        // Damping decay factor
         const beta = damping / (2 * (mode === 'spring' ? mass : mass * length));
         const decayFactor = Math.exp(-beta * timeRef.current);
         const currentRadius = maxRadius * decayFactor;
@@ -373,14 +381,14 @@ export function SimpleHarmonicMotionSimulation() {
         ctx.lineTo(circleX, circleY + maxRadius + 10);
         ctx.stroke();
 
-        // Draw main boundary auxiliary circle
+        // Draw main boundary auxiliary circle (represents initial amplitude)
         ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(circleX, circleY, maxRadius, 0, 2 * Math.PI);
         ctx.stroke();
 
-        // Draw current decaying orbit circle (dashed)
+        // Draw current decaying orbit circle (dashed, represents damped amplitude)
         if (damping > 0 && currentRadius > 2) {
           ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
           ctx.setLineDash([2, 3]);
@@ -391,18 +399,16 @@ export function SimpleHarmonicMotionSimulation() {
         }
 
         // Phasor rotation angle phi
-        // If spring, phase makes vertical displacement represent position
-        // If pendulum, phase makes horizontal displacement represent position
         const phi = omega0 * timeRef.current;
         let px = 0;
         let py = 0;
 
         if (mode === 'spring') {
-          // Vertical SHM: Y component is displacement (cos), X component is velocity (sin)
+          // Vertical SHM: Y component is displacement, X component is velocity
           px = Math.sin(phi) * currentRadius;
           py = Math.cos(phi) * currentRadius;
         } else {
-          // Horizontal SHM: X component is displacement (cos), Y component is velocity (sin)
+          // Horizontal SHM: X component is displacement, Y component is velocity
           px = Math.cos(phi) * currentRadius;
           py = -Math.sin(phi) * currentRadius;
         }
@@ -432,8 +438,7 @@ export function SimpleHarmonicMotionSimulation() {
           ctx.moveTo(circleX + px, circleY + py);
           ctx.lineTo(centerX, blockCenterY);
         } else {
-          // Pendulum: project horizontally to bob X coordinate
-          const visualL = length * 85;
+          // Pendulum: project horizontally/vertically to bob coordinate
           const bobX = centerX + visualL * Math.sin(state.displacement);
           const bobY = 50 + visualL * Math.cos(state.displacement);
           ctx.moveTo(circleX + px, circleY + py);
