@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { PlotlyGraph } from '../../PlotlyGraph';
 
 export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -84,6 +85,15 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
   const [labNotes, setLabNotes] = useState('');
   const [loggedData, setLoggedData] = useState<any[]>([]);
 
+  // History tracking for graph plots
+  const [history, setHistory] = useState<{ t: number[]; flux: number[]; emf: number[] }>({
+    t: [],
+    flux: [],
+    emf: []
+  });
+  const lastHistoryUpdateRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(performance.now());
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastXRef = useRef(100);
   const lastTimeRef = useRef(performance.now());
@@ -150,6 +160,34 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
     setInducedEMF(Math.max(-10, Math.min(10, emf)));
 
   }, [magnetX, B0, N, area, velocity]);
+
+  // Periodically update graph history and decay values if not dragging
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = performance.now();
+      const timeSec = parseFloat(((now - startTimeRef.current) / 1000).toFixed(1));
+      
+      setHistory(prev => {
+        const nextT = [...prev.t, timeSec];
+        const nextFlux = [...prev.flux, fluxVal];
+        const nextEMF = [...prev.emf, inducedEMF];
+        if (nextT.length > 50) {
+          nextT.shift();
+          nextFlux.shift();
+          nextEMF.shift();
+        }
+        return { t: nextT, flux: nextFlux, emf: nextEMF };
+      });
+
+      // If user isn't dragging, decay velocity and EMF to zero
+      if (!isDragging) {
+        setVelocity(v => (Math.abs(v) < 0.05 ? 0 : v * 0.75));
+        setInducedEMF(e => (Math.abs(e) < 0.05 ? 0 : e * 0.75));
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [fluxVal, inducedEMF, isDragging]);
 
   // Render animation canvas
   useEffect(() => {
@@ -306,6 +344,9 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
     setVelocity(0);
     setFluxVal(0);
     setInducedEMF(0);
+    setHistory({ t: [], flux: [], emf: [] });
+    startTimeRef.current = performance.now();
+    lastHistoryUpdateRef.current = 0;
   };
 
   const handleLogDataPoint = () => {
@@ -441,6 +482,51 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
               <RotateCcw className="w-3.5 h-3.5" />
               {t.reset}
             </button>
+          </div>
+        </div>
+
+        {/* Real-time Flux and EMF vs Time Graph */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+          <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+            {lang === 'en' ? 'Magnetic Flux & Induced EMF vs. Time' : lang === 'si' ? 'චුම්බක ස්‍රාවය සහ ප්‍රේරිත වි.ගා.බ. කාලය ප්‍රස්ථාරය' : 'காந்தப் பாயம் & தூண்டப்பட்ட மின்னியக்க விசை vs நேரம்'}
+          </h4>
+          <div className="h-60">
+            <PlotlyGraph
+              data={[
+                {
+                  x: history.t,
+                  y: history.flux,
+                  type: 'scatter',
+                  mode: 'lines',
+                  name: lang === 'en' ? 'Flux (Φ)' : lang === 'si' ? 'චුම්බක ස්‍රාවය (Φ)' : 'காந்தப் பாயம் (Φ)',
+                  line: { color: '#3b82f6', width: 2 }
+                },
+                {
+                  x: history.t,
+                  y: history.emf,
+                  type: 'scatter',
+                  mode: 'lines',
+                  name: lang === 'en' ? 'Induced EMF (V)' : lang === 'si' ? 'ප්‍රේරිත වි.ගා.බ. (V)' : 'தூண்டப்பட்ட விசை (V)',
+                  yaxis: 'y2',
+                  line: { color: '#ef4444', width: 2 }
+                }
+              ]}
+              layout={{
+                autosize: true,
+                margin: { l: 40, r: 40, t: 10, b: 35 },
+                xaxis: { title: { text: lang === 'en' ? 'Time (s)' : lang === 'si' ? 'කාලය (s)' : 'நேரம் (s)' }, gridcolor: '#f1f5f9' },
+                yaxis: { title: { text: lang === 'en' ? 'Flux (Wb)' : lang === 'si' ? 'චුම්බක ස්‍රාවය (Wb)' : 'பாயம் (Wb)' }, gridcolor: '#f1f5f9' },
+                yaxis2: {
+                  title: { text: lang === 'en' ? 'Induced EMF (V)' : lang === 'si' ? 'ප්‍රේරිත වි.ගා.බ. (V)' : 'மின்னியக்க விசை (V)' },
+                  overlaying: 'y',
+                  side: 'right'
+                },
+                plot_bgcolor: '#ffffff',
+                paper_bgcolor: '#ffffff',
+                legend: { orientation: 'h', y: -0.2 }
+              }}
+              config={{ displayModeBar: false, responsive: true }}
+            />
           </div>
         </div>
 
