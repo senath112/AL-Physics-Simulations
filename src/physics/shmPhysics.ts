@@ -99,7 +99,7 @@ export function calculateSHMState(t: number, params: SHMParameters): SHMState {
     // Pendulum (rotational or simple height-based energy)
     // height h = L * (1 - cos(theta))
     // using approximation h = L * theta^2 / 2 for consistency with linear SHM potential energy
-    kineticEnergy = 0.5 * mEff * (velocity / length) * (velocity / length); // 0.5 * I * omega^2
+    kineticEnergy = 0.5 * mEff * velocity * velocity; // 0.5 * I * omega^2
     potentialEnergy = 0.5 * kEff * displacement * displacement;
   }
 
