@@ -1,0 +1,541 @@
+import { useState, useEffect, useRef } from 'react';
+import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+
+export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const TRANSLATIONS = {
+    en: {
+      title: 'Charged Particle in Magnetic Field',
+      paramsTitle: 'Parameters',
+      charge: 'Charge (q)',
+      mass: 'Mass (m)',
+      velocity: 'Velocity (v)',
+      bField: 'Magnetic Field (B)',
+      bDirection: 'Field Direction',
+      intoScreen: 'Into Screen (X)',
+      outOfScreen: 'Out of Screen (•)',
+      play: 'Play',
+      pause: 'Pause',
+      reset: 'Reset',
+      vectors: 'Show Force & Velocity Vectors',
+      theoryOutput: 'Theoretical Analysis',
+      radius: 'Orbit Radius (r)',
+      freq: 'Cyclotron Frequency (f)',
+      period: 'Orbit Period (T)',
+      logData: 'Record Data Point',
+      downloadPDF: 'Download PDF Report',
+      labNotes: 'Observation Notebook',
+      trialHistory: 'Observation History Log',
+      clearLogs: 'Clear Logs'
+    },
+    si: {
+      title: 'චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක්',
+      paramsTitle: 'පරාමිතීන්',
+      charge: 'ආරෝපණය (q)',
+      mass: 'ස්කන්ධය (m)',
+      velocity: 'ප්‍රවේගය (v)',
+      bField: 'චුම්බක ක්ෂේත්‍රය (B)',
+      bDirection: 'ක්ෂේත්‍ර දිශාව',
+      intoScreen: 'තලයට ලම්බකව ඇතුළට (X)',
+      outOfScreen: 'තලයට ලම්බකව පිටතට (•)',
+      play: 'ධාවනය කරන්න',
+      pause: 'නවත්වා තබන්න',
+      reset: 'නැවත මුලට',
+      vectors: 'බල සහ ප්‍රවේග දෛශික පෙන්වන්න',
+      theoryOutput: 'න්‍යායාත්මක විශ්ලේෂණය',
+      radius: 'කක්ෂීය අරය (r)',
+      freq: 'සයික්ලොට්‍රෝන සංඛ්‍යාතය (f)',
+      period: 'කක්ෂීය ආවර්ත කාලය (T)',
+      logData: 'දත්ත සටහන් කරන්න',
+      downloadPDF: 'PDF ලබාගන්න',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
+      clearLogs: 'සියල්ල මකන්න'
+    },
+    ta: {
+      title: 'காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்',
+      paramsTitle: 'அளவுருக்கள்',
+      charge: 'மின்னூட்டம் (q)',
+      mass: 'திணிவு (m)',
+      velocity: 'வேகம் (v)',
+      bField: 'காந்தப்புலம் (B)',
+      bDirection: 'காந்தப்புலத் திசை',
+      intoScreen: 'உள்நோக்கி (X)',
+      outOfScreen: 'வெளிநோக்கி (•)',
+      play: 'இயக்கு',
+      pause: 'நிறுத்து',
+      reset: 'மீட்டமை',
+      vectors: 'விசை & திசைவேக திசையன்களைக் காட்டு',
+      theoryOutput: 'கோட்பாட்டு பகுப்பாய்வு',
+      radius: 'சுற்றுப்பாதை ஆரை (r)',
+      freq: 'சைக்ளோட்ரான் அதிர்வெண் (f)',
+      period: 'சுற்றுப்பாதை அலைவுகாலம் (T)',
+      logData: 'பதிவைச் சேமி',
+      downloadPDF: 'PDF தரவிறக்கம்',
+      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      trialHistory: 'சோதனைப் பதிவுகள்',
+      clearLogs: 'அனைத்தையும் நீக்கு'
+    }
+  };
+
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  // Parameters
+  const [q, setQ] = useState(1.0); // charge multiplier (-2 to 2)
+  const [m, setM] = useState(1.0); // mass multiplier (0.5 to 3)
+  const [v, setV] = useState(4.0); // velocity (1 to 8)
+  const [B, setB] = useState(1.5); // magnetic field strength (0.5 to 3)
+  const [bDir, setBDir] = useState<'in' | 'out'>('in'); // direction of B
+  const [showVectors, setShowVectors] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  // Animation values
+  const [angle, setAngle] = useState(0);
+  const [labNotes, setLabNotes] = useState('');
+  const [loggedData, setLoggedData] = useState<any[]>([]);
+
+  // Physics calculations: r = (m * v) / (q * B)
+  const absQ = Math.abs(q);
+  const calculatedRadius = absQ > 0 && B > 0 ? (m * v) / (absQ * B) : 0;
+  // f = (q * B) / (2 * pi * m)
+  const frequency = absQ > 0 ? (absQ * B) / (2 * Math.PI * m) : 0;
+  const period = frequency > 0 ? 1 / frequency : 0;
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Loop update
+  useEffect(() => {
+    if (!isPlaying) return;
+    let lastTime = performance.now();
+    let frameId: number;
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.03, (now - lastTime) / 1000);
+      lastTime = now;
+
+      // Angular velocity omega = v / r = (q * B) / m
+      const omega = m > 0 ? (q * B) / m : 0;
+      // Direction swap based on B-field direction
+      const direction = bDir === 'in' ? 1 : -1;
+
+      setAngle((prev) => (prev + omega * direction * dt) % (2 * Math.PI));
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [isPlaying, q, m, B, bDir]);
+
+  // Render uniform field and orbiting particle
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = 540;
+    const height = 280;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Center of circle orbit path
+    const cX = width / 2;
+    const cY = height / 2;
+    const orbitRadiusPx = calculatedRadius * 35; // visual scaling
+
+    // 1. Draw Magnetic Field indicator background grid (dots or crosses)
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+    ctx.lineWidth = 1;
+    const gridSpacing = 40;
+    for (let x = 20; x < width; x += gridSpacing) {
+      for (let y = 20; y < height; y += gridSpacing) {
+        if (bDir === 'in') {
+          // Draw X (Into screen)
+          ctx.beginPath();
+          ctx.moveTo(x - 3, y - 3); ctx.lineTo(x + 3, y + 3);
+          ctx.moveTo(x + 3, y - 3); ctx.lineTo(x - 3, y + 3);
+          ctx.stroke();
+        } else {
+          // Draw Dot (Out of screen)
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+          ctx.beginPath();
+          ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+    }
+
+    if (q === 0) {
+      // Neutral particle travels in straight horizontal line
+      const lineY = cY;
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(20, lineY);
+      ctx.lineTo(width - 20, lineY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Particle position animate linearly
+      const tParam = (Math.sin(angle) + 1) / 2; // oscillates back and forth for screen boundary loops
+      const px = 40 + tParam * (width - 80);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, lineY, 10, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px font-sans';
+      ctx.textAlign = 'center';
+      ctx.fillText('0', px, lineY + 3.5);
+
+      if (showVectors) {
+        // Draw velocity vector pointing right
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(px, lineY);
+        ctx.lineTo(px + v * 8, lineY);
+        ctx.stroke();
+        // Arrowhead
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.moveTo(px + v * 8, lineY);
+        ctx.lineTo(px + v * 8 - 4, lineY - 3);
+        ctx.lineTo(px + v * 8 - 4, lineY + 3);
+        ctx.fill();
+      }
+      return;
+    }
+
+    // 2. Draw circular orbit path trace
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.25)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(cX, cY, orbitRadiusPx, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 3. Draw radius line from center to particle
+    const px = cX + orbitRadiusPx * Math.cos(angle);
+    const py = cY + orbitRadiusPx * Math.sin(angle);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cX, cY);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+
+    // Radius text label center-aligned
+    const labelX = (cX + px) / 2;
+    const labelY = (cY + py) / 2 - 5;
+    ctx.fillStyle = '#d97706';
+    ctx.font = 'bold 9px font-sans';
+    ctx.textAlign = 'center';
+    ctx.fillText(`r = ${calculatedRadius.toFixed(2)} m`, labelX, labelY);
+
+    // 4. Draw particle
+    ctx.fillStyle = q > 0 ? '#ef4444' : '#3b82f6';
+    ctx.strokeStyle = q > 0 ? '#b91c1c' : '#1d4ed8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(px, py, 11, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Sign label inside particle
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px font-sans';
+    ctx.textAlign = 'center';
+    ctx.fillText(q > 0 ? '+' : '-', px, py + 4);
+
+    // 5. Draw force & velocity vectors
+    if (showVectors) {
+      // Velocity vector (tangential: perpendicular to radial vector)
+      // radial vector direction: (cos(angle), sin(angle))
+      // tangential vector direction (swapping components): (-sin(angle), cos(angle)) or (sin(angle), -cos(angle))
+      // Swap direction based on positive/negative orbits
+      const omegaSign = Math.sign((q * B) * (bDir === 'in' ? 1 : -1));
+      const tx = -Math.sin(angle) * omegaSign;
+      const ty = Math.cos(angle) * omegaSign;
+
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px + tx * v * 7, py + ty * v * 7);
+      ctx.stroke();
+      // Arrowhead
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      const vxEnd = px + tx * v * 7;
+      const vyEnd = py + ty * v * 7;
+      ctx.moveTo(vxEnd, vyEnd);
+      ctx.lineTo(vxEnd - 5 * tx - 3 * ty, vyEnd - 5 * ty + 3 * tx);
+      ctx.lineTo(vxEnd - 5 * tx + 3 * ty, vyEnd - 5 * ty - 3 * tx);
+      ctx.fill();
+
+      // Lorentz Force vector pointing centerwards (inwards along the radial line)
+      const fx = -Math.cos(angle);
+      const fy = -Math.sin(angle);
+      const forceVal = absQ * v * B;
+
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px + fx * forceVal * 6, py + fy * forceVal * 6);
+      ctx.stroke();
+      // Arrowhead
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      const fxEnd = px + fx * forceVal * 6;
+      const fyEnd = py + fy * forceVal * 6;
+      ctx.moveTo(fxEnd, fyEnd);
+      ctx.lineTo(fxEnd - 5 * fx - 3 * fy, fyEnd - 5 * fy + 3 * fx);
+      ctx.lineTo(fxEnd - 5 * fx + 3 * fy, fyEnd - 5 * fy - 3 * fx);
+      ctx.fill();
+    }
+
+  }, [angle, q, m, v, B, bDir, calculatedRadius, showVectors]);
+
+  const handleReset = () => {
+    setAngle(0);
+  };
+
+  const handleLogDataPoint = () => {
+    const newPoint = {
+      trial: loggedData.length + 1,
+      charge: q,
+      mass: `${m} kg`,
+      velocity: `${v} m/s`,
+      bField: `${B} T (${bDir})`,
+      radius: `${calculatedRadius.toFixed(2)} m`
+    };
+    setLoggedData((prev) => [...prev, newPoint]);
+  };
+
+  const handleDownloadPDF = () => {
+    const reportParams = {
+      'Charge (q)': `${q} C`,
+      'Mass (m)': `${m} kg`,
+      'Velocity (v)': `${v} m/s`,
+      'Magnetic Field (B)': `${B} T`,
+      'Field Direction': bDir,
+      'Calculated Radius (r)': `${calculatedRadius.toFixed(2)} m`,
+      'Cyclotron Frequency (f)': `${frequency.toFixed(2)} Hz`
+    };
+    downloadReportAsPDF('Charged Particle in Magnetic Field Lab Report', reportParams, loggedData, labNotes);
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full">
+      {/* Parameters Sidebar */}
+      <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
+            {t.paramsTitle}
+          </h3>
+
+          {/* Charge slider */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-650">{t.charge}</span>
+              <span className={`font-mono font-bold ${q > 0 ? 'text-red-500' : q < 0 ? 'text-blue-500' : 'text-slate-500'}`}>
+                {q > 0 ? `+${q.toFixed(1)}` : q.toFixed(1)} C
+              </span>
+            </div>
+            <input
+              type="range" min="-2.0" max="2.0" step="0.5" value={q}
+              onChange={(e) => setQ(parseFloat(e.target.value))}
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Mass slider */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-650">{t.mass}</span>
+              <span className="text-slate-700 font-mono">{m.toFixed(1)} kg</span>
+            </div>
+            <input
+              type="range" min="0.5" max="3.0" step="0.1" value={m}
+              onChange={(e) => setM(parseFloat(e.target.value))}
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Velocity slider */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-650">{t.velocity}</span>
+              <span className="text-emerald-600 font-mono">{v.toFixed(1)} m/s</span>
+            </div>
+            <input
+              type="range" min="1.0" max="8.0" step="0.2" value={v}
+              onChange={(e) => setV(parseFloat(e.target.value))}
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Magnetic Field slider */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-slate-650">{t.bField}</span>
+              <span className="text-purple-650 font-mono">{B.toFixed(2)} T</span>
+            </div>
+            <input
+              type="range" min="0.5" max="3.0" step="0.1" value={B}
+              onChange={(e) => setB(parseFloat(e.target.value))}
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Magnetic Field Direction toggle */}
+          <div className="space-y-1 pt-1">
+            <label className="text-xs text-slate-500 font-bold block">{t.bDirection}</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setBDir('in')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  bDir === 'in' ? 'bg-slate-800 text-white shadow' : 'bg-slate-50 text-slate-650'
+                }`}
+              >
+                {t.intoScreen}
+              </button>
+              <button
+                onClick={() => setBDir('out')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  bDir === 'out' ? 'bg-slate-800 text-white shadow' : 'bg-slate-50 text-slate-650'
+                }`}
+              >
+                {t.outOfScreen}
+              </button>
+            </div>
+          </div>
+
+          {/* Vector Checkbox */}
+          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <input
+              type="checkbox" id="show-vectors-cp" checked={showVectors}
+              onChange={(e) => setShowVectors(e.target.checked)}
+              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
+            />
+            <label htmlFor="show-vectors-cp" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
+              {t.vectors}
+            </label>
+          </div>
+        </div>
+
+        {/* Theoretical Analysis Card */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
+            {t.theoryOutput}
+          </h3>
+          <div className="grid grid-cols-1 gap-2.5 text-xs">
+            <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
+              <span className="text-slate-500 block">{t.radius}</span>
+              <span className="font-extrabold text-slate-800 font-mono text-sm">
+                {q === 0 ? 'Infinite (Straight Path)' : `${calculatedRadius.toFixed(2)} m`}
+              </span>
+            </div>
+            <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
+              <span className="text-slate-500 block">{t.freq}</span>
+              <span className="font-extrabold text-slate-800 font-mono text-sm">{frequency.toFixed(2)} Hz</span>
+            </div>
+            <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
+              <span className="text-slate-500 block">{t.period}</span>
+              <span className="font-extrabold text-purple-600 font-mono text-sm">
+                {q === 0 ? 'N/A' : `${period.toFixed(2)} s`}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Visual Canvas and Lab Notes */}
+      <div className="lg:col-span-8 flex flex-col gap-4 h-full">
+        {/* Canvas viewports */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0 overflow-hidden relative">
+          <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center p-4">
+            <canvas ref={canvasRef} className="border border-slate-100 rounded-lg bg-slate-50/20" />
+          </div>
+
+          {/* Action buttons */}
+          <div className="border-t border-slate-100 p-4 bg-slate-50 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                {isPlaying ? t.pause : t.play}
+              </button>
+              <button
+                onClick={handleReset}
+                className="p-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full cursor-pointer shadow-sm transition-all"
+                title="Reset angle"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Observation log */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">
+          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
+            <ClipboardList className="w-4 h-4 text-blue-600" />
+            {t.labNotes}
+          </h3>
+
+          <textarea
+            value={labNotes}
+            onChange={(e) => setLabNotes(e.target.value)}
+            placeholder="Type your laboratory observations, findings, and notes here..."
+            className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
+          />
+
+          <div className="flex gap-2">
+            <button
+              onClick={handleLogDataPoint}
+              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
+            >
+              {t.logData}
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              {t.downloadPDF}
+            </button>
+            <button
+              onClick={() => setLoggedData([])}
+              disabled={loggedData.length === 0}
+              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              title="Clear logged trials"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

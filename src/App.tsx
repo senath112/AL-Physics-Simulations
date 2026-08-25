@@ -16,6 +16,7 @@ import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimul
 import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
 import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
 import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
+import { ChargedParticleMagneticSimulation } from './components/simulations/magnetism/ChargedParticleMagneticSimulation';
 import { DopplerEffectSimulation } from './components/simulations/waves/DopplerEffectSimulation';
 import { 
   Compass, 
@@ -30,7 +31,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -261,6 +262,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'parallel_currents',
+    },
+    {
+      id: 'charged_particle_magnetic',
+      title: 'Charged Particle in a Magnetic Field',
+      sinhalaTitle: "චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක්",
+      tamilTitle: "காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்",
+      unit: 'magnetism',
+      description: 'Simulate cyclotron circular motion, evaluate orbit radius, and observe velocity and force vectors.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'charged_particle_magnetic_sim',
     },
     {
       id: 'doppler_effect',
@@ -972,6 +984,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <ParallelCurrentsSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE CHARGED PARTICLE IN A MAGNETIC FIELD SIMULATION */}
+        {currentPage === 'charged_particle_magnetic_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක් • காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்</span>
+                <span className="text-slate-900 font-semibold text-sm">Charged Particle in a Magnetic Field</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <ChargedParticleMagneticSimulation lang={lang} />
             </div>
           </div>
         )}
