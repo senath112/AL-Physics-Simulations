@@ -31,6 +31,10 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       sourceFreq: 'Source Frequency (fₛ)',
       speedOfSound: 'Speed of Sound (v)',
       soundToggle: 'Audio Synthesizer Pitch Tone',
+      audioListener: 'Audio Focus / Listener',
+      listenerA: 'Observer 1 (Left)',
+      listenerB: 'Observer 2 (Right)',
+      listenerSource: 'Source',
       calculations: 'Doppler Frequency Computations',
       formula: "f' = fₛ (v ± vₒ) / (v ∓ vₛ)",
       observedLeft: 'Observed Frequency Left (fₗ)',
@@ -52,6 +56,10 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       sourceFreq: 'ප්‍රභවයේ සංඛ්‍යාතය (fₛ)',
       speedOfSound: 'ධ්වනි ප්‍රවේගය (v)',
       soundToggle: 'ශ්‍රව්‍ය සංඛ්‍යාත ස්වරය',
+      audioListener: 'ශ්‍රව්‍ය අවධානය / නිරීක්ෂකයා',
+      listenerA: 'නිරීක්ෂක 1 (වම)',
+      listenerB: 'නිරීක්ෂක 2 (දකුණ)',
+      listenerSource: 'ප්‍රභවය',
       calculations: 'ඩොප්ලර් සංඛ්‍යාත ගණනය කිරීම්',
       formula: "f' = fₛ (v ± vₒ) / (v ∓ vₛ)",
       observedLeft: 'වම් නිරීක්ෂකයාට ඇසෙන සංඛ්‍යාතය (fₗ)',
@@ -73,6 +81,10 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       sourceFreq: 'மூல அதிர்வெண் (fₛ)',
       speedOfSound: 'ஒலியின் வேகம் (v)',
       soundToggle: 'ஒலி அதிர்வெண் தொனி',
+      audioListener: 'ஒலி அமைவு / அவதானிப்பாளர்',
+      listenerA: 'அவதானிப்பாளர் 1 (இடது)',
+      listenerB: 'அவதானிப்பாளர் 2 (வலது)',
+      listenerSource: 'மூலம்',
       calculations: 'டாப்ளர் அதிர்வெண் கணிப்புகள்',
       formula: "f' = fₛ (v ± vₒ) / (v ∓ vₛ)",
       observedLeft: 'இடது அவதானிப்பாளர் அதிர்வெண் (fₗ)',
@@ -96,6 +108,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   const [sourceFreq, setSourceFreq] = useState<number>(400); // Hz
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState<boolean>(false);
+  const [audioListener, setAudioListener] = useState<'a' | 'b' | 'source'>('b');
   const [notes, setNotes] = useState<string>('');
   const [logs, setLogs] = useState<TrialLog[]>([]);
 
@@ -122,20 +135,14 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   // Doppler Calculations
   const observedFreqLeft = useMemo(() => {
-    // Left observer is behind the source if source moves right (+v_s)
-    // Left observer is in front if source moves left (-v_s)
-    // Source velocity sign defines motion direction.
-    // For simplicity, we assume source is moving towards the right (+v_s)
-    // Left observer: source is moving away: f' = f_s * (v - v_o) / (v + v_s)
     if (sourceSpeed >= speedOfSound) return 0;
-    const v_obs = observerSpeed; // observer A moving right (+v_o)
+    const v_obs = observerSpeed;
     return sourceFreq * ((speedOfSound - v_obs) / (speedOfSound + sourceSpeed));
   }, [sourceFreq, sourceSpeed, observerSpeed]);
 
   const observedFreqRight = useMemo(() => {
-    // Right observer: source is approaching: f' = f_s * (v + v_o) / (v - v_s)
     if (sourceSpeed >= speedOfSound) return Infinity;
-    const v_obs = observerSpeed; // observer B moving right
+    const v_obs = observerSpeed;
     return sourceFreq * ((speedOfSound + v_obs) / (speedOfSound - sourceSpeed));
   }, [sourceFreq, sourceSpeed, observerSpeed]);
 
@@ -186,22 +193,27 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     };
   }, [isAudioEnabled]);
 
-  // Update sound synthesizer pitch real-time
+  // Update sound synthesizer pitch real-time following active observer focus selection
   useEffect(() => {
     if (isAudioEnabled && oscillatorRef.current && audioCtxRef.current) {
-      // Synthesize average pitch shifting based on movement direction
-      const displayPitch = sourceSpeed >= speedOfSound ? 0 : observedFreqRight;
+      let displayPitch = sourceFreq;
+      if (audioListener === 'a') {
+        displayPitch = observedFreqLeft;
+      } else if (audioListener === 'b') {
+        displayPitch = sourceSpeed >= speedOfSound ? 0 : observedFreqRight;
+      }
       if (isFinite(displayPitch) && displayPitch > 0) {
         oscillatorRef.current.frequency.setValueAtTime(displayPitch, audioCtxRef.current.currentTime);
       }
     }
-  }, [observedFreqRight, sourceSpeed, isAudioEnabled]);
+  }, [observedFreqLeft, observedFreqRight, sourceFreq, sourceSpeed, isAudioEnabled, audioListener]);
 
   const handleReset = () => {
     setSourceSpeed(120);
     setObserverSpeed(0);
     setSourceFreq(400);
     setIsPlaying(true);
+    setAudioListener('b');
     setLogs([]);
     setNotes('');
     sourceXRef.current = 270;
@@ -283,6 +295,39 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       ctx.fillStyle = '#475569';
       ctx.beginPath(); ctx.arc(500, rectHeight / 2, 8, 0, 2 * Math.PI); ctx.fill();
       ctx.fillText('Obs B (Right)', 460, rectHeight / 2 - 15);
+
+      // Draw observer velocity arrows
+      if (observerSpeed !== 0) {
+        ctx.strokeStyle = '#10b981';
+        ctx.fillStyle = '#10b981';
+        ctx.lineWidth = 2;
+        const arrowLength = observerSpeed * 0.45; // scale arrow length
+
+        // Arrow for Obs A
+        ctx.beginPath();
+        ctx.moveTo(40, rectHeight / 2 + 15);
+        ctx.lineTo(40 + arrowLength, rectHeight / 2 + 15);
+        ctx.stroke();
+        // arrowhead
+        ctx.beginPath();
+        const dirA = Math.sign(observerSpeed);
+        ctx.moveTo(40 + arrowLength, rectHeight / 2 + 15);
+        ctx.lineTo(40 + arrowLength - 4 * dirA, rectHeight / 2 + 12);
+        ctx.lineTo(40 + arrowLength - 4 * dirA, rectHeight / 2 + 18);
+        ctx.fill();
+
+        // Arrow for Obs B
+        ctx.beginPath();
+        ctx.moveTo(500, rectHeight / 2 + 15);
+        ctx.lineTo(500 + arrowLength, rectHeight / 2 + 15);
+        ctx.stroke();
+        // arrowhead
+        ctx.beginPath();
+        ctx.moveTo(500 + arrowLength, rectHeight / 2 + 15);
+        ctx.lineTo(500 + arrowLength - 4 * dirA, rectHeight / 2 + 12);
+        ctx.lineTo(500 + arrowLength - 4 * dirA, rectHeight / 2 + 18);
+        ctx.fill();
+      }
 
       if (isPlaying) {
         // Move source to the right
@@ -434,6 +479,45 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
                 onChange={(e) => setSourceFreq(parseInt(e.target.value))}
                 className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
+            </div>
+
+            {/* Audio Listener Focus Selector */}
+            <div className="space-y-1.5 pt-2 border-t border-slate-100">
+              <label className="text-[10px] font-bold text-slate-405 uppercase tracking-wider block">
+                {t.audioListener}
+              </label>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setAudioListener('a')}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                    audioListener === 'a'
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.listenerA}
+                </button>
+                <button
+                  onClick={() => setAudioListener('b')}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                    audioListener === 'b'
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.listenerB}
+                </button>
+                <button
+                  onClick={() => setAudioListener('source')}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                    audioListener === 'source'
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {t.listenerSource}
+                </button>
+              </div>
             </div>
 
             {/* Synthesizer Pitch Audio button */}
