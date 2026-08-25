@@ -204,9 +204,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       ctx.fill();
     };
 
-    // Draw Cart 1 (Blue Train Box)
-    ctx.fillStyle = '#3b82f6';
-    ctx.strokeStyle = '#1d4ed8';
+    // Draw Cart 1 (Red Train Box)
+    ctx.fillStyle = '#ef4444';
+    ctx.strokeStyle = '#b91c1c';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.roundRect(x1 - cW / 2, 180 - cH, cW, cH, 4);
@@ -218,9 +218,11 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
     ctx.fillRect(x1 + cW / 2, 180 - cH + 10, 3, 6);
     ctx.fillRect(x1 - cW / 2 - 3, 180 - cH + 10, 3, 6);
 
-    // Pulley Wheels C1
-    drawPulleyWheel(x1 - 12, 180);
-    drawPulleyWheel(x1 + 12, 180);
+    // Pulley Wheels C1 - hide wheels after collision
+    if (!hasCollided) {
+      drawPulleyWheel(x1 - 12, 180);
+      drawPulleyWheel(x1 + 12, 180);
+    }
 
     // Draw Cart 2 (Green Train Box)
     ctx.fillStyle = '#10b981';
