@@ -202,16 +202,7 @@ function App() {
       status: 'active',
       pageLink: 'ohms_sim',
     },
-    {
-      id: 'doppler',
-      title: 'Doppler Effect',
-      sinhalaTitle: "ඩොප්ලර් ආචරණය",
-      tamilTitle: "டொப்ளர் விளைவு",
-      unit: 'waves',
-      description: 'Visualize progressive wavefront compressions and calculate frequency shifts for moving sound sources and observers.',
-      icon: Waves,
-      status: 'coming_soon',
-    },
+
     {
       id: 'gas_laws',
       title: 'Thermal Physics & Gas Laws',
