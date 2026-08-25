@@ -616,8 +616,10 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           px = sign * Math.sqrt(Math.max(0, currentRadius * currentRadius - py * py));
         } else {
           // Horizontal SHM: X component is displacement, Y component is velocity
-          px = Math.cos(phi) * currentRadius;
-          py = -Math.sin(phi) * currentRadius;
+          // Calculate px to exactly match the bob's physical horizontal displacement
+          px = visualL * Math.sin(state.displacement);
+          const sign = state.velocity >= 0 ? 1 : -1;
+          py = sign * Math.sqrt(Math.max(0, currentRadius * currentRadius - px * px));
         }
 
         // Draw Phasor line
