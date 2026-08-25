@@ -18,6 +18,7 @@ import { MagneticFieldWireSimulation } from './components/simulations/magnetism/
 import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
 import { ChargedParticleMagneticSimulation } from './components/simulations/magnetism/ChargedParticleMagneticSimulation';
 import { SolenoidSimulation } from './components/simulations/magnetism/SolenoidSimulation';
+import { ElectromagneticInductionSimulation } from './components/simulations/magnetism/ElectromagneticInductionSimulation';
 import { DopplerEffectSimulation } from './components/simulations/waves/DopplerEffectSimulation';
 import { 
   Compass, 
@@ -32,7 +33,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -285,6 +286,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'solenoid_sim',
+    },
+    {
+      id: 'induction',
+      title: 'Electromagnetic Induction',
+      sinhalaTitle: "විද්‍යුත් චුම්බක ප්‍රේරණය",
+      tamilTitle: "மின்காந்தத் தூண்டல்",
+      unit: 'magnetism',
+      description: 'Drag a bar magnet inside a coil of wire, visualize changes in magnetic flux, and measure the induced EMF on an interactive galvanometer.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'induction_sim',
     },
     {
       id: 'doppler_effect',
@@ -1042,6 +1054,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <SolenoidSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE ELECTROMAGNETIC INDUCTION SIMULATION */}
+        {currentPage === 'induction_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">විද්‍යුත් චුම්බක ප්‍රේරණය • மின்காந்தத் தூண்டல்</span>
+                <span className="text-slate-900 font-semibold text-sm">Electromagnetic Induction</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <ElectromagneticInductionSimulation lang={lang} />
             </div>
           </div>
         )}
