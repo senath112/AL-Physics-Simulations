@@ -127,7 +127,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
 
     if (gasMode === 'boyle') {
       // P vs V curve (hyperbola: P = constant / V)
-      const k = 0.08 * 0.0821 * 300; // nRT constant
+      const k = moleculesCount * temperature * 0.05; // Matching calculateGasState scaling
       for (let vVal = 1.0; vVal <= 7.0; vVal += 0.25) {
         xData.push(vVal);
         yData.push(k / vVal);
@@ -141,13 +141,14 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     } else if (gasMode === 'pressure') {
       // P vs T straight line (Gay-Lussac)
       const vConst = 4.0;
+      const slope = (moleculesCount * 0.05) / vConst;
       for (let tVal = 100; tVal <= 500; tVal += 20) {
         xData.push(tVal);
-        yData.push((0.08 * 0.0821 * tVal) / vConst);
+        yData.push(slope * tVal);
       }
     }
     return { x: xData, y: yData };
-  }, [gasMode]);
+  }, [gasMode, moleculesCount, temperature]);
 
   // Reset simulation variables
   const handleReset = () => {
