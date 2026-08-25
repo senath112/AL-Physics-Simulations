@@ -16,7 +16,8 @@ interface TrialLog {
   id: string;
   timestamp: string;
   sourceSpeed: number;
-  observerSpeed: number;
+  observerSpeedA: number;
+  observerSpeedB: number;
   sourceFreq: number;
   observedFreqLeft: number;
   observedFreqRight: number;
@@ -105,7 +106,8 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   // Parameters
   const [sourceSpeed, setSourceSpeed] = useState<number>(120); // m/s
-  const [observerSpeed, setObserverSpeed] = useState<number>(0); // m/s
+  const [observerSpeedA, setObserverSpeedA] = useState<number>(0); // m/s (Left observer)
+  const [observerSpeedB, setObserverSpeedB] = useState<number>(0); // m/s (Right observer)
   const [sourceFreq, setSourceFreq] = useState<number>(400); // Hz
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState<boolean>(false);
@@ -146,15 +148,19 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   // Doppler Calculations
   const observedFreqLeft = useMemo(() => {
     if (sourceSpeed >= speedOfSound) return 0;
-    const v_obs = observerSpeed;
-    return sourceFreq * ((speedOfSound - v_obs) / (speedOfSound + sourceSpeed));
-  }, [sourceFreq, sourceSpeed, observerSpeed]);
+    // For Observer A (Left): sound travels left (negative direction).
+    // If observer A moves right (towards source, positive velocity): relative speed of waves meeting observer increases.
+    // So observed frequency f_A = f_s * (c + v_oA) / (c + v_s)
+    return sourceFreq * ((speedOfSound + observerSpeedA) / (speedOfSound + sourceSpeed));
+  }, [sourceFreq, sourceSpeed, observerSpeedA]);
 
   const observedFreqRight = useMemo(() => {
     if (sourceSpeed >= speedOfSound) return Infinity;
-    const v_obs = observerSpeed;
-    return sourceFreq * ((speedOfSound + v_obs) / (speedOfSound - sourceSpeed));
-  }, [sourceFreq, sourceSpeed, observerSpeed]);
+    // For Observer B (Right): sound travels right (positive direction).
+    // If observer B moves right (away from source, positive velocity): relative speed of waves meeting observer decreases.
+    // So observed frequency f_B = f_s * (c - v_oB) / (c - v_s)
+    return sourceFreq * ((speedOfSound - observerSpeedB) / (speedOfSound - sourceSpeed));
+  }, [sourceFreq, sourceSpeed, observerSpeedB]);
 
   // Audio effects handling
   useEffect(() => {
@@ -220,7 +226,8 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   const handleReset = () => {
     setSourceSpeed(120);
-    setObserverSpeed(0);
+    setObserverSpeedA(0);
+    setObserverSpeedB(0);
     setSourceFreq(400);
     setIsPlaying(true);
     setAudioListener('b');
@@ -239,7 +246,8 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       id: Math.random().toString(36).substring(2, 9),
       timestamp,
       sourceSpeed,
-      observerSpeed,
+      observerSpeedA,
+      observerSpeedB,
       sourceFreq,
       observedFreqLeft: parseFloat(observedFreqLeft.toFixed(1)),
       observedFreqRight: sourceSpeed >= speedOfSound ? 9999 : parseFloat(observedFreqRight.toFixed(1))
@@ -253,7 +261,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       `Institution: Physics by Senath\n`,
       `Logged Observations:`,
       ...logs.map(log => 
-        `[${log.timestamp}] vₛ = ${log.sourceSpeed} m/s | vₒ = ${log.observerSpeed} m/s | fₛ = ${log.sourceFreq} Hz => f_Left: ${log.observedFreqLeft} Hz | f_Right: ${log.observedFreqRight === 9999 ? 'Sonic Boom' : `${log.observedFreqRight} Hz`}`
+        `[${log.timestamp}] vₛ = ${log.sourceSpeed} m/s | v_oA = ${log.observerSpeedA} m/s, v_oB = ${log.observerSpeedB} m/s | fₛ = ${log.sourceFreq} Hz => f_Left: ${log.observedFreqLeft} Hz | f_Right: ${log.observedFreqRight === 9999 ? 'Sonic Boom' : `${log.observedFreqRight} Hz`}`
       ),
       `\nLab Observations Journal:\n${notes || 'No observations logged.'}`
     ].join('\n');
@@ -329,35 +337,41 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       ctx.fillText('Obs B (Right)', 460, rectHeight / 2 - 15);
 
       // Draw observer velocity arrows
-      if (observerSpeed !== 0) {
+      // Draw Observer A velocity arrow
+      if (observerSpeedA !== 0) {
         ctx.strokeStyle = '#10b981';
         ctx.fillStyle = '#10b981';
         ctx.lineWidth = 2;
-        const arrowLength = observerSpeed * 0.45; // scale arrow length
-
-        // Arrow for Obs A
+        const arrowLength = observerSpeedA * 0.45;
         ctx.beginPath();
         ctx.moveTo(40, rectHeight / 2 + 15);
         ctx.lineTo(40 + arrowLength, rectHeight / 2 + 15);
         ctx.stroke();
-        // arrowhead
+
         ctx.beginPath();
-        const dirA = Math.sign(observerSpeed);
+        const dirA = Math.sign(observerSpeedA);
         ctx.moveTo(40 + arrowLength, rectHeight / 2 + 15);
         ctx.lineTo(40 + arrowLength - 4 * dirA, rectHeight / 2 + 12);
         ctx.lineTo(40 + arrowLength - 4 * dirA, rectHeight / 2 + 18);
         ctx.fill();
+      }
 
-        // Arrow for Obs B
+      // Draw Observer B velocity arrow
+      if (observerSpeedB !== 0) {
+        ctx.strokeStyle = '#10b981';
+        ctx.fillStyle = '#10b981';
+        ctx.lineWidth = 2;
+        const arrowLength = observerSpeedB * 0.45;
         ctx.beginPath();
         ctx.moveTo(500, rectHeight / 2 + 15);
         ctx.lineTo(500 + arrowLength, rectHeight / 2 + 15);
         ctx.stroke();
-        // arrowhead
+
         ctx.beginPath();
+        const dirB = Math.sign(observerSpeedB);
         ctx.moveTo(500 + arrowLength, rectHeight / 2 + 15);
-        ctx.lineTo(500 + arrowLength - 4 * dirA, rectHeight / 2 + 12);
-        ctx.lineTo(500 + arrowLength - 4 * dirA, rectHeight / 2 + 18);
+        ctx.lineTo(500 + arrowLength - 4 * dirB, rectHeight / 2 + 12);
+        ctx.lineTo(500 + arrowLength - 4 * dirB, rectHeight / 2 + 18);
         ctx.fill();
       }
 
@@ -444,7 +458,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [isPlaying, sourceSpeed, sourceFreq, machNumber, observerSpeed, observedFreqLeft, observedFreqRight]);
+  }, [isPlaying, sourceSpeed, sourceFreq, machNumber, observerSpeedA, observerSpeedB, observedFreqLeft, observedFreqRight]);
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
@@ -479,19 +493,36 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
               />
             </div>
 
-            {/* Observer speed */}
+            {/* Observer A speed */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
-                <span className="text-slate-600">{t.observerSpeed}</span>
-                <span className="text-slate-850 font-mono">{observerSpeed} m/s</span>
+                <span className="text-slate-650">{lang === 'en' ? 'Obs A Speed (Left)' : lang === 'si' ? 'නිරීක්ෂක A ප්‍රවේගය' : 'அவதானிப்பாளர் A வேகம்'}</span>
+                <span className="text-slate-850 font-mono">{observerSpeedA} m/s</span>
               </div>
               <input
                 type="range"
                 min="-100"
                 max="100"
                 step="5"
-                value={observerSpeed}
-                onChange={(e) => setObserverSpeed(parseInt(e.target.value))}
+                value={observerSpeedA}
+                onChange={(e) => setObserverSpeedA(parseInt(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            {/* Observer B speed */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-bold">
+                <span className="text-slate-650">{lang === 'en' ? 'Obs B Speed (Right)' : lang === 'si' ? 'නිරීක්ෂක B ප්‍රවේගය' : 'அவதானிப்பாளர் B வேகம்'}</span>
+                <span className="text-slate-850 font-mono">{observerSpeedB} m/s</span>
+              </div>
+              <input
+                type="range"
+                min="-100"
+                max="100"
+                step="5"
+                value={observerSpeedB}
+                onChange={(e) => setObserverSpeedB(parseInt(e.target.value))}
                 className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
             </div>
