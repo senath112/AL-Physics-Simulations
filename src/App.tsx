@@ -17,6 +17,7 @@ import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawS
 import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
 import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
 import { ChargedParticleMagneticSimulation } from './components/simulations/magnetism/ChargedParticleMagneticSimulation';
+import { SolenoidSimulation } from './components/simulations/magnetism/SolenoidSimulation';
 import { DopplerEffectSimulation } from './components/simulations/waves/DopplerEffectSimulation';
 import { 
   Compass, 
@@ -31,7 +32,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -273,6 +274,17 @@ function App() {
       icon: Zap,
       status: 'active',
       pageLink: 'charged_particle_magnetic_sim',
+    },
+    {
+      id: 'solenoid',
+      title: 'Magnetic Field of a Solenoid',
+      sinhalaTitle: "සොලෙනොයිඩයක චුම්බක ක්ෂේත්‍රය",
+      tamilTitle: "வரிச்சுருளின் காந்தப்புலம்",
+      unit: 'magnetism',
+      description: 'Visualize magnetic field lines inside and outside a solenoid coil, adjust turns and current polarity, and explore fields using an interactive draggable compass.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'solenoid_sim',
     },
     {
       id: 'doppler_effect',
@@ -1007,6 +1019,29 @@ function App() {
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               <ChargedParticleMagneticSimulation lang={lang} />
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE SOLENOID SIMULATION */}
+        {currentPage === 'solenoid_sim' && (
+          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
+            {/* Simulation Nav Header */}
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
+              <button 
+                onClick={() => setCurrentPage('sims')}
+                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+              >
+                ← Back to Directory
+              </button>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සොලෙනොයිඩයක චුම්බක ක්ෂේත්‍රය • வரிச்சுருளின் காந்தப்புலம்</span>
+                <span className="text-slate-900 font-semibold text-sm">Magnetic Field of a Solenoid</span>
+              </div>
+            </div>
+            {/* Load Simulator component */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <SolenoidSimulation lang={lang} />
             </div>
           </div>
         )}
