@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Sparkles, Download, Plus, Trash2, Volume2, VolumeX } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { BlockMath, InlineMath } from '../../Math';
+import { PlotlyGraph } from '../../PlotlyGraph';
 
 interface Wavefront {
   id: number;
@@ -112,6 +113,15 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   const [notes, setNotes] = useState<string>('');
   const [logs, setLogs] = useState<TrialLog[]>([]);
 
+  // History tracking for frequency vs time plots
+  const [history, setHistory] = useState<{ t: number[]; freqA: number[]; freqB: number[] }>({
+    t: [],
+    freqA: [],
+    freqB: []
+  });
+  const lastHistoryUpdateRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(performance.now());
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number | null>(null);
 
@@ -218,6 +228,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     setNotes('');
     sourceXRef.current = 270;
     wavefrontsRef.current = [];
+    setHistory({ t: [], freqA: [], freqB: [] });
+    startTimeRef.current = performance.now();
+    lastHistoryUpdateRef.current = 0;
   };
 
   const logReading = () => {
@@ -268,6 +281,25 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     const loop = (time: number) => {
       const dt = Math.min(0.04, (time - lastTime) / 1000);
       lastTime = time;
+
+      // Update graph history periodically
+      if (isPlaying) {
+        const nowMs = time;
+        if (nowMs - lastHistoryUpdateRef.current >= 120) {
+          setHistory(prev => {
+            const nextT = [...prev.t, parseFloat(((nowMs - startTimeRef.current) / 1000).toFixed(1))];
+            const nextA = [...prev.freqA, observedFreqLeft];
+            const nextB = [...prev.freqB, sourceSpeed >= speedOfSound ? 0 : observedFreqRight];
+            if (nextT.length > 50) {
+              nextT.shift();
+              nextA.shift();
+              nextB.shift();
+            }
+            return { t: nextT, freqA: nextA, freqB: nextB };
+          });
+          lastHistoryUpdateRef.current = nowMs;
+        }
+      }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
@@ -412,7 +444,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [isPlaying, sourceSpeed, sourceFreq, machNumber]);
+  }, [isPlaying, sourceSpeed, sourceFreq, machNumber, observerSpeed, observedFreqLeft, observedFreqRight]);
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
@@ -633,6 +665,45 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
               <p>
                 When the source speed reaches the speed of sound (<InlineMath math="v_s = v" />), wave crests merge on top of one another to produce a high-amplitude shock cone.
               </p>
+            </div>
+          </div>
+
+          {/* Observed Frequencies vs Time Real-Time Graph */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 mt-6">
+            <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
+              {lang === 'en' ? 'Observed Frequencies vs. Time' : lang === 'si' ? 'නිරීක්ෂිත සංඛ්‍යාතය සහ කාලය ප්‍රස්ථාරය' : 'அவதானிக்கப்பட்ட அதிர்வெண் vs நேரம்'}
+            </h4>
+            <div className="h-60">
+              <PlotlyGraph
+                data={[
+                  {
+                    x: history.t,
+                    y: history.freqA,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: lang === 'en' ? 'Observer A (Left)' : lang === 'si' ? 'නිරීක්ෂක A (වම)' : 'அவதானிப்பாளர் A (இடது)',
+                    line: { color: '#10b981', width: 2.5 }
+                  },
+                  {
+                    x: history.t,
+                    y: history.freqB,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: lang === 'en' ? 'Observer B (Right)' : lang === 'si' ? 'නිරීක්ෂක B (දකුණ)' : 'அவதானிப்பாளர் B (வலது)',
+                    line: { color: '#3b82f6', width: 2.5 }
+                  }
+                ]}
+                layout={{
+                  autosize: true,
+                  margin: { l: 40, r: 15, t: 10, b: 35 },
+                  xaxis: { title: { text: lang === 'en' ? 'Time (s)' : lang === 'si' ? 'කාලය (s)' : 'நேரம் (s)' }, gridcolor: '#f1f5f9' },
+                  yaxis: { title: { text: lang === 'en' ? 'Frequency (Hz)' : lang === 'si' ? 'සංඛ්‍යාතය (Hz)' : 'அதிர்வெண் (Hz)' }, gridcolor: '#f1f5f9' },
+                  plot_bgcolor: '#ffffff',
+                  paper_bgcolor: '#ffffff',
+                  legend: { orientation: 'h', y: -0.2 }
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+              />
             </div>
           </div>
         </div>
