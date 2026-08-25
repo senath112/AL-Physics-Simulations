@@ -29,7 +29,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       downloadPDF: 'Download PDF Report',
       labNotes: 'Observation Notebook',
       trialHistory: 'Observation History Log',
-      clearLogs: 'Clear Logs'
+      clearLogs: 'Clear Logs',
+      launchAngle: 'Launch Angle (θ)'
     },
     si: {
       title: 'චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක්',
@@ -56,7 +57,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       downloadPDF: 'PDF ලබාගන්න',
       labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
-      clearLogs: 'සියල්ල මකන්න'
+      clearLogs: 'සියල්ල මකන්න',
+      launchAngle: 'ප්‍රක්ෂේපණ කෝණය (θ)'
     },
     ta: {
       title: 'காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்',
@@ -83,7 +85,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       downloadPDF: 'PDF தரவிறக்கம்',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
       trialHistory: 'சோதனைப் பதிவுகள்',
-      clearLogs: 'அனைத்தையும் நீக்கு'
+      clearLogs: 'அனைத்தையும் நீக்கு',
+      launchAngle: 'ஏவுதல் கோணம் (θ)'
     }
   };
 
@@ -105,6 +108,7 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
   const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Projected Particle state variables
+  const [launchAngle, setLaunchAngle] = useState(0); // launch angle in degrees (-45 to 45)
   const [projX, setProjX] = useState(-10);
   const [projY, setProjY] = useState(140);
   const [projVx, setProjVx] = useState(v * 25);
@@ -119,10 +123,11 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const resetProjected = () => {
+    const angleRad = (launchAngle * Math.PI) / 180;
     setProjX(-10);
     setProjY(140);
-    setProjVx(v * 25);
-    setProjVy(0);
+    setProjVx(v * 25 * Math.cos(angleRad));
+    setProjVy(v * 25 * Math.sin(angleRad));
   };
 
   // Loop update
@@ -157,7 +162,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
                   const newVy = prevVy + ay * dt;
                   return newVy;
                 }
-                return prevVy;
+                const angleRad = (launchAngle * Math.PI) / 180;
+                return v * 25 * Math.sin(angleRad);
               });
 
               if (prevX >= 180) {
@@ -166,7 +172,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
                 const ax = m > 0 ? (q * Bz * projVy) / m * scaleFactor : 0;
                 return prevVx + ax * dt;
               }
-              return v * 25; // maintain speed before entry
+              const angleRad = (launchAngle * Math.PI) / 180;
+              return v * 25 * Math.cos(angleRad);
             });
 
             // update Y coordinate
@@ -190,14 +197,14 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
 
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, q, m, B, bDir, mode, projVx, projVy, v]);
+  }, [isPlaying, q, m, B, bDir, mode, projVx, projVy, v, launchAngle]);
 
   // Synchronize projectile parameters on launch speed sliders changes
   useEffect(() => {
     if (mode === 'projected') {
       resetProjected();
     }
-  }, [v, mode]);
+  }, [v, mode, launchAngle]);
 
   // Render uniform field and orbiting particle
   useEffect(() => {
@@ -526,6 +533,21 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
               className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
+
+          {/* Launch Angle slider (only visible in projected mode) */}
+          {mode === 'projected' && (
+            <div className="space-y-1.5 border-t border-slate-100 pt-2.5">
+              <div className="flex justify-between text-xs font-semibold">
+                <span className="text-slate-650">{t.launchAngle}</span>
+                <span className="text-indigo-600 font-mono">{launchAngle}°</span>
+              </div>
+              <input
+                type="range" min="-45" max="45" step="5" value={launchAngle}
+                onChange={(e) => setLaunchAngle(parseInt(e.target.value))}
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          )}
 
           {/* Magnetic Field slider */}
           <div className="space-y-1.5">
