@@ -94,6 +94,7 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
 
   // Parameters
   const [mode, setMode] = useState<'orbit' | 'projected'>('orbit');
+  const [fullField, setFullField] = useState(true);
   const [q, setQ] = useState(1.0); // charge multiplier (-2 to 2)
   const [m, setM] = useState(1.0); // mass multiplier (0.5 to 3)
   const [v, setV] = useState(4.0); // velocity (1 to 8)
@@ -124,7 +125,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
 
   const resetProjected = () => {
     const angleRad = (launchAngle * Math.PI) / 180;
-    setProjX(-10);
+    const startX = fullField ? 60 : -10;
+    setProjX(startX);
     setProjY(140);
     setProjVx(v * 25 * Math.cos(angleRad));
     setProjVy(v * 25 * Math.sin(angleRad));
@@ -150,12 +152,9 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
           setProjY((prevY) => {
             setProjVx((prevVx) => {
               setProjVy((prevVy) => {
-                // boundary line at X = 180
-                if (prevX >= 180) {
+                const inField = fullField || prevX >= 180;
+                if (inField) {
                   const Bz = bDir === 'in' ? -B : B;
-                  // Acceleration a = q/m * (v x B)
-                  // ax = qBz/m * vy
-                  // ay = -qBz/m * vx
                   const scaleFactor = 35; // visual alignment multiplier
                   const ay = m > 0 ? -(q * Bz * prevVx) / m * scaleFactor : 0;
 
@@ -166,7 +165,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
                 return v * 25 * Math.sin(angleRad);
               });
 
-              if (prevX >= 180) {
+              const inField = fullField || prevX >= 180;
+              if (inField) {
                 const Bz = bDir === 'in' ? -B : B;
                 const scaleFactor = 35;
                 const ax = m > 0 ? (q * Bz * projVy) / m * scaleFactor : 0;
@@ -186,7 +186,7 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
           if (newX > 550 || newX < -20) {
             // Loop projectile back to start
             resetProjected();
-            return -10;
+            return fullField ? 60 : -10;
           }
           return newX;
         });
@@ -197,14 +197,14 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
 
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, q, m, B, bDir, mode, projVx, projVy, v, launchAngle]);
+  }, [isPlaying, q, m, B, bDir, mode, projVx, projVy, v, launchAngle, fullField]);
 
   // Synchronize projectile parameters on launch speed sliders changes
   useEffect(() => {
     if (mode === 'projected') {
       resetProjected();
     }
-  }, [v, mode, launchAngle]);
+  }, [v, mode, launchAngle, fullField]);
 
   // Render uniform field and orbiting particle
   useEffect(() => {
@@ -236,8 +236,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
     ctx.lineWidth = 1;
     const gridSpacing = 40;
     for (let x = 20; x < width; x += gridSpacing) {
-      // In projected mode, B-field only occupies X >= 180
-      if (mode === 'projected' && x < boundaryX) continue;
+      // In projected mode, B-field only occupies X >= 180 if fullField is false
+      if (mode === 'projected' && !fullField && x < boundaryX) continue;
 
       for (let y = 20; y < height; y += gridSpacing) {
         if (bDir === 'in') {
@@ -256,8 +256,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       }
     }
 
-    // Draw boundary line in projected mode
-    if (mode === 'projected') {
+    // Draw boundary line in projected mode if not fullField
+    if (mode === 'projected' && !fullField) {
       ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]);
@@ -429,7 +429,7 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
         }
       }
     }
-  }, [angle, q, m, v, B, bDir, calculatedRadius, showVectors, mode, projX, projY, projVx, projVy]);
+  }, [angle, q, m, v, B, bDir, calculatedRadius, showVectors, mode, projX, projY, projVx, projVy, fullField, launchAngle]);
 
   const handleReset = () => {
     setAngle(0);
@@ -492,6 +492,37 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
               </button>
             </div>
           </div>
+
+          {/* Field Boundary Coverage Toggle (only visible in projected mode) */}
+          {mode === 'projected' && (
+            <div className="space-y-1 pt-1.5 border-t border-slate-100">
+              <label className="text-xs text-slate-500 font-bold block">
+                {lang === 'en' ? 'Field Boundary' : lang === 'si' ? 'චුම්බක ක්ෂේත්‍රයේ සීමාව' : 'காந்தப்புல எல்லை'}
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFullField(true)}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                    fullField
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-250 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {lang === 'en' ? 'Full Canvas (Inside Field)' : lang === 'si' ? 'සම්පූර්ණ ක්ෂේත්‍රය' : 'முழு காந்தப்புலம்'}
+                </button>
+                <button
+                  onClick={() => setFullField(false)}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                    !fullField
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-250 text-slate-650 hover:bg-slate-50'
+                  }`}
+                >
+                  {lang === 'en' ? 'Right-Half (Boundary entry)' : lang === 'si' ? 'දකුණු අර්ධය' : 'வலது பாதி மட்டும்'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Charge slider */}
           <div className="space-y-1.5 border-t border-slate-100 pt-3">
