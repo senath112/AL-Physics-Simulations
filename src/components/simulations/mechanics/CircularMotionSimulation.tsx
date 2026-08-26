@@ -27,7 +27,8 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       downloadPDF: 'Download PDF Report',
       labNotes: 'Observation Notebook',
       trialHistory: 'Observation History Log',
-      clearLogs: 'Clear Logs'
+      clearLogs: 'Clear Logs',
+      slackWarning: 'String Slack! Simulation stopped.'
     },
     si: {
       title: 'වෘත්ත චලිත සිමියුලේටරය',
@@ -52,7 +53,8 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       downloadPDF: 'PDF ලබාගන්න',
       labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
-      clearLogs: 'සියල්ල මකන්න'
+      clearLogs: 'සියල්ල මකන්න',
+      slackWarning: 'තන්තුව බුරුල් විය! සිමියුලේෂනය නතර කරන ලදී.'
     },
     ta: {
       title: 'வட்ட இயக்கம் சிமுலேட்டர்',
@@ -77,7 +79,8 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       downloadPDF: 'PDF தரவிறக்கம்',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
       trialHistory: 'சோதனைப் பதிவுகள்',
-      clearLogs: 'அனைத்தையும் நீக்கு'
+      clearLogs: 'அனைத்தையும் நீக்கு',
+      slackWarning: 'கயிறு தளர்ந்தது! உருவகப்படுத்துதல் நிறுத்தப்பட்டது.'
     }
   };
 
@@ -93,8 +96,11 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
   const [isPlaying, setIsPlaying] = useState(true);
 
   const [angle, setAngle] = useState(0); // rotation angle in radians
+  const [isSlack, setIsSlack] = useState(false);
   const [labNotes, setLabNotes] = useState('');
   const [loggedData, setLoggedData] = useState<any[]>([]);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Physics Calculations
   const omega = r > 0 ? v / r : 0;
@@ -105,9 +111,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
   const tensionTop = r > 0 ? (m * v * v) / r - m * g : 0;
   const tensionBottom = r > 0 ? (m * v * v) / r + m * g : 0;
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Animation frame loop
+  // Animation frame loop with slack string checking
   useEffect(() => {
     if (!isPlaying) return;
     let lastTime = performance.now();
@@ -117,13 +121,24 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       const dt = Math.min(0.03, (now - lastTime) / 1000);
       lastTime = now;
 
-      setAngle((prev) => (prev + omega * dt) % (2 * Math.PI));
+      setAngle((prev) => {
+        const nextAngle = (prev + omega * dt) % (2 * Math.PI);
+        if (mode === 'vertical') {
+          const currentTension = (m * v * v) / r + m * g * Math.cos(nextAngle);
+          if (currentTension <= 0) {
+            setIsPlaying(false);
+            setIsSlack(true);
+            return nextAngle;
+          }
+        }
+        return nextAngle;
+      });
       frameId = requestAnimationFrame(tick);
     };
 
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, omega]);
+  }, [isPlaying, omega, mode, m, v, r, g]);
 
   // Render circular path
   useEffect(() => {
@@ -168,25 +183,53 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
     const pX = cX + radiusPx * Math.cos(renderAngle);
     const pY = cY + radiusPx * Math.sin(renderAngle);
 
-    // Draw connecting string line
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(cX, cY);
-    ctx.lineTo(pX, pY);
-    ctx.stroke();
+    // Draw connecting string line (loose if slack)
+    if (isSlack) {
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cX, cY);
+      // Quadratic curve downwards to simulate sag
+      const controlX = (cX + pX) / 2;
+      const controlY = Math.max(cY, pY) + 20;
+      ctx.quadraticCurveTo(controlX, controlY, pX, pY);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cX, cY);
+      ctx.lineTo(pX, pY);
+      ctx.stroke();
+    }
 
     // Draw Whirling Mass
-    ctx.fillStyle = mode === 'horizontal' ? '#3b82f6' : '#a855f7';
-    ctx.strokeStyle = mode === 'horizontal' ? '#1d4ed8' : '#7e22ce';
+    ctx.fillStyle = mode === 'horizontal' ? '#3b82f6' : (isSlack ? '#f43f5e' : '#a855f7');
+    ctx.strokeStyle = mode === 'horizontal' ? '#1d4ed8' : (isSlack ? '#be123c' : '#7e22ce');
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(pX, pY, 12, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
 
+    // Draw slack warning overlay
+    if (isSlack) {
+      ctx.fillStyle = 'rgba(254, 226, 226, 0.9)';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(cX - 130, 20, 260, 28, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#b91c1c';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.slackWarning, cX, 37);
+    }
+
     // Draw vector arrows
-    if (showVectors) {
+    if (showVectors && !isSlack) {
       const vScale = 1.2;
 
       // 1. Centripetal Force or String Tension (pointing towards center cX, cY)
@@ -236,10 +279,15 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
         ctx.fill();
       }
     }
-  }, [angle, r, mode, m, v, g, showVectors, fc]);
+  }, [angle, r, mode, m, v, g, showVectors, fc, isSlack]);
 
   const handleReset = () => {
     setAngle(0);
+    setIsSlack(false);
+  };
+
+  const handleParamChange = () => {
+    setIsSlack(false);
   };
 
   const handleLogDataPoint = () => {
@@ -279,7 +327,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             <label className="text-xs text-slate-500 font-bold block">{t.mode}</label>
             <div className="flex gap-2">
               <button
-                onClick={() => setMode('horizontal')}
+                onClick={() => { setMode('horizontal'); handleParamChange(); }}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   mode === 'horizontal' ? 'bg-blue-600 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
@@ -287,7 +335,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
                 {t.modeHorizontal}
               </button>
               <button
-                onClick={() => setMode('vertical')}
+                onClick={() => { setMode('vertical'); handleParamChange(); }}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   mode === 'vertical' ? 'bg-purple-600 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
@@ -305,7 +353,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             </div>
             <input
               type="range" min="0.5" max="8.0" step="0.1" value={m}
-              onChange={(e) => setM(parseFloat(e.target.value))}
+              onChange={(e) => { setM(parseFloat(e.target.value)); handleParamChange(); }}
               className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -318,7 +366,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             </div>
             <input
               type="range" min="0.5" max="2.0" step="0.05" value={r}
-              onChange={(e) => { setR(parseFloat(e.target.value)); handleReset(); }}
+              onChange={(e) => { setR(parseFloat(e.target.value)); handleReset(); handleParamChange(); }}
               className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -331,7 +379,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             </div>
             <input
               type="range" min="1.0" max="10.0" step="0.1" value={v}
-              onChange={(e) => setV(parseFloat(e.target.value))}
+              onChange={(e) => { setV(parseFloat(e.target.value)); handleParamChange(); }}
               className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -344,7 +392,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             </div>
             <input
               type="range" min="0" max="20" step="0.1" value={g}
-              onChange={(e) => setG(parseFloat(e.target.value))}
+              onChange={(e) => { setG(parseFloat(e.target.value)); handleParamChange(); }}
               className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -410,7 +458,10 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
           <div className="border-t border-slate-100 p-4 bg-slate-50 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => {
+                  if (isSlack) handleReset();
+                  setIsPlaying(!isPlaying);
+                }}
                 className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
               >
                 {isPlaying ? t.pause : t.play}
