@@ -96,10 +96,26 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
   const [heights, setHeights] = useState<number[]>(getDefaultTrack);
 
+  // Precompute segment lengths and cumulative arc lengths for coordinate mapping
+  const computeArcLengths = (trackHeights: number[]) => {
+    const s = [0];
+    let total = 0;
+    for (let i = 1; i <= 100; i++) {
+      const dx = trackLength / 100;
+      const dy = trackHeights[i] - trackHeights[i - 1];
+      const ds = Math.sqrt(dx * dx + dy * dy);
+      total += ds;
+      s.push(total);
+    }
+    return { s, total };
+  };
+
+  const { s: sCoords, total: sMax } = computeArcLengths(heights);
+
   // Simulation physical coordinates along track
-  const [xPos, setXPos] = useState(0); // horizontal displacement (meters)
-  const [vel, setVel] = useState(0); // velocity along the slope (m/s)
-  const [thermalE, setThermalE] = useState(0); // lost mechanical energy (J)
+  const [sPos, setSPos] = useState(0); // displacement along cumulative arc length (meters)
+  const [vel, setVel] = useState(0); // tangential velocity (m/s)
+  const [thermalE, setThermalE] = useState(0); // lost energy due to friction work (J)
 
   const [labNotes, setLabNotes] = useState('');
   const [loggedData, setLoggedData] = useState<any[]>([]);
@@ -108,73 +124,107 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lastDrawnIndexRef = useRef<number | null>(null);
 
+  // Helper to map s (arc length) to (x, y) coordinates and slope angle (theta)
+  const getCoordinatesAtArcLength = (s: number) => {
+    const targetS = Math.max(0, Math.min(sMax, s));
+    let i = 0;
+    while (i < 100 && sCoords[i + 1] < targetS) {
+      i++;
+    }
+    const sStart = sCoords[i];
+    const sEnd = sCoords[i + 1];
+    const segmentDs = sEnd - sStart;
+    const fraction = segmentDs > 0 ? (targetS - sStart) / segmentDs : 0;
+
+    const x = (i + fraction) * (trackLength / 100);
+    const y = heights[i] * (1 - fraction) + heights[i + 1] * fraction;
+
+    const dx = trackLength / 100;
+    const dy = heights[i + 1] - heights[i];
+    const theta = Math.atan2(dy, dx);
+
+    return { x, y, theta };
+  };
+
   // Derived initial height
   const h0 = heights[0];
 
-  // Physics loop values
-  const idx = Math.max(0, Math.min(100, (xPos / trackLength) * 100));
-  const idxInt = Math.floor(idx);
-  const idxNext = Math.min(100, idxInt + 1);
-  const fraction = idx - idxInt;
-  const currentHeight = heights[idxInt] * (1 - fraction) + (heights[idxNext] || 0) * fraction;
-  
+  // Derived coordinates
+  const { x: currentX, y: currentHeight, theta: currentTheta } = getCoordinatesAtArcLength(sPos);
+
+  // Energy terms (Perfect energy conservation solver)
   const potentialE = m * g * currentHeight;
-  const totalE = m * g * h0; // initial energy
+  const totalE = m * g * h0; // initial total energy at x=0
   const kineticE = Math.max(0, totalE - potentialE - thermalE);
 
-  // Physics animation tick
+  // Physics animation tick using symplectic-like energy correction
   useEffect(() => {
     if (!isPlaying) return;
     let lastTime = performance.now();
     let frameId: number;
 
     const tick = (now: number) => {
-      const dt = Math.min(0.02, (now - lastTime) / 1000);
+      const dt = Math.min(0.016, (now - lastTime) / 1000);
       lastTime = now;
 
-      setXPos((prevX) => {
-        const idx = Math.max(0, Math.min(100, (prevX / trackLength) * 100));
-        const idxInt = Math.floor(idx);
-        const idxNext = Math.min(100, idxInt + 1);
-        const slope = (heights[idxNext] - heights[idxInt]) / (trackLength / 100);
-        const theta = Math.atan(slope);
+      setSPos((prevS) => {
+        const { theta } = getCoordinatesAtArcLength(prevS);
 
-        // forces along slope
+        // Forces along track
         const gravityComponent = -g * Math.sin(theta);
         const normalForce = m * g * Math.cos(theta);
         const frictionForce = mu * normalForce;
 
         // Friction opposes current velocity direction
         const frictionDirection = vel > 0.01 ? 1 : (vel < -0.01 ? -1 : 0);
-        const netForceAlongSlope = m * gravityComponent - frictionDirection * frictionForce;
-        const acceleration = netForceAlongSlope / m;
+        const netForce = m * gravityComponent - frictionDirection * frictionForce;
+        const acceleration = netForce / m;
 
+        // Forward integration candidate
         let newVel = vel + acceleration * dt;
-        
-        // Stop the block if velocity is tiny and gravity cannot overcome static friction
-        if (Math.abs(newVel) < 0.05 && frictionForce >= Math.abs(m * gravityComponent)) {
-          newVel = 0;
-        }
-        
-        setVel(newVel);
-
         const ds = newVel * dt;
-        const dx = ds * Math.cos(theta);
+        const nextS = prevS + ds;
 
-        // energy loss due to friction work: W = f * ds
+        // Compute potential and thermal losses at candidate position
+        const { y: nextY } = getCoordinatesAtArcLength(nextS);
+        const nextPE = m * g * nextY;
+        const nextThermal = thermalE + frictionForce * Math.abs(ds);
+        
+        const remainingEnergy = totalE - nextPE - nextThermal;
+
+        if (remainingEnergy <= 0) {
+          // Insufficient energy to proceed up the slope/hill
+          if (Math.abs(gravityComponent) > frictionForce / m) {
+            // Gravity exceeds friction: turn around
+            newVel = -newVel * 0.1; // minor bounce, direction switches
+            setVel(newVel);
+          } else {
+            // Trapped by friction: stop
+            newVel = 0;
+            setVel(0);
+            setIsPlaying(false);
+          }
+        } else {
+          // Clamp magnitude based on exact energy conservation (resolves drift completely)
+          const speed = Math.sqrt((2 * remainingEnergy) / m);
+          newVel = newVel >= 0 ? speed : -speed;
+          setVel(newVel);
+        }
+
+        // Apply friction dissipation
         setThermalE((prevLoss) => prevLoss + frictionForce * Math.abs(ds));
 
-        const nextX = prevX + dx;
-        if (nextX <= 0) {
+        // Limit block position to path limits
+        if (nextS <= 0) {
           setVel(0);
           return 0;
         }
-        if (nextX >= trackLength) {
+        if (nextS >= sMax) {
           setVel(0);
           setIsPlaying(false);
-          return trackLength;
+          return sMax;
         }
-        return nextX;
+        return nextS;
       });
 
       frameId = requestAnimationFrame(tick);
@@ -182,7 +232,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, vel, m, heights, mu, g]);
+  }, [isPlaying, vel, m, heights, mu, g, sMax, thermalE]);
 
   // Render track & block
   useEffect(() => {
@@ -226,20 +276,13 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     ctx.stroke();
 
     // Draw sliding Block
-    const blockX = (xPos / trackLength) * chartW;
+    const blockX = (currentX / trackLength) * chartW;
     const screenBlockX = margin.left + blockX;
     const screenBlockY = margin.top + chartH - (currentHeight / 4) * chartH;
 
-    // slope angle for rotation
-    const blockIdx = Math.max(0, Math.min(100, (xPos / trackLength) * 100));
-    const blockIdxInt = Math.floor(blockIdx);
-    const blockIdxNext = Math.min(100, blockIdxInt + 1);
-    const slope = (heights[blockIdxNext] - heights[blockIdxInt]) / (trackLength / 100);
-    const theta = Math.atan(slope);
-
     ctx.save();
     ctx.translate(screenBlockX, screenBlockY);
-    ctx.rotate(theta);
+    ctx.rotate(currentTheta);
 
     ctx.fillStyle = '#ef4444';
     ctx.strokeStyle = '#b91c1c';
@@ -256,11 +299,11 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     ctx.font = '9px monospace';
     ctx.fillText('0m', margin.left - 10, margin.top + chartH + 15);
     ctx.fillText('10m', margin.left + chartW - 10, margin.top + chartH + 15);
-  }, [heights, xPos, currentHeight]);
+  }, [heights, currentX, currentHeight, currentTheta]);
 
   const handleReset = () => {
     setIsPlaying(false);
-    setXPos(0);
+    setSPos(0);
     setVel(0);
     setThermalE(0);
   };
@@ -273,7 +316,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
   const handleLogDataPoint = () => {
     const newPoint = {
       trial: loggedData.length + 1,
-      x: `${xPos.toFixed(2)} m`,
+      x: `${currentX.toFixed(2)} m`,
       pe: `${potentialE.toFixed(2)} J`,
       ke: `${kineticE.toFixed(2)} J`,
       loss: `${thermalE.toFixed(2)} J`
