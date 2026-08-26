@@ -1446,68 +1446,7 @@ function App() {
           </div>
         )}
 
-        {/* ACTIVE WORK ENERGY SIMULATION */}
-        {currentPage === 'energy_sim' && (
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
-                <span>&gt;</span>
-                <span className="text-slate-900 font-semibold">Work, Energy & Power</span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කාර්යය, ශක්තිය සහ බලය • வேலை, ஆற்றல் & வலு</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingFallback />}>
-                  <WorkEnergySimulation lang={lang} />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-          </div>
-        )}
 
-        {/* ACTIVE CENTRE OF MASS SIMULATION */}
-        {currentPage === 'centre_mass_sim' && (
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
-                <span>&gt;</span>
-                <span className="text-slate-900 font-semibold">Centre of Mass</span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්ව කේන්ද්‍රය • திணிவு மையம்</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingFallback />}>
-                  <CentreOfMassSimulation lang={lang} />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-          </div>
-        )}
-
-        {/* ACTIVE GRAVITY ORBITS SIMULATION */}
-        {currentPage === 'orbits_sim' && (
-          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
-                <span>&gt;</span>
-                <span className="text-slate-900 font-semibold">Gravitational Fields & Orbits</span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර සහ කක්ෂ • ஈர்ப்புப்புலமும் சுற்றுப்பாதையும்</span>
-            </div>
-            <div className="flex-1 min-h-0">
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingFallback />}>
-                  <GravityOrbitsSimulation lang={lang} />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-          </div>
-        )}
 
         {/* TERMS AND CONDITIONS PAGE */}
         {currentPage === 'terms' && (
