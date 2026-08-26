@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList, Trash2, FileDown, Undo } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 
 export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -13,7 +13,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       gravity: 'Gravity (g)',
       play: 'Play',
       pause: 'Pause',
-      reset: 'Reset',
+      reset: 'Reset Block',
+      resetTrack: 'Default Track',
       theoryOutput: 'Real-time Energy Spectrum',
       pe: 'Potential Energy (Ep)',
       ke: 'Kinetic Energy (Ek)',
@@ -23,7 +24,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       downloadPDF: 'Download PDF Report',
       labNotes: 'Observation Notebook',
       trialHistory: 'Observation History Log',
-      clearLogs: 'Clear Logs'
+      clearLogs: 'Clear Logs',
+      drawInstruction: 'Click & Drag on the canvas to draw a custom track shape!'
     },
     si: {
       title: 'ශක්ති සංරක්ෂණ විද්‍යාගාරය',
@@ -34,7 +36,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       gravity: 'ගුරුත්වාකර්ෂණය (g)',
       play: 'ධාවනය කරන්න',
       pause: 'නවත්වා තබන්න',
-      reset: 'නැවත මුලට',
+      reset: 'මුලට (අංශුව)',
+      resetTrack: 'පෙරනිමි මඟ',
       theoryOutput: 'තත්කාලීන ශක්ති ව්‍යාප්තිය',
       pe: 'විභව ශක්තිය (Ep)',
       ke: 'චාලක ශක්තිය (Ek)',
@@ -44,7 +47,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       downloadPDF: 'PDF ලබාගන්න',
       labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
-      clearLogs: 'සියල්ල මකන්න'
+      clearLogs: 'සියල්ල මකන්න',
+      drawInstruction: 'කැන්වසය මත ක්ලික් කර ඇදීමෙන් රිසි පරිදි මඟක් අඳින්න!'
     },
     ta: {
       title: 'ஆற்றல் காப்பு விதிகளின் ஆய்வகம்',
@@ -56,6 +60,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       play: 'இயக்கு',
       pause: 'நிறுத்து',
       reset: 'மீட்டமை',
+      resetTrack: 'இயல்புப் பாதை',
       theoryOutput: 'ஆற்றல் பரவல் பகுப்பாய்வு',
       pe: 'அழுத்த ஆற்றல் (Ep)',
       ke: 'இயக்க ஆற்றல் (Ek)',
@@ -65,7 +70,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       downloadPDF: 'PDF தரவிறக்கம்',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
       trialHistory: 'சோதனைப் பதிவுகள்',
-      clearLogs: 'அனைத்தையும் நீக்கு'
+      clearLogs: 'அனைத்தையும் நீக்கு',
+      drawInstruction: 'வரைவிடத்தில் கிளிக் செய்து இழுப்பதன் மூலம் தனிப்பயன் பாதையை வரையவும்!'
     }
   };
 
@@ -73,29 +79,48 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
   // Parameters state
   const [m, setM] = useState(2.0); // kg
-  const [h0, setH0] = useState(3.0); // meters
   const [mu, setMu] = useState(0.05); // friction coefficient
   const [g, setG] = useState(9.8); // m/s2
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Simulation physical coordinates along track
-  // Parabolic track shape: y(x) = h0 * (1 - x / L)^2
+  // Track heights (101 points from x=0 to x=10)
   const trackLength = 10; // meters
+  const getDefaultTrack = () => {
+    const arr = [];
+    for (let i = 0; i <= 100; i++) {
+      const x = (i / 100) * trackLength;
+      arr.push(3.0 * Math.pow(1 - x / trackLength, 2)); // default parabola starting at y=3m
+    }
+    return arr;
+  };
+
+  const [heights, setHeights] = useState<number[]>(getDefaultTrack);
+
+  // Simulation physical coordinates along track
   const [xPos, setXPos] = useState(0); // horizontal displacement (meters)
-  const [vel, setVel] = useState(0); // tangential velocity (m/s)
+  const [vel, setVel] = useState(0); // velocity along the slope (m/s)
   const [thermalE, setThermalE] = useState(0); // lost mechanical energy (J)
 
   const [labNotes, setLabNotes] = useState('');
   const [loggedData, setLoggedData] = useState<any[]>([]);
-
-  // Physics loop values
-  const currentHeight = h0 * Math.pow(1 - xPos / trackLength, 2);
-  const potentialE = m * g * currentHeight;
-  const totalE = m * g * h0; // initial energy
-
-  const kineticE = Math.max(0, totalE - potentialE - thermalE);
+  const [isDrawing, setIsDrawing] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const lastDrawnIndexRef = useRef<number | null>(null);
+
+  // Derived initial height
+  const h0 = heights[0];
+
+  // Physics loop values
+  const idx = Math.max(0, Math.min(100, (xPos / trackLength) * 100));
+  const idxInt = Math.floor(idx);
+  const idxNext = Math.min(100, idxInt + 1);
+  const fraction = idx - idxInt;
+  const currentHeight = heights[idxInt] * (1 - fraction) + (heights[idxNext] || 0) * fraction;
+  
+  const potentialE = m * g * currentHeight;
+  const totalE = m * g * h0; // initial energy
+  const kineticE = Math.max(0, totalE - potentialE - thermalE);
 
   // Physics animation tick
   useEffect(() => {
@@ -104,17 +129,14 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     let frameId: number;
 
     const tick = (now: number) => {
-      const dt = Math.min(0.03, (now - lastTime) / 1000);
+      const dt = Math.min(0.02, (now - lastTime) / 1000);
       lastTime = now;
 
       setXPos((prevX) => {
-        if (prevX >= trackLength - 0.1) {
-          setIsPlaying(false);
-          return trackLength;
-        }
-
-        // slope dy/dx = -2 * h0 / L * (1 - x / L)
-        const slope = (-2 * h0 / trackLength) * (1 - prevX / trackLength);
+        const idx = Math.max(0, Math.min(100, (prevX / trackLength) * 100));
+        const idxInt = Math.floor(idx);
+        const idxNext = Math.min(100, idxInt + 1);
+        const slope = (heights[idxNext] - heights[idxInt]) / (trackLength / 100);
         const theta = Math.atan(slope);
 
         // forces along slope
@@ -122,21 +144,37 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         const normalForce = m * g * Math.cos(theta);
         const frictionForce = mu * normalForce;
 
-        // net acceleration
-        const netForceAlongSlope = m * gravityComponent - frictionForce;
+        // Friction opposes current velocity direction
+        const frictionDirection = vel > 0.01 ? 1 : (vel < -0.01 ? -1 : 0);
+        const netForceAlongSlope = m * gravityComponent - frictionDirection * frictionForce;
         const acceleration = netForceAlongSlope / m;
 
-        const newVel = vel + acceleration * dt;
+        let newVel = vel + acceleration * dt;
+        
+        // Stop the block if velocity is tiny and gravity cannot overcome static friction
+        if (Math.abs(newVel) < 0.05 && frictionForce >= Math.abs(m * gravityComponent)) {
+          newVel = 0;
+        }
+        
         setVel(newVel);
 
-        // update position
         const ds = newVel * dt;
         const dx = ds * Math.cos(theta);
 
         // energy loss due to friction work: W = f * ds
         setThermalE((prevLoss) => prevLoss + frictionForce * Math.abs(ds));
 
-        return Math.min(trackLength, prevX + dx);
+        const nextX = prevX + dx;
+        if (nextX <= 0) {
+          setVel(0);
+          return 0;
+        }
+        if (nextX >= trackLength) {
+          setVel(0);
+          setIsPlaying(false);
+          return trackLength;
+        }
+        return nextX;
       });
 
       frameId = requestAnimationFrame(tick);
@@ -144,7 +182,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
     frameId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, vel, m, h0, mu, g]);
+  }, [isPlaying, vel, m, heights, mu, g]);
 
   // Render track & block
   useEffect(() => {
@@ -168,29 +206,35 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     const chartW = width - margin.left - margin.right;
     const chartH = height - margin.top - margin.bottom;
 
-    // Draw Parabolic Track shape
-    ctx.strokeStyle = '#64748b';
+    // Draw grid/background area
+    ctx.fillStyle = 'rgba(241, 245, 249, 0.2)';
+    ctx.fillRect(margin.left, margin.top, chartW, chartH);
+
+    // Draw custom track
+    ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
-    for (let px = 0; px <= chartW; px++) {
-      const xMeters = (px / chartW) * trackLength;
-      const yMeters = h0 * Math.pow(1 - xMeters / trackLength, 2);
-      // coordinate map
-      const screenX = margin.left + px;
-      const screenY = margin.top + chartH - (yMeters / 4) * chartH; // max height scale = 4m
-      if (px === 0) ctx.moveTo(screenX, screenY);
+    for (let i = 0; i <= 100; i++) {
+      const yMeters = heights[i];
+      const screenX = margin.left + (i / 100) * chartW;
+      const screenY = margin.top + chartH - (yMeters / 4) * chartH;
+      if (i === 0) ctx.moveTo(screenX, screenY);
       else ctx.lineTo(screenX, screenY);
     }
     ctx.stroke();
 
     // Draw sliding Block
     const blockX = (xPos / trackLength) * chartW;
-    const blockY = currentHeight;
     const screenBlockX = margin.left + blockX;
-    const screenBlockY = margin.top + chartH - (blockY / 4) * chartH;
+    const screenBlockY = margin.top + chartH - (currentHeight / 4) * chartH;
 
     // slope angle for rotation
-    const slope = (-2 * h0 / trackLength) * (1 - xPos / trackLength);
+    const blockIdx = Math.max(0, Math.min(100, (xPos / trackLength) * 100));
+    const blockIdxInt = Math.floor(blockIdx);
+    const blockIdxNext = Math.min(100, blockIdxInt + 1);
+    const slope = (heights[blockIdxNext] - heights[blockIdxInt]) / (trackLength / 100);
     const theta = Math.atan(slope);
 
     ctx.save();
@@ -206,13 +250,24 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     ctx.stroke();
 
     ctx.restore();
-  }, [xPos, currentHeight, h0]);
+
+    // Draw start and end flags
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px monospace';
+    ctx.fillText('0m', margin.left - 10, margin.top + chartH + 15);
+    ctx.fillText('10m', margin.left + chartW - 10, margin.top + chartH + 15);
+  }, [heights, xPos, currentHeight]);
 
   const handleReset = () => {
     setIsPlaying(false);
     setXPos(0);
     setVel(0);
     setThermalE(0);
+  };
+
+  const handleResetTrack = () => {
+    handleReset();
+    setHeights(getDefaultTrack());
   };
 
   const handleLogDataPoint = () => {
@@ -229,12 +284,86 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
   const handleDownloadPDF = () => {
     const reportParams = {
       'Mass (m)': `${m} kg`,
-      'Initial Height (h0)': `${h0} m`,
+      'Initial Height (h0)': `${h0.toFixed(2)} m`,
       'Friction Coefficient (mu)': `${mu}`,
       'Final Kinetic Energy': `${kineticE.toFixed(2)} J`,
       'Thermal Energy Dissipation': `${thermalE.toFixed(2)} J`
     };
     downloadReportAsPDF('Work and Energy Lab Report', reportParams, loggedData, labNotes);
+  };
+
+  // Canvas drawing path handlers
+  const handleDrawing = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    const margin = { left: 40, right: 40, bottom: 40, top: 40 };
+    const chartW = 540 - margin.left - margin.right;
+    const chartH = 240 - margin.top - margin.bottom;
+
+    const chartX = x - margin.left;
+    const chartY = chartH + margin.top - y;
+
+    const idx = Math.round((chartX / chartW) * 100);
+    const h = Math.max(0, Math.min(4.0, (chartY / chartH) * 4));
+
+    if (idx >= 0 && idx <= 100) {
+      setHeights((prev) => {
+        const next = [...prev];
+        if (lastDrawnIndexRef.current !== null) {
+          const start = Math.min(lastDrawnIndexRef.current, idx);
+          const end = Math.max(lastDrawnIndexRef.current, idx);
+          const startH = prev[lastDrawnIndexRef.current];
+          const endH = h;
+          for (let k = start; k <= end; k++) {
+            const frac = start === end ? 0.5 : (k - start) / (end - start);
+            next[k] = startH + (endH - startH) * frac;
+          }
+        } else {
+          next[idx] = h;
+        }
+        return next;
+      });
+      lastDrawnIndexRef.current = idx;
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsPlaying(false);
+    setIsDrawing(true);
+    lastDrawnIndexRef.current = null;
+    handleDrawing(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    handleDrawing(e.clientX, e.clientY);
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDrawing(false);
+    lastDrawnIndexRef.current = null;
+    handleReset();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    setIsPlaying(false);
+    setIsDrawing(true);
+    lastDrawnIndexRef.current = null;
+    if (e.touches[0]) {
+      handleDrawing(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    if (e.touches[0]) {
+      handleDrawing(e.touches[0].clientX, e.touches[0].clientY);
+    }
   };
 
   return (
@@ -259,17 +388,15 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             />
           </div>
 
-          {/* Initial height slider */}
+          {/* Initial height display (calculated from heights[0]) */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-semibold">
               <span className="text-slate-600">{t.height}</span>
               <span className="text-slate-700 font-mono">{h0.toFixed(2)} m</span>
             </div>
-            <input
-              type="range" min="1.0" max="4.0" step="0.1" value={h0}
-              onChange={(e) => { setH0(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-            />
+            <div className="text-[10px] text-slate-400 font-medium italic">
+              * Set by drawing starting point
+            </div>
           </div>
 
           {/* Friction coefficient slider */}
@@ -312,7 +439,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
                 <span>{potentialE.toFixed(1)} J</span>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(potentialE / totalE) * 100}%` }} />
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${totalE > 0 ? (potentialE / totalE) * 100 : 0}%` }} />
               </div>
             </div>
 
@@ -323,7 +450,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
                 <span>{kineticE.toFixed(1)} J</span>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(kineticE / totalE) * 100}%` }} />
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${totalE > 0 ? (kineticE / totalE) * 100 : 0}%` }} />
               </div>
             </div>
 
@@ -334,7 +461,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
                 <span>{thermalE.toFixed(1)} J</span>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-red-500 rounded-full" style={{ width: `${(thermalE / totalE) * 100}%` }} />
+                <div className="h-full bg-red-500 rounded-full" style={{ width: `${totalE > 0 ? (thermalE / totalE) * 100 : 0}%` }} />
               </div>
             </div>
           </div>
@@ -346,10 +473,23 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0 overflow-hidden relative">
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
+            <span className="text-[10px] font-semibold text-blue-650 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+              {t.drawInstruction}
+            </span>
           </div>
 
           <div className="flex-1 flex items-center justify-center p-4">
-            <canvas ref={canvasRef} className="border border-slate-100 rounded-lg bg-slate-50/20" />
+            <canvas 
+              ref={canvasRef} 
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUpOrLeave}
+              onMouseLeave={handleMouseUpOrLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleMouseUpOrLeave}
+              className="border border-slate-100 rounded-lg bg-slate-50/20 cursor-crosshair touch-none" 
+            />
           </div>
 
           {/* Action buttons */}
@@ -363,10 +503,19 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
               </button>
               <button
                 onClick={handleReset}
-                className="p-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full cursor-pointer shadow-sm transition-all"
+                className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full text-xs font-bold cursor-pointer shadow-sm transition-all flex items-center gap-1"
                 title="Reset simulation"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
+                {t.reset}
+              </button>
+              <button
+                onClick={handleResetTrack}
+                className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full text-xs font-bold cursor-pointer shadow-sm transition-all flex items-center gap-1"
+                title="Reset track shape"
+              >
+                <Undo className="w-3.5 h-3.5" />
+                {t.resetTrack}
               </button>
             </div>
           </div>
