@@ -1,26 +1,74 @@
-import { useState } from 'react';
-import { ProjectileSimulation } from './components/simulations/mechanics/ProjectileSimulation';
-import { NewtonsLawsSimulation } from './components/simulations/mechanics/NewtonsLawsSimulation';
-import { InclinedPlaneSimulation } from './components/simulations/mechanics/InclinedPlaneSimulation';
-import { ConnectedParticlesSimulation } from './components/simulations/mechanics/ConnectedParticlesSimulation';
-import { PulleySystemsSimulation } from './components/simulations/mechanics/PulleySystemsSimulation';
-import { MomentumCollisionsSimulation } from './components/simulations/mechanics/MomentumCollisionsSimulation';
-import { CircularMotionSimulation } from './components/simulations/mechanics/CircularMotionSimulation';
-import { WorkEnergySimulation } from './components/simulations/mechanics/WorkEnergySimulation';
-import { CentreOfMassSimulation } from './components/simulations/mechanics/CentreOfMassSimulation';
-import { GravityOrbitsSimulation } from './components/simulations/mechanics/GravityOrbitsSimulation';
-import { GeometricalOpticsSimulation } from './components/simulations/optics/GeometricalOpticsSimulation';
-import { SimpleHarmonicMotionSimulation } from './components/simulations/mechanics/SimpleHarmonicMotionSimulation';
-import { PhotoelectricEffectSimulation } from './components/simulations/modern/PhotoelectricEffectSimulation';
-import { GasLawsSimulation } from './components/simulations/thermal/GasLawsSimulation';
-import { LenzsLawSimulation } from './components/simulations/magnetism/LenzsLawSimulation';
-import { MagneticFieldWireSimulation } from './components/simulations/magnetism/MagneticFieldWireSimulation';
-import { ParallelCurrentsSimulation } from './components/simulations/magnetism/ParallelCurrentsSimulation';
-import { ChargedParticleMagneticSimulation } from './components/simulations/magnetism/ChargedParticleMagneticSimulation';
-import { SolenoidSimulation } from './components/simulations/magnetism/SolenoidSimulation';
-import { ElectromagneticInductionSimulation } from './components/simulations/magnetism/ElectromagneticInductionSimulation';
-import { DCOhmsLawSimulation } from './components/simulations/electricity/DCOhmsLawSimulation';
-import { DopplerEffectSimulation } from './components/simulations/waves/DopplerEffectSimulation';
+import { useState, lazy, Suspense, useEffect } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingFallback } from './components/LoadingFallback';
+
+// Lazy-loaded simulation components
+const ProjectileSimulation = lazy(() =>
+  import('./components/simulations/mechanics/ProjectileSimulation').then(m => ({ default: m.ProjectileSimulation }))
+);
+const NewtonsLawsSimulation = lazy(() =>
+  import('./components/simulations/mechanics/NewtonsLawsSimulation').then(m => ({ default: m.NewtonsLawsSimulation }))
+);
+const InclinedPlaneSimulation = lazy(() =>
+  import('./components/simulations/mechanics/InclinedPlaneSimulation').then(m => ({ default: m.InclinedPlaneSimulation }))
+);
+const ConnectedParticlesSimulation = lazy(() =>
+  import('./components/simulations/mechanics/ConnectedParticlesSimulation').then(m => ({ default: m.ConnectedParticlesSimulation }))
+);
+const PulleySystemsSimulation = lazy(() =>
+  import('./components/simulations/mechanics/PulleySystemsSimulation').then(m => ({ default: m.PulleySystemsSimulation }))
+);
+const MomentumCollisionsSimulation = lazy(() =>
+  import('./components/simulations/mechanics/MomentumCollisionsSimulation').then(m => ({ default: m.MomentumCollisionsSimulation }))
+);
+const CircularMotionSimulation = lazy(() =>
+  import('./components/simulations/mechanics/CircularMotionSimulation').then(m => ({ default: m.CircularMotionSimulation }))
+);
+const WorkEnergySimulation = lazy(() =>
+  import('./components/simulations/mechanics/WorkEnergySimulation').then(m => ({ default: m.WorkEnergySimulation }))
+);
+const CentreOfMassSimulation = lazy(() =>
+  import('./components/simulations/mechanics/CentreOfMassSimulation').then(m => ({ default: m.CentreOfMassSimulation }))
+);
+const GravityOrbitsSimulation = lazy(() =>
+  import('./components/simulations/mechanics/GravityOrbitsSimulation').then(m => ({ default: m.GravityOrbitsSimulation }))
+);
+const GeometricalOpticsSimulation = lazy(() =>
+  import('./components/simulations/optics/GeometricalOpticsSimulation').then(m => ({ default: m.GeometricalOpticsSimulation }))
+);
+const SimpleHarmonicMotionSimulation = lazy(() =>
+  import('./components/simulations/mechanics/SimpleHarmonicMotionSimulation').then(m => ({ default: m.SimpleHarmonicMotionSimulation }))
+);
+const PhotoelectricEffectSimulation = lazy(() =>
+  import('./components/simulations/modern/PhotoelectricEffectSimulation').then(m => ({ default: m.PhotoelectricEffectSimulation }))
+);
+const GasLawsSimulation = lazy(() =>
+  import('./components/simulations/thermal/GasLawsSimulation').then(m => ({ default: m.GasLawsSimulation }))
+);
+const LenzsLawSimulation = lazy(() =>
+  import('./components/simulations/magnetism/LenzsLawSimulation').then(m => ({ default: m.LenzsLawSimulation }))
+);
+const MagneticFieldWireSimulation = lazy(() =>
+  import('./components/simulations/magnetism/MagneticFieldWireSimulation').then(m => ({ default: m.MagneticFieldWireSimulation }))
+);
+const ParallelCurrentsSimulation = lazy(() =>
+  import('./components/simulations/magnetism/ParallelCurrentsSimulation').then(m => ({ default: m.ParallelCurrentsSimulation }))
+);
+const ChargedParticleMagneticSimulation = lazy(() =>
+  import('./components/simulations/magnetism/ChargedParticleMagneticSimulation').then(m => ({ default: m.ChargedParticleMagneticSimulation }))
+);
+const SolenoidSimulation = lazy(() =>
+  import('./components/simulations/magnetism/SolenoidSimulation').then(m => ({ default: m.SolenoidSimulation }))
+);
+const ElectromagneticInductionSimulation = lazy(() =>
+  import('./components/simulations/magnetism/ElectromagneticInductionSimulation').then(m => ({ default: m.ElectromagneticInductionSimulation }))
+);
+const DCOhmsLawSimulation = lazy(() =>
+  import('./components/simulations/electricity/DCOhmsLawSimulation').then(m => ({ default: m.DCOhmsLawSimulation }))
+);
+const DopplerEffectSimulation = lazy(() =>
+  import('./components/simulations/waves/DopplerEffectSimulation').then(m => ({ default: m.DopplerEffectSimulation }))
+);
 import { 
   Compass, 
   Activity, 
@@ -49,11 +97,84 @@ interface SimulationMetadata {
   pageLink?: PageType;
 }
 
+const PATH_MAP: Record<PageType, string> = {
+  home: '/',
+  sims: '/simulations',
+  projectile_sim: '/projectile-motion',
+  newtons_sim: '/newtons-second-law',
+  inclined_sim: '/inclined-plane',
+  optics_sim: '/geometrical-optics',
+  shm_sim: '/simple-harmonic-motion',
+  photoelectric_sim: '/photoelectric-effect',
+  gas_sim: '/gas-laws',
+  lenz_sim: '/lenzs-law',
+  magnetic_field_wire: '/magnetic-field-wire',
+  parallel_currents: '/parallel-currents',
+  charged_particle_magnetic_sim: '/charged-particle-magnetic',
+  solenoid_sim: '/solenoid',
+  induction_sim: '/electromagnetic-induction',
+  ohms_sim: '/ohms-law',
+  doppler_sim: '/doppler-effect',
+  connected_particles_sim: '/connected-particles',
+  pulleys_sim: '/pulley-systems',
+  collisions_sim: '/collisions',
+  circular_motion_sim: '/circular-motion',
+  energy_sim: '/work-energy-power',
+  centre_mass_sim: '/centre-of-mass',
+  orbits_sim: '/orbits',
+  terms: '/terms',
+  privacy: '/privacy'
+};
+
+const getPageFromPath = (path: string): PageType => {
+  // Support both hash routing fallback (e.g. /#/projectile-motion) and clean paths (e.g. /projectile-motion)
+  let cleanPath = path;
+  if (path.includes('#')) {
+    cleanPath = path.substring(path.indexOf('#') + 1);
+  }
+  
+  // Ensure we match with prefix slash and handle trailing slash
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = '/' + cleanPath;
+  }
+  if (cleanPath.endsWith('/') && cleanPath.length > 1) {
+    cleanPath = cleanPath.slice(0, -1);
+  }
+
+  const entry = Object.entries(PATH_MAP).find(([_, p]) => p === cleanPath);
+  return entry ? (entry[0] as PageType) : 'home';
+};
+
 function App() {
-  const [currentPage, setCurrentPage] = useState<PageType>('home');
+  const [currentPage, setCurrentPageState] = useState<PageType>(() => {
+    return getPageFromPath(window.location.pathname || window.location.hash || '/');
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchMinimized, setIsSearchMinimized] = useState<boolean>(false);
   const [lang, setLang] = useState<'en' | 'si' | 'ta'>('en');
+
+  const setCurrentPage = (page: PageType) => {
+    const targetPath = PATH_MAP[page] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+    setCurrentPageState(page);
+    window.scrollTo(0, 0);
+  };
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const page = getPageFromPath(window.location.pathname || window.location.hash || '/');
+      setCurrentPageState(page);
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
 
 
   // 1. Simulations Catalog Data
@@ -797,7 +918,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <ProjectileSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProjectileSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -816,7 +941,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <NewtonsLawsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <NewtonsLawsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -839,7 +968,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
-              <InclinedPlaneSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <InclinedPlaneSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -862,7 +995,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <GeometricalOpticsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <GeometricalOpticsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -885,7 +1022,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <SimpleHarmonicMotionSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <SimpleHarmonicMotionSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -903,17 +1044,19 @@ function App() {
               </button>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ප්‍රකාශ විද්‍යුත් ආචරණය • ஒளிமின் விளைவு</span>
-                <span className="text-slate-900 font-semibold text-sm">Photoelectric Effect Explainer</span>
+                <span className="text-slate-905 font-semibold text-sm">Photoelectric Effect Explainer</span>
               </div>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <PhotoelectricEffectSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <PhotoelectricEffectSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
-
-        {/* ACTIVE THERMAL PHYSICS & GAS LAWS SIMULATION */}
         {currentPage === 'gas_sim' && (
           <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
             {/* Simulation Nav Header */}
@@ -931,7 +1074,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <GasLawsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <GasLawsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -948,13 +1095,17 @@ function App() {
                 ← Back to Directory
               </button>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය • லென்சின் விதியும் மின்காந்தத் தூண்டலும்</span>
+                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය • ලෙන්සின் විதியும் மின்காந்தத் தூண்டலும்</span>
                 <span className="text-slate-900 font-semibold text-sm">Lenz's Law & Faraday Induction Explainer</span>
               </div>
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <LenzsLawSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <LenzsLawSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -977,7 +1128,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <MagneticFieldWireSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <MagneticFieldWireSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1000,7 +1155,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <ParallelCurrentsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ParallelCurrentsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1023,7 +1182,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <ChargedParticleMagneticSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ChargedParticleMagneticSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1046,7 +1209,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <SolenoidSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <SolenoidSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1069,7 +1236,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <ElectromagneticInductionSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ElectromagneticInductionSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1092,7 +1263,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <DCOhmsLawSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <DCOhmsLawSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1115,7 +1290,11 @@ function App() {
             </div>
             {/* Load Simulator component */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              <DopplerEffectSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <DopplerEffectSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1132,7 +1311,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සම්බන්ධිත අංශු • இணைக்கப்பட்ட துகள்கள்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <ConnectedParticlesSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ConnectedParticlesSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1149,7 +1332,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කප්පි පද්ධති • கப்ப்பி தொகுதிகள்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <PulleySystemsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <PulleySystemsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1166,7 +1353,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගම්‍යතාවය සහ ගැටුම් • உந்தம் & மோதல்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <MomentumCollisionsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <MomentumCollisionsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1183,7 +1374,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">වෘත්ත චලිතය • வட்ட இயக்கம்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <CircularMotionSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <CircularMotionSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1200,7 +1395,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කාර්යය, ශක්තිය සහ බලය • வேலை, ஆற்றல் & வலு</span>
             </div>
             <div className="flex-1 min-h-0">
-              <WorkEnergySimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <WorkEnergySimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1217,7 +1416,11 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්ව කේන්ද්‍රය • திணிவு மையம்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <CentreOfMassSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <CentreOfMassSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
@@ -1234,7 +1437,74 @@ function App() {
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර සහ කක්ෂ • ஈர்ப்புப்புலமும் சுற்றுப்பாதையும்</span>
             </div>
             <div className="flex-1 min-h-0">
-              <GravityOrbitsSimulation lang={lang} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <GravityOrbitsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE WORK ENERGY SIMULATION */}
+        {currentPage === 'energy_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Work, Energy & Power</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">කාර්යය, ශක්තිය සහ බලය • வேலை, ஆற்றல் & வலு</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <WorkEnergySimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE CENTRE OF MASS SIMULATION */}
+        {currentPage === 'centre_mass_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Centre of Mass</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්ව කේන්ද්‍රය • திணிவு மையம்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <CentreOfMassSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE GRAVITY ORBITS SIMULATION */}
+        {currentPage === 'orbits_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Gravitational Fields & Orbits</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර සහ කක්ෂ • ஈர்ப்புப்புலமும் சுற்றுப்பாதையும்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <GravityOrbitsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         )}
