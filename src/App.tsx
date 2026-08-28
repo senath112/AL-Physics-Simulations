@@ -81,6 +81,7 @@ import {
   Search, 
   ArrowRight
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
@@ -92,7 +93,7 @@ interface SimulationMetadata {
   tamilTitle?: string;
   unit: SyllabusUnit;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   status: 'active' | 'coming_soon';
   pageLink?: PageType;
 }
@@ -141,17 +142,20 @@ const getPageFromPath = (path: string): PageType => {
     cleanPath = cleanPath.slice(0, -1);
   }
 
-  const entry = Object.entries(PATH_MAP).find(([_, p]) => p === cleanPath);
+  const entry = Object.entries(PATH_MAP).find(([, p]) => p === cleanPath);
   return entry ? (entry[0] as PageType) : 'home';
 };
 
 function App() {
+  const getCurrentPath = () => window.location.hash || window.location.pathname || '/';
+
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
-    return getPageFromPath(window.location.pathname || window.location.hash || '/');
+    return getPageFromPath(getCurrentPath());
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchMinimized, setIsSearchMinimized] = useState<boolean>(false);
   const [lang, setLang] = useState<'en' | 'si' | 'ta'>('en');
+  const [selectedUnit, setSelectedUnit] = useState<SyllabusUnit | 'all'>('all');
 
   const setCurrentPage = (page: PageType) => {
     const targetPath = PATH_MAP[page] || '/';
@@ -164,7 +168,7 @@ function App() {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      const page = getPageFromPath(window.location.pathname || window.location.hash || '/');
+      const page = getPageFromPath(getCurrentPath());
       setCurrentPageState(page);
     };
 
@@ -425,20 +429,117 @@ function App() {
     },
   ];
 
-  const unitsList: { id: SyllabusUnit; name: string; icon: any; color: string }[] = [
-    { id: 'mechanics', name: 'Mechanics & SHM', icon: Compass, color: 'text-blue-600 bg-blue-50' },
-    { id: 'waves', name: 'Waves & Oscillations', icon: Waves, color: 'text-indigo-600 bg-indigo-50' },
-    { id: 'electricity', name: 'Electricity', icon: Zap, color: 'text-amber-600 bg-amber-50' },
-    { id: 'magnetism', name: 'Electromagnetism', icon: Cpu, color: 'text-rose-600 bg-rose-50' },
-    { id: 'thermal', name: 'Thermal Physics', icon: Thermometer, color: 'text-emerald-600 bg-emerald-50' },
-    { id: 'modern', name: 'Modern Physics', icon: Atom, color: 'text-purple-600 bg-purple-50' },
+  const unitLabels: Record<SyllabusUnit, { en: string; si: string; ta: string }> = {
+    mechanics: { en: 'Mechanics & SHM', si: 'යාන්ත්‍රික විද්‍යාව', ta: 'இயக்கவியல்' },
+    waves: { en: 'Waves & Oscillations', si: 'තරංග හා දෝලන', ta: 'அலைகள் & அதிர்வுகள்' },
+    electricity: { en: 'Electricity', si: 'විදුලිය', ta: 'மின்சாரம்' },
+    magnetism: { en: 'Electromagnetism', si: 'චුම්බක විද්‍යාව', ta: 'மின்காந்தவியல்' },
+    thermal: { en: 'Thermal Physics', si: 'තාප භෞතික විද්‍යාව', ta: 'வெப்பப் பௌதிகவியல்' },
+    modern: { en: 'Modern Physics', si: 'නවීන භෞතික විද්‍යාව', ta: 'நவீன பௌதிகவியல்' },
+  };
+
+  const text = {
+    en: {
+      exploreSims: 'Explore Sims',
+      visualLab: 'A Visual Lab • Advanced Level',
+      heroLine1: 'Simulations by developers,',
+      heroLine2: 'for students.',
+      heroDescription: 'Explore physics by changing variables, watching real-time animations, tracking Plotly graphing vectors, and downloading printable PDF laboratory notes configured for G.C.E. Advanced Level syllabus specs.',
+      browseSimulations: 'Browse simulations',
+      launchLauncher: '🚀 Launch Launcher',
+      activeLabs: 'Active Labs',
+      visualized: 'Visualized',
+      directoryTitle: 'Simulations Directory',
+      directorySubtitle: 'Select an active laboratory simulation to start experimenting.',
+      searchSimsPlaceholder: 'Search simulations...',
+      syllabusUnits: 'Syllabus Units',
+      allUnits: 'All Units',
+      noMatchTitle: 'No simulations match search',
+      noMatchHint: 'Try searching for other topics like "motion" or "circuit".',
+      terms: 'Terms & Conditions',
+      privacy: 'Privacy Policy',
+      footerLine: 'This educational software is developed for Advanced Level physics students in Sri Lanka.',
+      searchBarPlaceholder: 'Search simulations, units, equations...',
+      searchLabel: 'Search',
+      returnHome: '← Return Home',
+    },
+    si: {
+      exploreSims: 'අනුකරණ බලන්න',
+      visualLab: 'දෘශ්‍ය පරීක්ෂණාගාරය • උසස් පෙළ',
+      heroLine1: 'සංවර්ධකයන්ගෙන් සකස් කළ',
+      heroLine2: 'සිසුන් සඳහා අනුකරණ.',
+      heroDescription: 'පරාමිතීන් වෙනස් කරමින්, සජීවී සජීවිකරණ නිරීක්ෂණය කරමින්, ප්‍රස්ථාර දත්ත විශ්ලේෂණය කරමින් භෞතික විද්‍යාව ගවේෂණය කරන්න.',
+      browseSimulations: 'අනුකරණ තෝරන්න',
+      launchLauncher: '🚀 ආරම්භ කරන්න',
+      activeLabs: 'සක්‍රිය පරීක්ෂණ',
+      visualized: 'දෘශ්‍යකරණය',
+      directoryTitle: 'අනුකරණ ලැයිස්තුව',
+      directorySubtitle: 'අත්හදා බැලීමට සක්‍රිය අනුකරණයක් තෝරන්න.',
+      searchSimsPlaceholder: 'අනුකරණ සොයන්න...',
+      syllabusUnits: 'විෂය ඒකක',
+      allUnits: 'සියලු ඒකක',
+      noMatchTitle: 'ගැළපෙන අනුකරණ නොමැත',
+      noMatchHint: '"චලිතය" හෝ "සර්කියුට්" වැනි වචන සොයන්න.',
+      terms: 'නියම සහ කොන්දේසි',
+      privacy: 'පෞද්ගලිකතා ප්‍රතිපත්තිය',
+      footerLine: 'මෙම අධ්‍යාපනික මෘදුකාංගය ශ්‍රී ලංකාවේ උසස් පෙළ භෞතික විද්‍යාව සිසුන් සඳහා සංවර්ධනය කර ඇත.',
+      searchBarPlaceholder: 'අනුකරණ, ඒකක, සූත්‍ර සොයන්න...',
+      searchLabel: 'සොයන්න',
+      returnHome: '← මුල් පිටුවට',
+    },
+    ta: {
+      exploreSims: 'சிமுலேஷன்களை காண்க',
+      visualLab: 'காட்சிப் பரிசோதனை • உயர்தரம்',
+      heroLine1: 'உருவாக்குநர்களால் உருவாக்கப்பட்ட',
+      heroLine2: 'மாணவர்களுக்கான சிமுலேஷன்கள்.',
+      heroDescription: 'மாறிலிகளை மாற்றி, நேரடி அனிமேஷன்களைப் பார்த்து, வரைபடத் தரவை ஆய்வு செய்து இயற்பியலை கற்கவும்.',
+      browseSimulations: 'சிமுலேஷன்களை தேர்வு செய்க',
+      launchLauncher: '🚀 தொடங்கவும்',
+      activeLabs: 'செயலில் உள்ள ஆய்வுகள்',
+      visualized: 'காட்சிப்படுத்தப்பட்டது',
+      directoryTitle: 'சிமுலேஷன் அடைவு',
+      directorySubtitle: 'பயிற்சி தொடங்க செயல்பாட்டு சிமுலேஷனைத் தேர்ந்தெடுக்கவும்.',
+      searchSimsPlaceholder: 'சிமுலேஷன்களை தேடுக...',
+      syllabusUnits: 'பாடத்திட்ட அலகுகள்',
+      allUnits: 'அனைத்து அலகுகள்',
+      noMatchTitle: 'தேடலுக்கு பொருந்தும் சிமுலேஷன் இல்லை',
+      noMatchHint: '"இயக்கம்" அல்லது "சுற்று" போன்ற சொற்களை முயற்சிக்கவும்.',
+      terms: 'விதிமுறைகள்',
+      privacy: 'தனியுரிமைக் கொள்கை',
+      footerLine: 'இந்த கல்வி மென்பொருள் இலங்கையின் உயர்தர இயற்பியல் மாணவர்களுக்காக உருவாக்கப்பட்டது.',
+      searchBarPlaceholder: 'சிமுலேஷன், அலகு, சமன்பாடு தேடுக...',
+      searchLabel: 'தேடல்',
+      returnHome: '← முகப்புக்கு',
+    },
+  } as const;
+
+  const t = text[lang];
+
+  const unitsList: { id: SyllabusUnit; name: string; icon: LucideIcon; color: string }[] = [
+    { id: 'mechanics', name: unitLabels.mechanics[lang], icon: Compass, color: 'text-blue-600 bg-blue-50' },
+    { id: 'waves', name: unitLabels.waves[lang], icon: Waves, color: 'text-indigo-600 bg-indigo-50' },
+    { id: 'electricity', name: unitLabels.electricity[lang], icon: Zap, color: 'text-amber-600 bg-amber-50' },
+    { id: 'magnetism', name: unitLabels.magnetism[lang], icon: Cpu, color: 'text-rose-600 bg-rose-50' },
+    { id: 'thermal', name: unitLabels.thermal[lang], icon: Thermometer, color: 'text-emerald-600 bg-emerald-50' },
+    { id: 'modern', name: unitLabels.modern[lang], icon: Atom, color: 'text-purple-600 bg-purple-50' },
   ];
 
-  // Filtering simulations based on search
-  const filteredSims = simulations.filter(sim =>
-    sim.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sim.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredSims = simulations.filter((sim) => {
+    if (!normalizedQuery) return true;
+    const labels = unitLabels[sim.unit];
+    return [
+      sim.title,
+      sim.description,
+      sim.sinhalaTitle ?? '',
+      sim.tamilTitle ?? '',
+      labels.en,
+      labels.si,
+      labels.ta,
+    ].some((value) => value.toLowerCase().includes(normalizedQuery));
+  });
+  const activeSimulationsCount = simulations.filter((sim) => sim.status === 'active').length;
+  const visibleSims = selectedUnit === 'all' ? filteredSims : filteredSims.filter((sim) => sim.unit === selectedUnit);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 antialiased">
@@ -448,9 +549,11 @@ function App() {
         <div className="bg-white/45 backdrop-blur-2xl border border-white/55 rounded-full shadow-[0_12px_40px_rgba(31,38,135,0.06)] px-6 py-2 flex justify-between items-center h-14">
           
           {/* Logo */}
-          <div 
+          <button
+            type="button"
             onClick={() => setCurrentPage('home')}
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2 cursor-pointer select-none bg-transparent border-0 p-0"
+            aria-label="Go to home page"
           >
             <div className="bg-blue-600 text-white p-1.5 rounded-xl shadow-sm">
               <GraduationCap className="w-5 h-5" />
@@ -458,7 +561,7 @@ function App() {
             <span className="font-extrabold text-sm text-slate-900 tracking-tight flex items-center gap-1">
               Physics <span className="text-blue-600 font-black">by Senath</span>
             </span>
-          </div>
+          </button>
 
 
 
@@ -470,7 +573,7 @@ function App() {
                 onClick={() => setLang('en')}
                 className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
                   lang === 'en' 
-                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    ? 'bg-white text-blue-700 shadow-sm border border-slate-200/40' 
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
                 title="Switch to English"
@@ -481,7 +584,7 @@ function App() {
                 onClick={() => setLang('si')}
                 className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
                   lang === 'si' 
-                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    ? 'bg-white text-blue-700 shadow-sm border border-slate-200/40' 
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
                 title="සිංහල භාෂාවට මාරු වන්න"
@@ -492,7 +595,7 @@ function App() {
                 onClick={() => setLang('ta')}
                 className={`px-3 py-1 text-[10px] font-extrabold rounded-full transition-all cursor-pointer ${
                   lang === 'ta' 
-                    ? 'bg-white text-blue-650 shadow-sm border border-slate-200/40' 
+                    ? 'bg-white text-blue-700 shadow-sm border border-slate-200/40' 
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
                 title="தமிழ் மொழிக்கு மாறவும்"
@@ -504,7 +607,7 @@ function App() {
               onClick={() => setCurrentPage('sims')}
               className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
             >
-              Explore Sims
+              {t.exploreSims}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <a 
@@ -543,16 +646,16 @@ function App() {
                 <div className="lg:col-span-7 space-y-6 text-left">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200/60 border border-slate-300/40 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-600 select-none">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block animate-pulse"></span>
-                    A Visual Lab • Advanced Level
+                    {t.visualLab}
                   </div>
 
                   <h2 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-                    Simulations by developers,<br />
-                    <span className="bg-gradient-to-r from-blue-600 via-emerald-500 to-orange-500 bg-clip-text text-transparent">for students.</span>
+                    {t.heroLine1}<br />
+                    <span className="bg-gradient-to-r from-blue-600 via-emerald-500 to-orange-500 bg-clip-text text-transparent">{t.heroLine2}</span>
                   </h2>
 
                   <p className="text-slate-500 text-sm sm:text-base max-w-xl leading-relaxed">
-                    Explore physics by changing variables, watching real-time animations, tracking Plotly graphing vectors, and downloading printable PDF laboratory notes configured for G.C.E. Advanced Level syllabus specs.
+                    {t.heroDescription}
                   </p>
 
                   <div className="flex flex-wrap gap-3 pt-2">
@@ -560,26 +663,26 @@ function App() {
                       onClick={() => setCurrentPage('sims')}
                       className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer hover:translate-x-0.5"
                     >
-                      Browse simulations
+                      {t.browseSimulations}
                       <ArrowRight className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setCurrentPage('projectile_sim')}
                       className="flex items-center justify-center gap-2 px-5 py-3 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
                     >
-                      🚀 Launch Launcher
+                      {t.launchLauncher}
                     </button>
                   </div>
 
                   {/* Stats Counter Row */}
                   <div className="pt-8 border-t border-slate-200/60 flex gap-8 select-none">
                     <div>
-                      <div className="text-2xl font-black text-slate-900">4</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Active Labs</div>
+                      <div className="text-2xl font-black text-slate-900">{activeSimulationsCount}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.activeLabs}</div>
                     </div>
                     <div>
                       <div className="text-2xl font-black text-slate-900">100%</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Visualized</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{t.visualized}</div>
                     </div>
                   </div>
                 </div>
@@ -779,8 +882,8 @@ function App() {
             {/* Page Header and Search */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5 shrink-0">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Simulations Directory</h2>
-                <p className="text-xs text-slate-500 mt-1">Select an active laboratory simulation to start experimenting.</p>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{t.directoryTitle}</h2>
+                <p className="text-xs text-slate-500 mt-1">{t.directorySubtitle}</p>
               </div>
 
               {/* Search Bar */}
@@ -788,7 +891,7 @@ function App() {
                 <Search className="absolute left-3 top-2.5 w-4.5 h-4.5 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search simulations..."
+                  placeholder={t.searchSimsPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-10 pr-4 text-xs outline-none focus:border-blue-500 transition-colors"
@@ -801,14 +904,33 @@ function App() {
               
               {/* Category sidebar list */}
               <div className="space-y-2 lg:col-span-1">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-3">Syllabus Units</h3>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-3">{t.syllabusUnits}</h3>
                 <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 pb-2 lg:pb-0">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUnit('all')}
+                    className={`flex items-center justify-between px-3 py-2 border rounded-lg text-xs font-medium min-w-[160px] lg:min-w-0 cursor-pointer transition-colors ${
+                      selectedUnit === 'all'
+                        ? 'bg-blue-50 border-blue-200 text-blue-700'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>{t.allUnits}</span>
+                    <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold font-mono text-[10px]">{filteredSims.length}</span>
+                  </button>
                   {unitsList.map((unit) => {
                     const count = simulations.filter(s => s.unit === unit.id).length;
+                    const isSelected = selectedUnit === unit.id;
                     return (
-                      <div 
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUnit(unit.id)}
                         key={unit.id}
-                        className="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 min-w-[160px] lg:min-w-0"
+                        className={`flex items-center justify-between px-3 py-2 border rounded-lg text-xs font-medium min-w-[160px] lg:min-w-0 cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
                       >
                         <div className="flex items-center gap-2">
                           <div className={`p-1.5 rounded-md ${unit.color}`}>
@@ -817,7 +939,7 @@ function App() {
                           <span>{unit.name}</span>
                         </div>
                         <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold font-mono text-[10px]">{count}</span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -825,9 +947,9 @@ function App() {
 
               {/* Simulation cards grouped by unit */}
               <div className="lg:col-span-3 overflow-y-auto pr-1 custom-scrollbar space-y-8">
-                {unitsList.some(unit => filteredSims.some(s => s.unit === unit.id)) ? (
+                {unitsList.some(unit => visibleSims.some(s => s.unit === unit.id)) ? (
                   unitsList.map((unit) => {
-                    const unitSims = filteredSims.filter(s => s.unit === unit.id);
+                    const unitSims = visibleSims.filter(s => s.unit === unit.id);
                     if (unitSims.length === 0) return null;
                     return (
                       <div key={unit.id} className="space-y-3">
@@ -869,7 +991,7 @@ function App() {
                                     {sim.sinhalaTitle && sim.tamilTitle && (
                                       <div className="text-[10px] font-semibold text-slate-400 space-x-1 mt-0.5 font-sans leading-none flex items-center gap-1">
                                         <span>{sim.sinhalaTitle}</span>
-                                        <span className="text-[8px] text-slate-350">•</span>
+                                        <span className="text-[8px] text-slate-400">•</span>
                                         <span>{sim.tamilTitle}</span>
                                       </div>
                                     )}
@@ -893,8 +1015,8 @@ function App() {
                 ) : (
                   <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm max-w-md mx-auto my-12">
                     <Search className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                    <h3 className="font-bold text-slate-800 text-sm">No simulations match search</h3>
-                    <p className="text-slate-500 text-xs mt-1">Try searching for other topics like "motion" or "circuit".</p>
+                    <h3 className="font-bold text-slate-800 text-sm">{t.noMatchTitle}</h3>
+                    <p className="text-slate-500 text-xs mt-1">{t.noMatchHint}</p>
                   </div>
                 )}
               </div>
@@ -910,7 +1032,7 @@ function App() {
             {/* Top breadcrumb navigation bar */}
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Projectile Motion</span>
               </div>
@@ -933,7 +1055,7 @@ function App() {
             {/* Top breadcrumb navigation bar */}
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Newton's Second Law</span>
               </div>
@@ -1044,7 +1166,7 @@ function App() {
               </button>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ප්‍රකාශ විද්‍යුත් ආචරණය • ஒளிமின் விளைவு</span>
-                <span className="text-slate-905 font-semibold text-sm">Photoelectric Effect Explainer</span>
+                <span className="text-slate-900 font-semibold text-sm">Photoelectric Effect Explainer</span>
               </div>
             </div>
             {/* Load Simulator component */}
@@ -1304,7 +1426,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Connected Particles</span>
               </div>
@@ -1325,7 +1447,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Pulley Systems</span>
               </div>
@@ -1346,7 +1468,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Momentum & Collisions</span>
               </div>
@@ -1367,7 +1489,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Circular Motion</span>
               </div>
@@ -1388,7 +1510,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Work, Energy & Power</span>
               </div>
@@ -1409,7 +1531,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Centre of Mass</span>
               </div>
@@ -1430,7 +1552,7 @@ function App() {
           <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
             <div className="flex items-center justify-between mb-3 shrink-0">
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <button type="button" onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0 text-xs text-slate-500 font-medium">Simulations</button>
                 <span>&gt;</span>
                 <span className="text-slate-900 font-semibold">Gravitational Fields & Orbits</span>
               </div>
@@ -1458,19 +1580,19 @@ function App() {
                   onClick={() => setCurrentPage('home')}
                   className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer transition-colors"
                 >
-                  ← Return Home
+                  {t.returnHome}
                 </button>
               </div>
-              <p className="text-xs text-slate-450 font-bold">Last updated: 24 August 2026</p>
+              <p className="text-xs text-slate-500 font-bold">Last updated: 24 August 2026</p>
               
               <div className="text-slate-700 text-sm leading-relaxed space-y-4 font-medium">
-                <p>Welcome to A/L Physics Simulations, an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk/physics</a>.</p>
+                <p>Welcome to A/L Physics Simulations, an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">senathsethmika.lk/physics</a>.</p>
                 <p>By accessing or using the website, you agree to these Terms and Conditions. If you do not agree with these terms, please do not use the website.</p>
                 
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">1. Purpose of the Website</h2>
                 <p>A/L Physics Simulations is an educational resource intended to help students explore and understand physics concepts through interactive simulations.</p>
                 <p className="font-bold text-slate-800">The Project is not intended to replace:</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
                   <li>A qualified teacher</li>
                   <li>School laboratory work</li>
                   <li>Official textbooks</li>
@@ -1485,7 +1607,7 @@ function App() {
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">3. Use of Simulations</h2>
                 <p>You may use the simulations for personal educational purposes.</p>
                 <p className="font-bold text-slate-800">You may:</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
                   <li>Explore simulations</li>
                   <li>Conduct virtual experiments</li>
                   <li>Record your own observations</li>
@@ -1493,8 +1615,8 @@ function App() {
                   <li>Generate and download your own reports</li>
                   <li>Use the results for learning and personal study</li>
                 </ul>
-                <p className="font-bold text-slate-850 pt-1">You must not use the website to:</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                <p className="font-bold text-slate-800 pt-1">You must not use the website to:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
                   <li>Attempt to damage or disrupt the service</li>
                   <li>Circumvent security measures</li>
                   <li>Introduce malicious code</li>
@@ -1540,11 +1662,11 @@ function App() {
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">14. Contact</h2>
                 <p>For questions about these Terms or the A/L Physics Simulations project, contact:</p>
                 <p className="font-bold text-slate-800">Senath Sethmika</p>
-                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk</a></p>
+                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">senathsethmika.lk</a></p>
 
                 <div className="border-t border-slate-100 pt-6 text-center space-y-1">
                   <p className="font-extrabold text-slate-800">A/L Physics Simulations</p>
-                  <p className="text-xs text-slate-450 italic">Interactive physics for deeper understanding.</p>
+                  <p className="text-xs text-slate-500 italic">Interactive physics for deeper understanding.</p>
                 </div>
               </div>
             </div>
@@ -1561,19 +1683,19 @@ function App() {
                   onClick={() => setCurrentPage('home')}
                   className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer transition-colors"
                 >
-                  ← Return Home
+                  {t.returnHome}
                 </button>
               </div>
-              <p className="text-xs text-slate-450 font-bold">Last updated: 24 August 2026</p>
+              <p className="text-xs text-slate-500 font-bold">Last updated: 24 August 2026</p>
               
               <div className="text-slate-700 text-sm leading-relaxed space-y-4 font-medium">
-                <p>A/L Physics Simulations (“the Project”, “we”, “us”, or “our”) is an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk/physics</a>.</p>
+                <p>A/L Physics Simulations (“the Project”, “we”, “us”, or “our”) is an educational project created by Senath Sethmika and available at <a href="https://senathsethmika.lk/physics" target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">senathsethmika.lk/physics</a>.</p>
                 <p>We are committed to keeping the platform simple, transparent, and privacy-conscious.</p>
                 
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">1. Information We Collect</h2>
                 <p>A/L Physics Simulations is designed to work primarily in your web browser. We aim to collect as little personal information as reasonably possible.</p>
                 <p className="font-bold text-slate-800">Depending on the features available at a particular time, the website may process:</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
                   <li>Simulation settings and parameters</li>
                   <li>Measurements generated during simulations</li>
                   <li>Lab Notes entered by the user</li>
@@ -1585,7 +1707,7 @@ function App() {
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">2. Lab Notes and PDF Reports</h2>
                 <p>The Lab Notes feature may allow you to record experimental observations, measurements, calculations, and conclusions.</p>
                 <p className="font-bold text-slate-800">Where technically implemented as a local feature:</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-650">
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
                   <li>Lab Notes remain in your browser or device.</li>
                   <li>We do not receive the contents of your Lab Notes.</li>
                   <li>PDF reports are generated on your device.</li>
@@ -1622,11 +1744,11 @@ function App() {
                 <h2 className="text-base font-black text-slate-900 pt-2 border-t border-slate-50">11. Contact</h2>
                 <p>For questions regarding this Privacy Policy or the A/L Physics Simulations project, contact:</p>
                 <p className="font-bold text-slate-800">Senath Sethmika</p>
-                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-650 hover:underline">senathsethmika.lk</a></p>
+                <p>Website: <a href="https://senathsethmika.lk" target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">senathsethmika.lk</a></p>
 
                 <div className="border-t border-slate-100 pt-6 text-center space-y-1">
                   <p className="font-extrabold text-slate-800">A/L Physics Simulations</p>
-                  <p className="text-xs text-slate-450 italic">Learn the equation. See the equation. Use the equation.</p>
+                  <p className="text-xs text-slate-500 italic">Learn the equation. See the equation. Use the equation.</p>
                 </div>
               </div>
             </div>
@@ -1642,17 +1764,17 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
           <p>© {new Date().getFullYear()} A/L Physics Simulations. Developed by Physics by Senath. All Rights Reserved.</p>
           <p>
-            This educational software is developed for Advanced Level physics students in Sri Lanka.
+            {t.footerLine}
             <span className="mx-2">•</span>
-            <button onClick={() => setCurrentPage('terms')} className="text-blue-600 hover:underline cursor-pointer">Terms & Conditions</button>
+            <button onClick={() => setCurrentPage('terms')} className="text-blue-600 hover:underline cursor-pointer">{t.terms}</button>
             <span className="mx-2">•</span>
-            <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">Privacy Policy</button>
+            <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">{t.privacy}</button>
           </p>
         </div>
       </footer>
 
       {/* Floating Bottom Search Bar */}
-      {(currentPage === 'home' || currentPage === 'sims') && (
+      {currentPage === 'home' && (
         <>
           {isSearchMinimized ? (
             <button 
@@ -1666,21 +1788,21 @@ function App() {
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-xl w-[90%] pointer-events-auto">
               <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.06)] px-5 py-2.5 flex items-center gap-3">
                 <span className="text-[10px] font-black tracking-wider uppercase bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full border border-blue-100">
-                  Search
+                  {t.searchLabel}
                 </span>
                 <span className="h-4 w-px bg-slate-200"></span>
                 <div className="relative flex-1 flex items-center gap-2">
                   <input 
                     type="text"
-                    placeholder="Search simulations, units, equations..."
+                    placeholder={t.searchBarPlaceholder}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
-                      if (currentPage !== 'sims') setCurrentPage('sims');
+                      setCurrentPage('sims');
                     }}
                     className="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 outline-none pr-6 font-medium"
                   />
-                  <Search className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-650 transition-colors shrink-0" onClick={() => { setCurrentPage('sims'); }} />
+                  <Search className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600 transition-colors shrink-0" onClick={() => { setCurrentPage('sims'); }} />
                   <span className="h-4 w-px bg-slate-200 shrink-0"></span>
                   <button 
                     onClick={() => setIsSearchMinimized(true)}
