@@ -10,8 +10,10 @@ import {
   runValidationTests,
   ProjectileParameters,
 } from '../../../physics/projectilePhysics';
-import { Play, Pause, RotateCcw, SkipForward, Info, Maximize2, ChevronLeft, ChevronRight, BookOpen, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, Info, Maximize2, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -95,21 +97,37 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
   const [expandedGraph, setExpandedGraph] = useState<'trajectory' | 'displacement' | 'velocity' | null>(null);
   const [isLearnExpanded, setIsLearnExpanded] = useState(true);
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      time: `${time.toFixed(2)}s`,
-      velocity: `${params.v0}m/s`,
-      angle: `${params.angle}°`,
-      height: `${params.h0}m`,
-      gravity: `${params.g}m/s²`,
-      range: `${range.toFixed(2)}m`,
-      max_height: `${maxH.toFixed(2)}m`,
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'projectile_sim',
+    simulationTitle: 'Projectile Motion',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'angle', label: 'Launch Angle θ', unit: '°' },
+      { key: 'velocity', label: 'Initial Velocity v₀', unit: 'm/s' },
+      { key: 'range', label: 'Horizontal Range R', unit: 'm' },
+      { key: 'maxHeight', label: 'Max Height H', unit: 'm' },
+      { key: 'flightTime', label: 'Flight Time T', unit: 's' },
+      { key: 'gravity', label: 'Gravity g', unit: 'm/s²' },
+    ],
+    getCurrentRow: () => ({
+      angle: params.angle,
+      velocity: params.v0,
+      range: parseFloat(range.toFixed(2)),
+      maxHeight: parseFloat(maxH.toFixed(2)),
+      flightTime: parseFloat(tFlight.toFixed(2)),
+      gravity: params.g,
+    }),
+    defaultGraphConfig: {
+      xAxis: 'angle',
+      yAxis: 'range',
+      title: 'Range vs Launch Angle (R vs θ)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -118,13 +136,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       'Initial Height (h0)': `${params.h0} m`,
       'Gravity (g)': `${params.g} m/s²`,
     };
-    downloadReportAsPDF("Projectile Motion Laboratory", reportParams, loggedData, labNotes);
-  };
-
-  const handleClearLogs = () => {
-    if (confirm('Clear all logged laboratory trials?')) {
-      setLoggedData([]);
-    }
+    downloadReportAsPDF("Projectile Motion Laboratory", reportParams, recorder.recordedRows, labNotes);
   };
 
   // Run validation tests on mount
@@ -766,36 +778,16 @@ Hence, the maximum height reached is 5.0 m.`,
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-              title="Download full lab report as PDF"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={handleClearLogs}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {loggedData.length > 0 && (
-            <div className="text-[10px] text-slate-400 font-mono text-center">
-              {loggedData.length} trial(s) logged in report
-            </div>
-          )}
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
 
         {validationMsg && (

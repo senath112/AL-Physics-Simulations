@@ -1,26 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath } from '../../Math';
-import { 
-  Sparkles, 
-  Info, 
-  Download,
-  Plus,
-  Trash2
-} from 'lucide-react';
+import { Sparkles, Info, Plus } from 'lucide-react';
 import { calculateRayState, traceFibreRay, OpticsParameters } from '../../../physics/opticsPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-
-interface TrialLog {
-  id: string;
-  timestamp: string;
-  mode: string;
-  n1: number;
-  n2: number;
-  incidentAngle: number;
-  resultAngle: string;
-  status: string;
-}
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   // Parameters
@@ -39,7 +24,6 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
 
   // Lab Notes
   const [notes, setNotes] = useState<string>('');
-  const [logs, setLogs] = useState<TrialLog[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDraggingRay = useRef(false);
@@ -425,29 +409,46 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
     isDraggingRay.current = false;
   };
 
-  // Add notes to logs
-  const logTrial = () => {
-    const newLog: TrialLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: new Date().toLocaleTimeString(),
-      mode: mode.toUpperCase(),
-      n1: mode === 'fibre' ? 1.00 : n1,
-      n2: mode === 'fibre' ? nCore : n2,
-      incidentAngle: mode === 'fibre' ? entryAngle : incidentAngle,
-      resultAngle: mode === 'fibre' 
-        ? (fibreRay.isGuided ? 'GUIDED' : 'ESCAPED') 
-        : (rayState.isTIR ? 'TIR' : `${((rayState.refractedAngleRad || 0) * 180 / Math.PI).toFixed(1)}°`),
-      status: mode === 'fibre' 
-        ? (fibreRay.isGuided ? 'GUIDED' : 'CLADDING LOSS') 
-        : (rayState.isTIR ? 'TIR' : 'REFRACTED')
-    };
-    setLogs([newLog, ...logs]);
-  };
 
-  // Clear logs
-  const clearLogs = () => {
-    setLogs([]);
-  };
+
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'optics_sim',
+    simulationTitle: 'Geometrical Optics & Refraction',
+    category: 'optics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'incidentAngleDeg', label: 'Incident Angle i', unit: '°' },
+      { key: 'sinI', label: 'sin(i)', unit: '' },
+      { key: 'refractedAngleDeg', label: 'Refracted Angle r', unit: '°' },
+      { key: 'sinR', label: 'sin(r)', unit: '' },
+      { key: 'n1', label: 'Medium 1 Index (n₁)', unit: '' },
+      { key: 'n2', label: 'Medium 2 Index (n₂)', unit: '' },
+      { key: 'status', label: 'State / Phenomenon', unit: '' },
+    ],
+    getCurrentRow: () => {
+      const iRad = (incidentAngle * Math.PI) / 180;
+      const sinIVal = Math.sin(iRad);
+      const rDeg = rayState.isTIR ? null : (rayState.refractedAngleRad !== null ? (rayState.refractedAngleRad * 180) / Math.PI : null);
+      const sinRVal = rayState.isTIR || rayState.refractedAngleRad === null ? 0 : Math.sin(rayState.refractedAngleRad);
+      return {
+        incidentAngleDeg: incidentAngle,
+        sinI: parseFloat(sinIVal.toFixed(4)),
+        refractedAngleDeg: rDeg !== null ? parseFloat(rDeg.toFixed(2)) : 'TIR',
+        sinR: parseFloat(sinRVal.toFixed(4)),
+        n1: mode === 'fibre' ? 1.0 : n1,
+        n2: mode === 'fibre' ? nCore : n2,
+        status: mode === 'fibre' ? (fibreRay.isGuided ? 'GUIDED' : 'LOSS') : (rayState.isTIR ? 'TIR' : 'REFRACTED'),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'sinI',
+      yAxis: 'sinR',
+      title: "Snell's Law: sin(r) vs sin(i) (Slope = n₁/n₂)",
+      showRegression: true,
+    },
+    notes,
+  });
 
   // Download Lab Notes PDF
   const downloadPDFReport = () => {
@@ -458,20 +459,10 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
       'Incident Angle': mode === 'fibre' ? `${entryAngle.toFixed(1)}°` : `${incidentAngle.toFixed(1)}°`
     };
 
-    const printableLogs = logs.map(l => ({
-      'timestamp': l.timestamp,
-      'mode': l.mode,
-      'n1': l.n1,
-      'n2': l.n2,
-      'incident': l.incidentAngle,
-      'result': l.resultAngle,
-      'status': l.status
-    }));
-
     downloadReportAsPDF(
       'Geometrical Optics Lab Report',
       parameterMap,
-      printableLogs,
+      recorder.recordedRows,
       notes
     );
   };
@@ -764,7 +755,7 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
             )}
             
             <button
-              onClick={logTrial}
+              onClick={recorder.recordTrial}
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer mt-2"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -867,24 +858,12 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
         {/* Lab Notes Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lab Notebook Notes</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={clearLogs}
-                className="text-slate-400 hover:text-red-500 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                title="Clear notebook logs"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Clear Logs
-              </button>
-              <button
-                onClick={downloadPDFReport}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                PDF Report
-              </button>
-            </div>
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              Lab Notebook & Universal Recorder
+            </h3>
+            <span className="text-xs font-mono text-slate-400 font-bold">
+              {recorder.trialCount} Trials Recorded
+            </span>
           </div>
 
           <textarea
@@ -894,33 +873,16 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
             className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar"
           />
 
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Logged Trials ({logs.length})</h4>
-            <div className="border border-slate-100 rounded-lg max-h-36 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
-              {logs.length > 0 ? (
-                logs.map((log) => (
-                  <div key={log.id} className="p-2.5 text-[11px] flex justify-between items-center hover:bg-slate-50">
-                    <div>
-                      <span className="font-bold text-slate-800 font-mono">[{log.timestamp}]</span>{' '}
-                      <span className="text-slate-500 font-semibold">{log.mode}</span>: i = {log.incidentAngle.toFixed(1)}°, n₁ = {log.n1.toFixed(2)}, n₂ = {log.n2.toFixed(2)}
-                    </div>
-                    <span className={`px-2 py-0.5 rounded font-bold text-[9px] ${
-                      log.status === 'TIR' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      log.status === 'GUIDED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                      'bg-blue-50 text-blue-700 border border-blue-200'
-                    }`}>
-                      {log.resultAngle}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="p-6 text-center text-slate-400 text-xs italic">
-                  No active logs recorded. Adjust parameters and click "Log Trial Snapshot" above.
-                </div>
-              )}
-            </div>
-          </div>
-
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={downloadPDFReport}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
 
       </div>

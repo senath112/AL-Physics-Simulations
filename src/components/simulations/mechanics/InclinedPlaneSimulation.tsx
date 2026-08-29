@@ -8,7 +8,9 @@ import {
   InclinedPlaneParameters,
 } from '../../../physics/inclinedPlanePhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList } from 'lucide-react';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -106,7 +108,51 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   // Lab Notes State
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
+
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'inclined_sim',
+    simulationTitle: 'Inclined Plane Dynamics',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'angle', label: 'Incline Angle θ', unit: '°' },
+      { key: 'sinAngle', label: 'sin(θ)', unit: '' },
+      { key: 'mass', label: 'Mass m', unit: 'kg' },
+      { key: 'acceleration', label: 'Acceleration a', unit: 'm/s²' },
+      { key: 'normalForce', label: 'Normal Force R', unit: 'N' },
+      { key: 'frictionForce', label: 'Friction Force f', unit: 'N' },
+    ],
+    getCurrentRow: () => {
+      const angleRad = (params.angle * Math.PI) / 180;
+      return {
+        angle: params.angle,
+        sinAngle: parseFloat(Math.sin(angleRad).toFixed(3)),
+        mass: params.mass,
+        acceleration: parseFloat(currentDynamics.acceleration.toFixed(2)),
+        normalForce: parseFloat(currentDynamics.normalForce.toFixed(2)),
+        frictionForce: parseFloat(currentDynamics.frictionForce.toFixed(2)),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'angle',
+      yAxis: 'acceleration',
+      title: 'Incline Angle vs Acceleration',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
+
+  const handleDownloadPDF = () => {
+    const reportParams = {
+      'Incline Angle (θ)': `${params.angle}°`,
+      'Block Mass (m)': `${params.mass} kg`,
+      'Static Friction (μs)': `${params.muStatic}`,
+      'Kinetic Friction (μk)': `${params.muKinetic}`,
+      'Gravity (g)': `${params.g} m/s²`,
+    };
+    downloadReportAsPDF('Inclined Plane Laboratory', reportParams, recorder.recordedRows, labNotes);
+  };
 
   // Simulation time-series tracking for graphs
   const [history, setHistory] = useState<{ t: number; pos: number; vel: number; acc: number; gravityParallel: number; friction: number }[]>([]);
@@ -131,7 +177,6 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   // 2. Simulation Engine Hook
   const {
-    time,
     setTime,
     isPlaying,
     setIsPlaying,
@@ -434,37 +479,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     }
   }, [dynamics, params, showVectors, currentDynamics]);
 
-  // 4. Lab Logger Handlers
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      time: `${time.toFixed(2)}s`,
-      angle: `${params.angle}°`,
-      mass: `${params.mass}kg`,
-      gravity_parallel: `${currentDynamics.gravityParallel.toFixed(2)}N`,
-      friction: `${currentDynamics.frictionForce.toFixed(2)}N`,
-      accel: `${currentDynamics.acceleration.toFixed(3)}m/s²`,
-      velocity: `${dynamics.velocity.toFixed(2)}m/s`,
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
 
-  const handleClearLogs = () => {
-    if (confirm('Clear all logged inclined plane trials?')) {
-      setLoggedData([]);
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    const reportParams = {
-      'Incline Angle (theta)': `${params.angle}°`,
-      'Block Mass (m)': `${params.mass} kg`,
-      'Static Friction (μs)': `${params.muStatic}`,
-      'Kinetic Friction (μk)': `${params.muKinetic}`,
-      'Gravity (g)': `${params.g} m/s²`,
-    };
-    downloadReportAsPDF("Friction on an Inclined Plane", reportParams, loggedData, labNotes);
-  };
 
   // 5. Graphs Data
   const timeAxis = history.map(h => h.t);
@@ -657,36 +672,16 @@ Hence, the critical angle is 30°.`,
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-              title="Download PDF Lab Report"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={handleClearLogs}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {loggedData.length > 0 && (
-            <div className="text-[10px] text-slate-400 font-mono text-center">
-              {loggedData.length} trial(s) logged in report
-            </div>
-          )}
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
 

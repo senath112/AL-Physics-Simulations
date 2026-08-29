@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -106,7 +108,6 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
   // Animation values
   const [angle, setAngle] = useState(0);
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Projected Particle state variables
   const [launchAngle, setLaunchAngle] = useState(0); // launch angle in degrees (-45 to 45)
@@ -436,18 +437,42 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
     resetProjected();
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      mode: mode,
-      charge: q,
-      mass: `${m} kg`,
-      velocity: `${v} m/s`,
-      bField: `${B} T (${bDir})`,
-      radius: `${calculatedRadius.toFixed(2)} m`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'charged_particle_sim',
+    simulationTitle: 'Charged Particle in Magnetic Field',
+    category: 'fields',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'velocity', label: 'Velocity (v)', unit: 'm/s' },
+      { key: 'radius', label: 'Radius (r)', unit: 'm' },
+      { key: 'charge', label: 'Charge (q)', unit: 'C' },
+      { key: 'mass', label: 'Mass (m)', unit: 'kg' },
+      { key: 'bField', label: 'Field (B)', unit: 'T' },
+      { key: 'frequency', label: 'Frequency (f)', unit: 'Hz' },
+      { key: 'period', label: 'Period (T)', unit: 's' },
+    ],
+    getCurrentRow: () => {
+      const freq = (Math.abs(q) * B) / (2 * Math.PI * m);
+      const period = freq > 0 ? 1 / freq : 0;
+      return {
+        velocity: v,
+        radius: parseFloat(calculatedRadius.toFixed(2)),
+        charge: q,
+        mass: m,
+        bField: B,
+        frequency: parseFloat(freq.toFixed(2)),
+        period: parseFloat(period.toFixed(4)),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'velocity',
+      yAxis: 'radius',
+      title: 'Cyclotron Orbit: r vs v (r = mv / qB, Slope = m / qB)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -458,7 +483,7 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       'Magnetic Field (B)': `${B} T`,
       'Calculated Radius (r)': `${calculatedRadius.toFixed(2)} m`
     };
-    downloadReportAsPDF('Charged Particle in Magnetic Field Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Charged Particle in Magnetic Field Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -701,29 +726,16 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

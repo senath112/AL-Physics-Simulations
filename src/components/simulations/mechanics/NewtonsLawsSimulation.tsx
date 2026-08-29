@@ -8,7 +8,9 @@ import {
   NewtonsLawsParameters,
 } from '../../../physics/newtonsLawsPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList } from 'lucide-react';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -108,7 +110,46 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
   // Lab Notes State
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
+
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'newtons_sim',
+    simulationTitle: "Newton's Second Law of Motion",
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'force', label: 'Applied Force F', unit: 'N' },
+      { key: 'mass', label: 'Mass m', unit: 'kg' },
+      { key: 'acceleration', label: 'Acceleration a', unit: 'm/s²' },
+      { key: 'friction', label: 'Friction Force f', unit: 'N' },
+      { key: 'normalForce', label: 'Normal Force R', unit: 'N' },
+    ],
+    getCurrentRow: () => ({
+      force: params.force,
+      mass: params.mass,
+      acceleration: parseFloat(currentDynamics.acceleration.toFixed(2)),
+      friction: parseFloat(currentDynamics.frictionForce.toFixed(2)),
+      normalForce: parseFloat(currentDynamics.normalForce.toFixed(2)),
+    }),
+    defaultGraphConfig: {
+      xAxis: 'acceleration',
+      yAxis: 'force',
+      title: "Newton's Law: F vs a (F = ma, Slope = Mass M)",
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
+
+  const handleDownloadPDF = () => {
+    const reportParams = {
+      'Applied Force (F)': `${params.force} N`,
+      'Block Mass (m)': `${params.mass} kg`,
+      'Static Friction Coeff (μs)': `${params.muStatic}`,
+      'Kinetic Friction Coeff (μk)': `${params.muKinetic}`,
+      'Gravity (g)': `${params.g} m/s²`,
+    };
+    downloadReportAsPDF("Newton's Laws of Motion Laboratory", reportParams, recorder.recordedRows, labNotes);
+  };
 
   // Simulation time-series tracking for graphs
   const [history, setHistory] = useState<{ t: number; pos: number; vel: number; acc: number; force: number; friction: number }[]>([]);
@@ -133,7 +174,6 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
   // 2. Simulation Engine Hook
   const {
-    time,
     setTime,
     isPlaying,
     setIsPlaying,
@@ -383,36 +423,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     }
   }, [dynamics, params, showVectors, currentDynamics]);
 
-  // 4. Lab Logger Handlers
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      time: `${time.toFixed(2)}s`,
-      force: `${params.force}N`,
-      mass: `${params.mass}kg`,
-      accel: `${currentDynamics.acceleration.toFixed(3)}m/s²`,
-      friction: `${currentDynamics.frictionForce.toFixed(2)}N`,
-      velocity: `${dynamics.velocity.toFixed(2)}m/s`,
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
 
-  const handleClearLogs = () => {
-    if (confirm('Clear all logged laboratory trials?')) {
-      setLoggedData([]);
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    const reportParams = {
-      'Applied Force (F)': `${params.force} N`,
-      'Block Mass (m)': `${params.mass} kg`,
-      'Static Friction (μs)': `${params.muStatic}`,
-      'Kinetic Friction (μk)': `${params.muKinetic}`,
-      'Gravity (g)': `${params.g} m/s²`,
-    };
-    downloadReportAsPDF("Newton's Second Law of Motion", reportParams, loggedData, labNotes);
-  };
 
   // 5. Graphs Data Preparation
   const timeAxis = history.map(h => h.t);
@@ -612,36 +623,16 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-              title="Download full lab report as PDF"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={handleClearLogs}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {loggedData.length > 0 && (
-            <div className="text-[10px] text-slate-400 font-mono text-center">
-              {loggedData.length} trial(s) logged in report
-            </div>
-          )}
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
 

@@ -82,11 +82,35 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
   // Quota percentage
   const quotaPercent = Math.min(100, (quota.used / quota.max) * 100);
 
+  const [xTransform, setXTransform] = useState<'none' | 'reciprocal' | 'sq' | 'cube' | 'sqrt'>('none');
+  const [yTransform, setYTransform] = useState<'none' | 'reciprocal' | 'sq' | 'sqrt'>('none');
+
+  // Helper to apply math transformations
+  const transformValue = (val: number, trans: string): number => {
+    if (isNaN(val)) return NaN;
+    if (trans === 'reciprocal') return val !== 0 ? 1 / val : NaN;
+    if (trans === 'sq') return val * val;
+    if (trans === 'cube') return val * val * val;
+    if (trans === 'sqrt') return val >= 0 ? Math.sqrt(val) : NaN;
+    return val;
+  };
+
+  const getTransformLabel = (label: string, trans: string): string => {
+    if (trans === 'reciprocal') return `1 / (${label})`;
+    if (trans === 'sq') return `(${label})²`;
+    if (trans === 'cube') return `(${label})³`;
+    if (trans === 'sqrt') return `√(${label})`;
+    return label;
+  };
+
   // Helper to calculate linear regression
-  const calculateRegression = (rows: DataRow[], xKey: string, yKey: string) => {
+  const calculateRegression = (rows: DataRow[], xKey: string, yKey: string, xTrans = 'none', yTrans = 'none') => {
     const validPairs = rows
-      .map(r => ({ x: Number(r[xKey]), y: Number(r[yKey]) }))
-      .filter(p => !isNaN(p.x) && !isNaN(p.y));
+      .map(r => ({
+        x: transformValue(Number(r[xKey]), xTrans),
+        y: transformValue(Number(r[yKey]), yTrans)
+      }))
+      .filter(p => !isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y));
 
     if (validPairs.length < 2) return null;
 
@@ -175,8 +199,6 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                 Perform regression analytics on recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.
               </p>
               <div className="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs text-blue-200">
-                <span className="font-mono text-[11px] text-blue-200/90">ID: {user.id}</span>
-                <span>•</span>
                 <span className="inline-flex items-center gap-1.5 bg-white/15 border border-white/20 text-white px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-xs">
                   <span>☁️ Cloud Sync: Synced</span>
                   <span className="text-emerald-300 font-black">✓</span>
@@ -422,14 +444,85 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
           {(() => {
             const xKey = selectedPractical.graphConfig?.xAxis || selectedPractical.columns[0]?.key || 'trial';
             const yKey = selectedPractical.graphConfig?.yAxis || selectedPractical.columns[1]?.key || 'value';
-            const reg = calculateRegression(selectedPractical.data, xKey, yKey);
+            const reg = calculateRegression(selectedPractical.data, xKey, yKey, xTransform, yTransform);
+
+            const xColObj = selectedPractical.columns.find((c) => c.key === xKey);
+            const yColObj = selectedPractical.columns.find((c) => c.key === yKey);
+
+            const rawXLabel = xColObj?.label || xKey;
+            const rawYLabel = yColObj?.label || yKey;
+            const displayXLabel = getTransformLabel(rawXLabel, xTransform);
+            const displayYLabel = getTransformLabel(rawYLabel, yTransform);
+
+            // Deduce physical constants based on simulation context and linear slope
+            let deducedConstant: { label: string; value: string; unit: string; formula: string } | null = null;
+            if (reg && reg.slope !== 0) {
+              const simId = selectedPractical.simulationId;
+              if (simId === 'shm_sim' && (xKey === 'length' || displayXLabel.includes('Length')) && (yKey === 'periodSq' || yTransform === 'sq')) {
+                // T^2 = (4pi^2 / g) * L  =>  g = 4pi^2 / slope
+                const gVal = (4 * Math.PI * Math.PI) / reg.slope;
+                deducedConstant = {
+                  label: 'Gravitational Acceleration (g)',
+                  value: gVal.toFixed(2),
+                  unit: 'm/s²',
+                  formula: 'g = 4π² / slope',
+                };
+              } else if (simId === 'ohms_sim' && xKey === 'voltage' && yKey === 'current') {
+                // I = (1/R) * V  =>  R = 1 / slope
+                const rVal = 1 / reg.slope;
+                deducedConstant = {
+                  label: 'Resistance (R)',
+                  value: rVal.toFixed(2),
+                  unit: 'Ω',
+                  formula: 'R = 1 / slope',
+                };
+              } else if (simId === 'ohms_sim' && xKey === 'current' && yKey === 'voltage') {
+                // V = R * I  =>  R = slope
+                deducedConstant = {
+                  label: 'Resistance (R)',
+                  value: reg.slope.toFixed(2),
+                  unit: 'Ω',
+                  formula: 'R = slope',
+                };
+              } else if (simId === 'photoelectric_sim' && xKey === 'frequency' && yKey === 'stoppingPotential') {
+                // eV_s = hf - Phi => slope = h/e => h = slope * e
+                const eCharge = 1.602e-19;
+                const hVal = reg.slope * eCharge;
+                deducedConstant = {
+                  label: "Planck's Constant (h)",
+                  value: hVal.toExponential(3),
+                  unit: 'J·s',
+                  formula: 'h = slope · e',
+                };
+              } else if (simId === 'optics_sim' && xTransform === 'reciprocal' && yTransform === 'reciprocal') {
+                // 1/v = -1/u + 1/f => f = 1 / intercept
+                if (reg.intercept !== 0) {
+                  const fVal = 1 / reg.intercept;
+                  deducedConstant = {
+                    label: 'Focal Length (f)',
+                    value: (fVal * 100).toFixed(1),
+                    unit: 'cm',
+                    formula: 'f = 1 / intercept',
+                  };
+                }
+              } else if (simId === 'newtons_sim' && xKey === 'acceleration' && yKey === 'force') {
+                // F = m * a  =>  m = slope
+                deducedConstant = {
+                  label: 'Total Accelerated Mass (M)',
+                  value: reg.slope.toFixed(2),
+                  unit: 'kg',
+                  formula: 'M = slope',
+                };
+              }
+            }
 
             return (
               <div className="space-y-6">
-                {/* Axis Selectors */}
+                {/* Axis Selectors and Math Transformations */}
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center gap-4 text-xs">
+                  {/* X-Axis Controls */}
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-700">X-Axis Variable:</span>
+                    <span className="font-bold text-slate-700">X-Axis:</span>
                     <select
                       value={xKey}
                       onChange={(e) => {
@@ -449,10 +542,24 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                         <option key={c.key} value={c.key}>{c.label} {c.unit ? `(${c.unit})` : ''}</option>
                       ))}
                     </select>
+
+                    <select
+                      value={xTransform}
+                      onChange={(e: any) => setXTransform(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-indigo-700 outline-none"
+                      title="Transform X-axis mathematically"
+                    >
+                      <option value="none">f(X) = X</option>
+                      <option value="reciprocal">1 / X</option>
+                      <option value="sq">X²</option>
+                      <option value="cube">X³</option>
+                      <option value="sqrt">√X</option>
+                    </select>
                   </div>
 
+                  {/* Y-Axis Controls */}
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-700">Y-Axis Variable:</span>
+                    <span className="font-bold text-slate-700">Y-Axis:</span>
                     <select
                       value={yKey}
                       onChange={(e) => {
@@ -472,10 +579,22 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                         <option key={c.key} value={c.key}>{c.label} {c.unit ? `(${c.unit})` : ''}</option>
                       ))}
                     </select>
+
+                    <select
+                      value={yTransform}
+                      onChange={(e: any) => setYTransform(e.target.value)}
+                      className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-bold text-indigo-700 outline-none"
+                      title="Transform Y-axis mathematically"
+                    >
+                      <option value="none">f(Y) = Y</option>
+                      <option value="reciprocal">1 / Y</option>
+                      <option value="sq">Y²</option>
+                      <option value="sqrt">√Y</option>
+                    </select>
                   </div>
 
                   {reg && (
-                    <div className="flex flex-wrap items-center gap-3 ml-auto text-xs font-mono font-bold">
+                    <div className="flex flex-wrap items-center gap-2.5 ml-auto text-xs font-mono font-bold">
                       <span className="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-lg border border-indigo-200">
                         Slope m: {reg.slope.toFixed(4)}
                       </span>
@@ -489,11 +608,37 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                   )}
                 </div>
 
+                {/* Deduced Physical Constant Banner */}
+                {deducedConstant && (
+                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-600 text-white rounded-xl font-bold text-xs">
+                        ⚡ Physical Constant
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-xs text-emerald-950">
+                          {deducedConstant.label}: <span className="font-mono text-sm text-emerald-700 font-black">{deducedConstant.value} {deducedConstant.unit}</span>
+                        </h4>
+                        <p className="text-[11px] text-emerald-800 font-mono mt-0.5">
+                          Evaluated via: {deducedConstant.formula}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold bg-emerald-200/60 text-emerald-900 px-2.5 py-1 rounded-full border border-emerald-300">
+                      High-Precision Linear Regression
+                    </span>
+                  </div>
+                )}
+
                 {/* Graph View */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-inner">
                   {(() => {
-                    const xVals = selectedPractical.data.map(r => Number(r[xKey])).filter(v => !isNaN(v));
-                    const yVals = selectedPractical.data.map(r => Number(r[yKey])).filter(v => !isNaN(v));
+                    const xVals = selectedPractical.data
+                      .map((r) => transformValue(Number(r[xKey]), xTransform))
+                      .filter((v) => !isNaN(v) && isFinite(v));
+                    const yVals = selectedPractical.data
+                      .map((r) => transformValue(Number(r[yKey]), yTransform))
+                      .filter((v) => !isNaN(v) && isFinite(v));
 
                     const traces: any[] = [
                       {
@@ -501,7 +646,7 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                         y: yVals,
                         mode: 'markers',
                         type: 'scatter',
-                        name: 'Trial Data',
+                        name: 'Transformed Data',
                         marker: { color: '#4f46e5', size: 9 },
                       },
                     ];
@@ -519,17 +664,14 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                       });
                     }
 
-                    const xColObj = selectedPractical.columns.find(c => c.key === xKey);
-                    const yColObj = selectedPractical.columns.find(c => c.key === yKey);
-
                     return (
                       <PlotlyGraph
                         data={traces}
                         layout={{
-                          title: { text: `<b>${yColObj?.label || yKey} vs ${xColObj?.label || xKey}</b>`, font: { size: 14 } },
-                          xaxis: { title: { text: `${xColObj?.label || xKey} ${xColObj?.unit ? `(${xColObj.unit})` : ''}` } },
-                          yaxis: { title: { text: `${yColObj?.label || yKey} ${yColObj?.unit ? `(${yColObj.unit})` : ''}` } },
-                          margin: { l: 55, r: 25, t: 40, b: 45 },
+                          title: { text: `<b>${displayYLabel} vs ${displayXLabel}</b>`, font: { size: 14 } },
+                          xaxis: { title: { text: displayXLabel } },
+                          yaxis: { title: { text: displayYLabel } },
+                          margin: { l: 60, r: 25, t: 40, b: 45 },
                           height: 380,
                         }}
                       />

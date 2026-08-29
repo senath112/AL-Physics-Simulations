@@ -4,6 +4,7 @@ import {
   LaboratoryPractical, 
   LaboratoryContextType, 
   PracticalQuota, 
+  PracticalCategory,
   DataColumn, 
   DataRow, 
   PracticalReportContent, 
@@ -53,7 +54,7 @@ export const LaboratoryProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     title: string;
     simulationId: string;
     simulationTitle: string;
-    category?: 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
+    category?: PracticalCategory;
     columns: DataColumn[];
     data: DataRow[];
     notes?: string;

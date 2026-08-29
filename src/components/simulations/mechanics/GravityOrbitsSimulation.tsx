@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -80,7 +82,6 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   const [angle, setAngle] = useState(0); // orbit angle in radians
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Keplerian orbit geometry: r(theta) = a * (1 - e^2) / (1 + e * cos(theta))
   // For simplicity, we model a stable elliptical trajectory with semi-major axis determined by launch distance
@@ -214,15 +215,40 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     setAngle(0);
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      starMass: M,
-      distance: `${currentRadius.toFixed(2)} r`,
-      speed: `${currentSpeed.toFixed(2)} v`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'orbits_sim',
+    simulationTitle: "Kepler's Laws & Planetary Orbits",
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'orbitalRadius', label: 'Semi-Major Axis (a)', unit: 'AU' },
+      { key: 'orbitalRadiusCubed', label: 'Radius Cubed (a³)', unit: 'AU³' },
+      { key: 'orbitalPeriod', label: 'Period (T)', unit: 'yr' },
+      { key: 'orbitalPeriodSq', label: 'Period Squared (T²)', unit: 'yr²' },
+      { key: 'orbitalSpeed', label: 'Orbital Speed (v)', unit: 'km/s' },
+      { key: 'centralMass', label: 'Central Mass (M)', unit: 'M_sun' },
+    ],
+    getCurrentRow: () => {
+      // Kepler: T^2 = a^3 / M
+      const period = Math.sqrt(Math.pow(a, 3) / M);
+      return {
+        orbitalRadius: parseFloat(a.toFixed(2)),
+        orbitalRadiusCubed: parseFloat(Math.pow(a, 3).toFixed(2)),
+        orbitalPeriod: parseFloat(period.toFixed(2)),
+        orbitalPeriodSq: parseFloat(Math.pow(period, 2).toFixed(2)),
+        orbitalSpeed: parseFloat(currentSpeed.toFixed(2)),
+        centralMass: M,
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'orbitalRadiusCubed',
+      yAxis: 'orbitalPeriodSq',
+      title: "Kepler's 3rd Law: T² vs a³ (Slope = 4π²/GM)",
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -231,7 +257,7 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       'Initial Launch speed (vLaunch)': `${vLaunch}`,
       'Final Eccentricity (e)': eVal.toFixed(3)
     };
-    downloadReportAsPDF('Gravitational Orbital Motion Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Gravitational Orbital Motion Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -363,29 +389,16 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

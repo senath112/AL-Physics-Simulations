@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Play, Pause, RotateCcw, Sparkles, Download, Plus, Trash2, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, RotateCcw, Sparkles, Volume2, VolumeX, Plus } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { BlockMath, InlineMath } from '../../Math';
 import { PlotlyGraph } from '../../PlotlyGraph';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Wavefront {
   id: number;
@@ -10,17 +12,6 @@ interface Wavefront {
   y: number;
   radius: number;
   timeElapsed: number;
-}
-
-interface TrialLog {
-  id: string;
-  timestamp: string;
-  sourceSpeed: number;
-  observerSpeedA: number;
-  observerSpeedB: number;
-  sourceFreq: number;
-  observedFreqLeft: number;
-  observedFreqRight: number;
 }
 
 export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -113,7 +104,6 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   const [isAudioEnabled, setIsAudioEnabled] = useState<boolean>(false);
   const [audioListener, setAudioListener] = useState<'a' | 'b' | 'source'>('b');
   const [notes, setNotes] = useState<string>('');
-  const [logs, setLogs] = useState<TrialLog[]>([]);
 
   // History tracking for frequency vs time plots
   const [history, setHistory] = useState<{ t: number[]; freqA: number[]; freqB: number[] }>({
@@ -231,7 +221,6 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     setSourceFreq(400);
     setIsPlaying(true);
     setAudioListener('b');
-    setLogs([]);
     setNotes('');
     sourceXRef.current = 270;
     wavefrontsRef.current = [];
@@ -240,32 +229,52 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     lastHistoryUpdateRef.current = 0;
   };
 
-  const logReading = () => {
-    const timestamp = new Date().toLocaleTimeString();
-    const newLog: TrialLog = {
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp,
-      sourceSpeed,
-      observerSpeedA,
-      observerSpeedB,
-      sourceFreq,
-      observedFreqLeft: parseFloat(observedFreqLeft.toFixed(1)),
-      observedFreqRight: sourceSpeed >= speedOfSound ? 9999 : parseFloat(observedFreqRight.toFixed(1))
-    };
-    setLogs([newLog, ...logs]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'doppler_sim',
+    simulationTitle: 'Doppler Effect & Wavefront Analysis',
+    category: 'waves',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'sourceSpeed', label: 'Source Speed (vₛ)', unit: 'm/s' },
+      { key: 'sourceFreq', label: 'Source Frequency (fₛ)', unit: 'Hz' },
+      { key: 'speedOfSound', label: 'Speed of Sound (v)', unit: 'm/s' },
+      { key: 'observedFreqRight', label: 'Observed Freq Right (fᵣ)', unit: 'Hz' },
+      { key: 'observedFreqLeft', label: 'Observed Freq Left (fₗ)', unit: 'Hz' },
+      { key: 'machNumber', label: 'Mach Number (M)', unit: '' },
+    ],
+    getCurrentRow: () => {
+      const fRight = sourceSpeed >= speedOfSound ? 9999 : parseFloat(observedFreqRight.toFixed(1));
+      const fLeft = parseFloat(observedFreqLeft.toFixed(1));
+      const mach = parseFloat((sourceSpeed / speedOfSound).toFixed(2));
+      return {
+        sourceSpeed,
+        sourceFreq,
+        speedOfSound,
+        observedFreqRight: fRight,
+        observedFreqLeft: fLeft,
+        machNumber: mach,
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'sourceSpeed',
+      yAxis: 'observedFreqRight',
+      title: "Doppler Effect: Observed Frequency f' vs Source Speed vₛ",
+      showRegression: false,
+    },
+    notes,
+  });
 
   const handleExportPDF = () => {
-    const content = [
-      `A/L Physics Laboratory - Doppler Effect Analysis Report`,
-      `Institution: Physics by Senath\n`,
-      `Logged Observations:`,
-      ...logs.map(log => 
-        `[${log.timestamp}] vₛ = ${log.sourceSpeed} m/s | v_oA = ${log.observerSpeedA} m/s, v_oB = ${log.observerSpeedB} m/s | fₛ = ${log.sourceFreq} Hz => f_Left: ${log.observedFreqLeft} Hz | f_Right: ${log.observedFreqRight === 9999 ? 'Sonic Boom' : `${log.observedFreqRight} Hz`}`
-      ),
-      `\nLab Observations Journal:\n${notes || 'No observations logged.'}`
-    ].join('\n');
-    downloadReportAsPDF('Doppler_Effect_Report', {}, [], content);
+    const reportParams = {
+      'Source Speed (vₛ)': `${sourceSpeed} m/s`,
+      'Observer Speed A': `${observerSpeedA} m/s`,
+      'Observer Speed B': `${observerSpeedB} m/s`,
+      'Source Frequency (fₛ)': `${sourceFreq} Hz`,
+      'Speed of Sound (v)': `${speedOfSound} m/s`,
+      'Mach Number (M)': `${(sourceSpeed / speedOfSound).toFixed(2)}`
+    };
+    downloadReportAsPDF('Doppler Effect Laboratory Report', reportParams, recorder.recordedRows, notes);
   };
 
   // Rendering wavefront propagation loops
@@ -602,7 +611,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             {/* Action buttons */}
             <div className="flex gap-2 pt-2 border-t border-slate-100">
               <button
-                onClick={logReading}
+                onClick={recorder.recordTrial}
                 className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
               >
                 <Plus className="w-3 h-3" />
@@ -761,60 +770,28 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           />
         </div>
 
-        {/* History Log List */}
+        {/* History Log List & Laboratory Transfer */}
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
               {t.trialHistory}
             </h3>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setLogs([])}
-                disabled={logs.length === 0}
-                className="p-1.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleExportPDF}
-                disabled={logs.length === 0}
-                className="py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                <Download className="w-3 h-3" />
-                {t.pdf}
-              </button>
-            </div>
+            <span className="text-xs font-mono text-slate-400 font-bold">
+              {recorder.trialCount} Trials Recorded
+            </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-36 pr-1 custom-scrollbar">
-            {logs.length > 0 ? (
-              <div className="space-y-2">
-                {logs.map((log) => (
-                  <div key={log.id} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-[10px]">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-800">fₛ = {log.sourceFreq} Hz</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="font-bold text-slate-650">vₛ = {log.sourceSpeed} m/s</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2.5 font-mono">
-                      <span className="text-emerald-600 font-bold">f_Left: {log.observedFreqLeft} Hz</span>
-                      <span className="text-slate-300">|</span>
-                      <span className="text-blue-600 font-extrabold">f_Right: {log.observedFreqRight === 9999 ? 'Sonic Boom' : `${log.observedFreqRight} Hz`}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                No logs recorded yet
-              </div>
-            )}
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleExportPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
-
       </div>
 
     </div>

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -98,7 +100,6 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
   const [angle, setAngle] = useState(0); // rotation angle in radians
   const [isSlack, setIsSlack] = useState(false);
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -290,17 +291,38 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
     setIsSlack(false);
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      mode: mode,
-      mass: `${m} kg`,
-      radius: `${r} m`,
-      speed: `${v} m/s`,
-      centripetal: `${fc.toFixed(2)} N`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'circular_motion_sim',
+    simulationTitle: 'Circular Motion Dynamics',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'speed', label: 'Speed v', unit: 'm/s' },
+      { key: 'speedSq', label: 'Speed Squared v²', unit: 'm²/s²' },
+      { key: 'radius', label: 'Radius r', unit: 'm' },
+      { key: 'mass', label: 'Mass m', unit: 'kg' },
+      { key: 'centripetalForce', label: 'Centripetal Force Fc', unit: 'N' },
+      { key: 'topTension', label: 'Tension at Top', unit: 'N' },
+      { key: 'bottomTension', label: 'Tension at Bottom', unit: 'N' },
+    ],
+    getCurrentRow: () => ({
+      speed: v,
+      speedSq: parseFloat((v * v).toFixed(2)),
+      radius: r,
+      mass: m,
+      centripetalForce: parseFloat(fc.toFixed(2)),
+      topTension: parseFloat(tensionTop.toFixed(2)),
+      bottomTension: parseFloat(tensionBottom.toFixed(2)),
+    }),
+    defaultGraphConfig: {
+      xAxis: 'speedSq',
+      yAxis: 'centripetalForce',
+      title: 'Fc vs v² (Fc = (m/r)v², Slope = m/r)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -310,7 +332,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       'Tangential Velocity (v)': `${v} m/s`,
       'Centripetal Force (Fc)': `${fc.toFixed(2)} N`
     };
-    downloadReportAsPDF('Circular Motion Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Circular Motion Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -491,29 +513,16 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

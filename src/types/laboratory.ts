@@ -22,13 +22,15 @@ export interface GraphConfig {
   showRegression: boolean;
 }
 
+export type PracticalCategory = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern' | 'optics' | 'fields';
+
 export interface LaboratoryPractical {
   id: string;
   userId: string;
   title: string;
   simulationId: string;
   simulationTitle: string;
-  category: 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
+  category: PracticalCategory;
   createdAt: string;
   updatedAt: string;
   columns: DataColumn[];
@@ -55,7 +57,7 @@ export interface LaboratoryContextType {
     title: string;
     simulationId: string;
     simulationTitle: string;
-    category?: 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
+    category?: PracticalCategory;
     columns: DataColumn[];
     data: DataRow[];
     notes?: string;

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { LogIn, LogOut, FlaskConical, ChevronDown, UserCheck, Shield } from 'lucide-react';
+import { LogIn, LogOut, FlaskConical, ChevronDown, UserCheck } from 'lucide-react';
 
 interface UserMenuProps {
   onNavigateToLaboratory: () => void;
@@ -76,10 +76,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onNavigateToLaboratory }) =>
               </span>
             </div>
             <span className="text-[11px] text-slate-500 truncate block">{user.email}</span>
-            <div className="pt-1 flex items-center gap-1 text-[10px] text-slate-400 font-mono">
-              <Shield className="w-3 h-3 text-blue-500" />
-              <span>ID: {user.id}</span>
-            </div>
           </div>
 
           {/* Navigation Options */}

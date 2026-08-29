@@ -3,26 +3,17 @@ import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
-  Download,
-  Plus,
-  Trash2,
-  Play,
-  Pause,
-  RotateCcw,
-  Flame,
-  Snowflake
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Flame, 
+  Snowflake,
+  Plus 
 } from 'lucide-react';
-import { 
-  calculateGasState
-} from '../../../physics/thermalPhysics';
+import { calculateGasState } from '../../../physics/thermalPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-
-interface TrialLog {
-  id: string;
-  timestamp: string;
-  tab: string;
-  detail: string;
-}
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Molecule {
   x: number;
@@ -94,9 +85,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
   const [volume, setVolume] = useState<number>(4.0); // Liters
   const [temperature, setTemperature] = useState<number>(300); // Kelvin
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-
   const [notes, setNotes] = useState<string>('');
-  const [logs, setLogs] = useState<TrialLog[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const moleculesRef = useRef<Molecule[]>([]);
@@ -156,32 +145,56 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     setMoleculesCount(60);
     setVolume(4.0);
     setTemperature(300);
-    setLogs([]);
     setNotes('');
   };
 
-  // Add Log Entry
-  const logReading = () => {
-    const timestamp = new Date().toLocaleTimeString();
-    const detail = `Law: ${gasMode.toUpperCase()} | N = ${moleculesCount} | V = ${volume.toFixed(2)} L | T = ${temperature} K => P = ${gasState.pressure.toFixed(3)} atm`;
-    const newLog: TrialLog = {
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp,
-      tab: 'Gas Laws',
-      detail
-    };
-    setLogs([newLog, ...logs]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'gas_sim',
+    simulationTitle: 'Gas Laws & Kinetic Theory',
+    category: 'thermal',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'gasMode', label: 'Law Investigated', unit: '' },
+      { key: 'volume', label: 'Volume (V)', unit: 'L' },
+      { key: 'invVolume', label: 'Inverse Volume (1/V)', unit: '1/L' },
+      { key: 'temperature', label: 'Temperature (T)', unit: 'K' },
+      { key: 'pressure', label: 'Pressure (P)', unit: 'atm' },
+      { key: 'moleculesCount', label: 'Molecules (N)', unit: '' },
+      { key: 'pvOverT', label: 'PV/T Ratio', unit: 'atm·L/K' },
+    ],
+    getCurrentRow: () => {
+      const p = gasState.pressure;
+      const invV = volume > 0 ? 1 / volume : 0;
+      const ratio = temperature > 0 ? (p * volume) / temperature : 0;
+      return {
+        gasMode: gasMode.toUpperCase(),
+        volume: parseFloat(volume.toFixed(2)),
+        invVolume: parseFloat(invV.toFixed(3)),
+        temperature,
+        pressure: parseFloat(p.toFixed(3)),
+        moleculesCount,
+        pvOverT: parseFloat(ratio.toFixed(4)),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'invVolume',
+      yAxis: 'pressure',
+      title: "Boyle's Law: P vs 1/V (Linear Fit, Slope = nRT)",
+      showRegression: true,
+    },
+    notes,
+  });
 
   const handleExportPDF = () => {
-    const content = [
-      `A/L Physics Laboratory - Gas Laws Scientific Report`,
-      `Institution: Physics by Senath\n`,
-      `Logged Parameters History:`,
-      ...logs.map(log => `[${log.timestamp}] ${log.detail}`),
-      `\nLab Instructor Journal Notes:\n${notes || 'No observations logged.'}`
-    ].join('\n');
-    downloadReportAsPDF('Gas_Laws_Report', {}, [], content);
+    const reportParams = {
+      'Investigated Mode': gasMode.toUpperCase(),
+      'Molecules Count (N)': `${moleculesCount}`,
+      'Volume (V)': `${volume.toFixed(2)} L`,
+      'Temperature (T)': `${temperature} K`,
+      'Calculated Pressure (P)': `${gasState.pressure.toFixed(3)} atm`,
+    };
+    downloadReportAsPDF('Gas Laws Laboratory Report', reportParams, recorder.recordedRows, notes);
   };
 
   // Chamber Visualizer rendering loop
@@ -455,7 +468,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
             {/* Logging and resets */}
             <div className="flex gap-2 pt-2 border-t border-slate-100">
               <button
-                onClick={logReading}
+                onClick={recorder.recordTrial}
                 className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors cursor-pointer"
               >
                 <Plus className="w-3 h-3" />
@@ -637,55 +650,28 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
           />
         </div>
 
-        {/* Logs list (7 Cols) */}
+        {/* Logs list & Laboratory Transfer (7 Cols) */}
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
               {t.trialHistory}
             </h3>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setLogs([])}
-                disabled={logs.length === 0}
-                className="p-1.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleExportPDF}
-                disabled={logs.length === 0}
-                className="py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                <Download className="w-3 h-3" />
-                {t.pdf}
-              </button>
-            </div>
+            <span className="text-xs font-mono text-slate-400 font-bold">
+              {recorder.trialCount} Trials Recorded
+            </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-36 pr-1 custom-scrollbar">
-            {logs.length > 0 ? (
-              <div className="space-y-2">
-                {logs.map((log) => (
-                  <div key={log.id} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-[10px]">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-400">{log.tab}</span>
-                        <span className="text-slate-350">•</span>
-                        <span className="text-slate-800 font-extrabold">{log.detail}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                No trial observations logged
-              </div>
-            )}
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleExportPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
-
       </div>
 
     </div>

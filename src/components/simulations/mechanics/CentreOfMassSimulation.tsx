@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface PointMass {
   id: number;
@@ -67,7 +69,6 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
   const [selectedId, setSelectedId] = useState<number | null>(1);
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Compute Center of Mass
   const sumMass = points.reduce((acc, p) => acc + p.m, 0);
@@ -220,21 +221,39 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
     );
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      totalMass: `${sumMass.toFixed(2)} kg`,
-      centerCoordinate: `(${xCM.toFixed(2)}, ${yCM.toFixed(2)})`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'centre_mass_sim',
+    simulationTitle: 'Centre of Mass Coordinates',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'pointCount', label: 'Point Count', unit: '' },
+      { key: 'totalMass', label: 'Total Mass M', unit: 'kg' },
+      { key: 'xCM', label: 'Centre X_cm', unit: 'm' },
+      { key: 'yCM', label: 'Centre Y_cm', unit: 'm' },
+    ],
+    getCurrentRow: () => ({
+      pointCount: points.length,
+      totalMass: parseFloat(sumMass.toFixed(2)),
+      xCM: parseFloat(xCM.toFixed(2)),
+      yCM: parseFloat(yCM.toFixed(2)),
+    }),
+    defaultGraphConfig: {
+      xAxis: 'totalMass',
+      yAxis: 'xCM',
+      title: 'Centre of Mass X_cm vs Total Mass',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
       'Total Mass (M)': `${sumMass.toFixed(2)} kg`,
       'Centre of Mass (X_cm, Y_cm)': `(${xCM.toFixed(2)}, ${yCM.toFixed(2)})`
     };
-    downloadReportAsPDF('Centre of Mass Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Centre of Mass Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   const selectedPoint = points.find((p) => p.id === selectedId);
@@ -329,29 +348,16 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

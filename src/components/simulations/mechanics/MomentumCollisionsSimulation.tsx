@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -91,7 +93,6 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
   const [hasCollided, setHasCollided] = useState(false);
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Theoretical final velocities calculations
   // v1 = ((m1 - e*m2)*u1 + (1+e)*m2*u2) / (m1 + m2)
@@ -286,19 +287,48 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
     setHasCollided(false);
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      mass1: `${m1} kg`,
-      vel1Initial: `${u1} m/s`,
-      mass2: `${m2} kg`,
-      vel2Initial: `${u2} m/s`,
-      restitution: e,
-      vel1Final: `${calcV1.toFixed(2)} m/s`,
-      vel2Final: `${calcV2.toFixed(2)} m/s`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'collisions_sim',
+    simulationTitle: 'Momentum & Collisions Conservation',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'initialMomentum', label: 'Initial Momentum (p_i)', unit: 'kg·m/s' },
+      { key: 'finalMomentum', label: 'Final Momentum (p_f)', unit: 'kg·m/s' },
+      { key: 'mass1', label: 'Mass 1', unit: 'kg' },
+      { key: 'vel1Initial', label: 'u1', unit: 'm/s' },
+      { key: 'vel1Final', label: 'v1', unit: 'm/s' },
+      { key: 'mass2', label: 'Mass 2', unit: 'kg' },
+      { key: 'vel2Initial', label: 'u2', unit: 'm/s' },
+      { key: 'vel2Final', label: 'v2', unit: 'm/s' },
+      { key: 'restitution', label: 'Restitution (e)', unit: '' },
+      { key: 'energyLoss', label: 'Kinetic Energy Loss', unit: 'J' },
+    ],
+    getCurrentRow: () => {
+      const pInitial = m1 * u1 + m2 * u2;
+      const pFinal = m1 * calcV1 + m2 * calcV2;
+      return {
+        initialMomentum: parseFloat(pInitial.toFixed(2)),
+        finalMomentum: parseFloat(pFinal.toFixed(2)),
+        mass1: m1,
+        vel1Initial: u1,
+        vel1Final: parseFloat(calcV1.toFixed(2)),
+        mass2: m2,
+        vel2Initial: u2,
+        vel2Final: parseFloat(calcV2.toFixed(2)),
+        restitution: e,
+        energyLoss: parseFloat(keLoss.toFixed(2)),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'initialMomentum',
+      yAxis: 'finalMomentum',
+      title: 'Conservation of Momentum: p_f vs p_i (Slope = 1.0)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -311,7 +341,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       'Cart 2 Final Velocity (v2)': `${calcV2.toFixed(2)} m/s`,
       'Kinetic Energy Loss': `${keLoss.toFixed(2)} J`
     };
-    downloadReportAsPDF('Momentum and Collisions Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Momentum and Collisions Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -465,29 +495,16 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

@@ -4,28 +4,16 @@ import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
   Info, 
-  Download,
-  Plus,
-  Trash2,
-  Play,
-  Pause,
-  RotateCcw,
-  Zap
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Zap,
+  Plus 
 } from 'lucide-react';
 import { calculatePhotoelectricState, PhotoelectricParameters } from '../../../physics/photoelectricPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-
-interface TrialLog {
-  id: string;
-  timestamp: string;
-  metal: string;
-  workFunction: number;
-  wavelength: number;
-  frequency: string;
-  voltage: number;
-  current: number;
-  emission: string;
-}
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Particle {
   x: number;
@@ -148,9 +136,8 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   const [activeGraphTab, setActiveGraphTab] = useState<'iv' | 'vsf' | 'energy'>('iv');
   const [explainMode, setExplainMode] = useState<boolean>(true);
 
-  // Lab Notes & logs
+  // Lab Notes
   const [notes, setNotes] = useState<string>('');
-  const [logs, setLogs] = useState<TrialLog[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -422,27 +409,43 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
     particlesRef.current = [];
   };
 
-  // Add notes to logs
-  const logTrial = () => {
-    const timestamp = new Date().toLocaleTimeString();
-    const newLog: TrialLog = {
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp,
-      metal: activeMetal.name,
-      workFunction: activeMetal.workFunction,
-      wavelength,
-      frequency: frequency14.toFixed(2),
-      voltage,
-      current: physicsState.photocurrent,
-      emission: physicsState.hasEmission ? 'Ejected' : 'No Emission'
-    };
-    setLogs([newLog, ...logs]);
-  };
 
-  // Clear logs
-  const clearLogs = () => {
-    setLogs([]);
-  };
+
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'photoelectric_sim',
+    simulationTitle: 'Photoelectric Effect & Quantum Physics',
+    category: 'modern',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'metal', label: 'Target Metal', unit: '' },
+      { key: 'frequency', label: 'Frequency (f)', unit: '×10¹⁴ Hz' },
+      { key: 'wavelength', label: 'Wavelength (λ)', unit: 'nm' },
+      { key: 'stoppingPotential', label: 'Stopping Potential (Vs)', unit: 'V' },
+      { key: 'workFunction', label: 'Work Function (Φ)', unit: 'eV' },
+      { key: 'photocurrent', label: 'Photocurrent (I)', unit: 'mA' },
+      { key: 'emission', label: 'Emission Status', unit: '' },
+    ],
+    getCurrentRow: () => {
+      const f14 = (3e8 / (wavelength * 1e-9)) / 1e14;
+      return {
+        metal: activeMetal.name,
+        frequency: parseFloat(f14.toFixed(2)),
+        wavelength,
+        stoppingPotential: parseFloat(physicsState.stoppingPotential.toFixed(2)),
+        workFunction: activeMetal.workFunction,
+        photocurrent: parseFloat(physicsState.photocurrent.toFixed(3)),
+        emission: physicsState.hasEmission ? 'Ejected' : 'No Emission',
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'frequency',
+      yAxis: 'stoppingPotential',
+      title: "Einstein's Photoelectric Equation: Vs vs f (Slope = h/e, y-int = -Φ/e)",
+      showRegression: true,
+    },
+    notes,
+  });
 
   // Export logs to PDF
   const handleExportPDF = () => {
@@ -453,21 +456,11 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
       'Light Intensity': `${intensity}%`,
       'Applied Potential (V)': `${voltage.toFixed(2)} V`
     };
-    
-    const logsData = logs.map(l => ({
-      'Timestamp': l.timestamp,
-      'Metal': l.metal,
-      'Wavelength': `${l.wavelength} nm`,
-      'Frequency': `${l.frequency} x10¹⁴ Hz`,
-      'Voltage': `${l.voltage.toFixed(2)} V`,
-      'Current': `${l.current.toFixed(3)} mA`,
-      'Emission Status': l.emission
-    }));
 
     downloadReportAsPDF(
       'Photoelectric Effect Laboratory Report',
       paramsMap,
-      logsData,
+      recorder.recordedRows,
       notes
     );
   };
@@ -645,7 +638,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
           {/* Action trigger button */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
             <button
-              onClick={logTrial}
+              onClick={recorder.recordTrial}
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -921,72 +914,28 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
           />
         </div>
 
-        {/* Trial logs history (7 Cols) */}
+        {/* Trial logs history & Laboratory Transfer (7 Cols) */}
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
               {t.trialHistory}
             </h3>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={clearLogs}
-                disabled={logs.length === 0}
-                className="p-1.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded transition-colors disabled:opacity-50 cursor-pointer"
-                title="Clear history"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleExportPDF}
-                disabled={logs.length === 0}
-                className="py-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
-                title="Export report to PDF"
-              >
-                <Download className="w-3 h-3" />
-                {t.pdf}
-              </button>
-            </div>
+            <span className="text-xs font-mono text-slate-400 font-bold">
+              {recorder.trialCount} Trials Recorded
+            </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-36 pr-1 custom-scrollbar">
-            {logs.length > 0 ? (
-              <div className="space-y-2">
-                {logs.map((log) => (
-                  <div key={log.id} className="border border-slate-100 rounded-lg p-2.5 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-[10px]">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-800">{log.metal}</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="font-bold text-slate-650">λ = {log.wavelength} nm</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="font-mono font-bold text-slate-600">f = {log.frequency}x10¹⁴ Hz</span>
-                      </div>
-                      <div className="flex gap-3 text-slate-500 font-medium">
-                        <span>Voltage: {log.voltage.toFixed(2)} V</span>
-                        <span>Current: {log.current.toFixed(3)} mA</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-2.5">
-                      <span className={`px-2 py-0.5 rounded font-black uppercase tracking-wider text-[8px] ${
-                        log.current > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {log.emission}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-mono font-bold">{log.timestamp}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs py-8">
-                <Info className="w-8 h-8 text-slate-200 mb-2" />
-                No logged records. Click "Log Trial Snapshot" above to record active values.
-              </div>
-            )}
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleExportPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
-
       </div>
 
     </div>

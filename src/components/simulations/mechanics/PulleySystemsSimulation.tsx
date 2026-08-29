@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -77,7 +79,6 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   const [vel, setVel] = useState(0);
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // Calculations
   const totalMass = m1 + m2;
@@ -285,16 +286,39 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     setVel(0);
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      m1: `${m1} kg`,
-      m2: `${m2} kg`,
-      accel: `${acceleration.toFixed(2)} m/s²`,
-      tension: `${tension.toFixed(2)} N`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'pulleys_sim',
+    simulationTitle: 'Atwood Machine Pulley Systems',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'massDifferenceRatio', label: '(m2 - m1) / (m1 + m2)', unit: '' },
+      { key: 'mass1', label: 'Left Mass m₁', unit: 'kg' },
+      { key: 'mass2', label: 'Right Mass m₂', unit: 'kg' },
+      { key: 'acceleration', label: 'Acceleration a', unit: 'm/s²' },
+      { key: 'tension', label: 'String Tension T', unit: 'N' },
+      { key: 'gravity', label: 'Gravity g', unit: 'm/s²' },
+    ],
+    getCurrentRow: () => {
+      const diffRatio = (m2 - m1) / (m1 + m2);
+      return {
+        massDifferenceRatio: parseFloat(diffRatio.toFixed(3)),
+        mass1: m1,
+        mass2: m2,
+        acceleration: parseFloat(acceleration.toFixed(2)),
+        tension: parseFloat(tension.toFixed(2)),
+        gravity: g,
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'massDifferenceRatio',
+      yAxis: 'acceleration',
+      title: 'Atwood Machine: a vs (m2-m1)/(m1+m2) (Slope = g)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -303,7 +327,7 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       'System Acceleration': `${acceleration.toFixed(2)} m/s²`,
       'String Tension': `${tension.toFixed(2)} N`
     };
-    downloadReportAsPDF('Atwood Pulley System Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Atwood Pulley System Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -431,29 +455,16 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

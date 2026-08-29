@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown, Undo } from 'lucide-react';
+import { RotateCcw, ClipboardList, Undo } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -118,7 +120,6 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
   const [thermalE, setThermalE] = useState(0); // lost energy due to friction work (J)
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -313,16 +314,41 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     setHeights(getDefaultTrack());
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      x: `${currentX.toFixed(2)} m`,
-      pe: `${potentialE.toFixed(2)} J`,
-      ke: `${kineticE.toFixed(2)} J`,
-      loss: `${thermalE.toFixed(2)} J`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'energy_sim',
+    simulationTitle: 'Work, Energy & Power',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'height', label: 'Height h', unit: 'm' },
+      { key: 'velocity', label: 'Velocity v', unit: 'm/s' },
+      { key: 'velocitySq', label: 'Velocity Squared v²', unit: 'm²/s²' },
+      { key: 'potentialEnergy', label: 'Potential Energy Ep', unit: 'J' },
+      { key: 'kineticEnergy', label: 'Kinetic Energy Ek', unit: 'J' },
+      { key: 'thermalEnergy', label: 'Thermal Dissipation Eth', unit: 'J' },
+      { key: 'totalEnergy', label: 'Total Energy E', unit: 'J' },
+    ],
+    getCurrentRow: () => {
+      const v = vel;
+      return {
+        height: parseFloat(currentHeight.toFixed(2)),
+        velocity: parseFloat(v.toFixed(2)),
+        velocitySq: parseFloat((v * v).toFixed(2)),
+        potentialEnergy: parseFloat(potentialE.toFixed(2)),
+        kineticEnergy: parseFloat(kineticE.toFixed(2)),
+        thermalEnergy: parseFloat(thermalE.toFixed(2)),
+        totalEnergy: parseFloat(totalE.toFixed(2)),
+      };
+    },
+    defaultGraphConfig: {
+      xAxis: 'height',
+      yAxis: 'velocitySq',
+      title: 'v² vs Height h (v² = 2gh, Slope = 2g)',
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -332,7 +358,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       'Final Kinetic Energy': `${kineticE.toFixed(2)} J`,
       'Thermal Energy Dissipation': `${thermalE.toFixed(2)} J`
     };
-    downloadReportAsPDF('Work and Energy Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Work and Energy Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   // Canvas drawing path handlers
@@ -578,29 +604,16 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

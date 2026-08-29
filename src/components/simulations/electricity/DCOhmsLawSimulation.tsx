@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { PlotlyGraph } from '../../PlotlyGraph';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -84,7 +86,6 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
 
   // Live state values
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
   const [chargeOffset, setChargeOffset] = useState(0);
 
   // Calculations
@@ -291,19 +292,37 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
     setV(6.0);
     setR(100);
     setFlowMode('conventional');
-    setLoggedData([]);
     setLabNotes('');
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      voltage: `${V.toFixed(1)} V`,
-      resistance: `${R} Ω`,
-      current: `${I_mA.toFixed(1)} mA`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'circuits_sim',
+    simulationTitle: "DC Circuits & Ohm's Law",
+    category: 'electricity',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'voltage', label: 'Voltage (V)', unit: 'V' },
+      { key: 'current_mA', label: 'Current (I)', unit: 'mA' },
+      { key: 'current_A', label: 'Current (I)', unit: 'A' },
+      { key: 'resistance', label: 'Set Resistance (R)', unit: 'Ω' },
+      { key: 'calculatedR', label: 'Calculated R (V/I)', unit: 'Ω' },
+    ],
+    getCurrentRow: () => ({
+      voltage: parseFloat(V.toFixed(2)),
+      current_mA: parseFloat(I_mA.toFixed(2)),
+      current_A: parseFloat(I_amps.toFixed(4)),
+      resistance: R,
+      calculatedR: I_amps > 0 ? parseFloat((V / I_amps).toFixed(2)) : R,
+    }),
+    defaultGraphConfig: {
+      xAxis: 'voltage',
+      yAxis: 'current_A',
+      title: "Ohm's Law: I vs V (Linear Fit, Slope = 1/R = Conductance G)",
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -311,7 +330,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       'Resistor Value (R)': `${R} Ω`,
       'Calculated Current (I)': `${I_mA.toFixed(1)} mA`
     };
-    downloadReportAsPDF("DC Circuits & Ohm's Law Lab Report", reportParams, loggedData, labNotes);
+    downloadReportAsPDF("DC Circuits & Ohm's Law Lab Report", reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -446,8 +465,8 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             <PlotlyGraph
               data={[
                 {
-                  x: loggedData.map((d) => parseFloat(d.current)),
-                  y: loggedData.map((d) => parseFloat(d.voltage)),
+                  x: recorder.recordedRows.map((d) => Number(d.current_mA || 0)),
+                  y: recorder.recordedRows.map((d) => Number(d.voltage_V || 0)),
                   type: 'scatter',
                   mode: 'lines+markers',
                   name: 'Logged Trials',
@@ -491,29 +510,16 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>

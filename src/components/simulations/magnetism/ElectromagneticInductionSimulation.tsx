@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown } from 'lucide-react';
+import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { PlotlyGraph } from '../../PlotlyGraph';
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -83,7 +85,6 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
   const [inducedEMF, setInducedEMF] = useState(0);
 
   const [labNotes, setLabNotes] = useState('');
-  const [loggedData, setLoggedData] = useState<any[]>([]);
 
   // History tracking for graph plots
   const [history, setHistory] = useState<{ t: number[]; flux: number[]; emf: number[] }>({
@@ -349,16 +350,34 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
     lastHistoryUpdateRef.current = 0;
   };
 
-  const handleLogDataPoint = () => {
-    const newPoint = {
-      trial: loggedData.length + 1,
-      magnetX: `${magnetX.toFixed(0)} px`,
-      turns: N,
-      flux: `${fluxVal.toFixed(2)} Wb`,
-      emf: `${inducedEMF.toFixed(3)} V`
-    };
-    setLoggedData((prev) => [...prev, newPoint]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'induction_sim',
+    simulationTitle: 'Electromagnetic Induction & Faraday Law',
+    category: 'fields',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'turns_N', label: 'Coil Turns (N)', unit: '' },
+      { key: 'magnetStrength_T', label: 'Magnet Strength (B₀)', unit: 'T' },
+      { key: 'coilArea', label: 'Coil Area (A)', unit: 'm²' },
+      { key: 'magneticFlux_Wb', label: 'Magnetic Flux (Φ)', unit: 'Wb' },
+      { key: 'inducedEMF_V', label: 'Induced EMF (ℰ)', unit: 'V' },
+    ],
+    getCurrentRow: () => ({
+      turns_N: N,
+      magnetStrength_T: B0,
+      coilArea: area,
+      magneticFlux_Wb: parseFloat(fluxVal.toFixed(3)),
+      inducedEMF_V: parseFloat(inducedEMF.toFixed(3)),
+    }),
+    defaultGraphConfig: {
+      xAxis: 'turns_N',
+      yAxis: 'inducedEMF_V',
+      title: "Faraday's Law: Induced EMF ℰ vs Coil Turns N (ℰ = -N dΦ/dt)",
+      showRegression: true,
+    },
+    notes: labNotes,
+  });
 
   const handleDownloadPDF = () => {
     const reportParams = {
@@ -367,7 +386,7 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
       'Coil Area (A)': `${area}`,
       'Induced EMF (V)': `${inducedEMF.toFixed(3)} V`
     };
-    downloadReportAsPDF('Electromagnetic Induction Lab Report', reportParams, loggedData, labNotes);
+    downloadReportAsPDF('Electromagnetic Induction Lab Report', reportParams, recorder.recordedRows, labNotes);
   };
 
   return (
@@ -544,29 +563,16 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
-            >
-              {t.logData}
-            </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
       </div>
     </div>
