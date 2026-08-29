@@ -174,10 +174,13 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
               <p className="text-xs text-blue-100 mt-1">
                 Perform regression analytics on recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.
               </p>
-              <div className="flex items-center gap-3 mt-2 text-[10px] text-blue-200 font-mono">
-                <span>Account ID: {user.id}</span>
+              <div className="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs text-blue-200">
+                <span className="font-mono text-[11px] text-blue-200/90">ID: {user.id}</span>
                 <span>•</span>
-                <span>Cloudflare R2: Connected</span>
+                <span className="inline-flex items-center gap-1.5 bg-white/15 border border-white/20 text-white px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-xs">
+                  <span>☁️ Cloud Sync: Synced</span>
+                  <span className="text-emerald-300 font-black">✓</span>
+                </span>
               </div>
             </div>
           </div>
@@ -192,28 +195,44 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
         </div>
       </div>
 
-      {/* Storage Quota Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <HardDrive className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Account Storage Quota</h3>
+      {/* Cloud Sync & Quota Overview Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Card 1: Cloudflare R2 Cloud Sync Status */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-xl text-blue-600 shadow-inner shrink-0">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span>☁️ Cloud Sync</span>
+              </h3>
+              <p className="text-xs text-slate-500 leading-snug">
+                Your laboratory work is securely synced to your account.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 max-w-xl">
-            Each account can store up to <strong>{quota.max} saved editable practicals</strong> with direct Cloudflare R2 cloud sync.
-          </p>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full text-xs font-extrabold shrink-0 shadow-xs">
+            <span>Synced</span>
+            <span className="text-sm font-black leading-none">✓</span>
+          </div>
         </div>
 
-        <div className="w-full md:w-64 space-y-1.5 shrink-0">
-          <div className="flex justify-between text-xs font-bold">
-            <span className="text-slate-600">Saved Experiments</span>
-            <span className={`font-mono ${quota.isFull ? 'text-red-600' : 'text-blue-600'}`}>
-              {quota.used} / {quota.max}
+        {/* Card 2: Account Storage Quota */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <HardDrive className="w-4 h-4 text-purple-600" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">Storage Quota</h3>
+            </div>
+            <span className={`font-mono text-xs font-bold ${quota.isFull ? 'text-red-600' : 'text-purple-600'}`}>
+              {quota.used} / {quota.max} Practicals
             </span>
           </div>
-          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className={`h-full rounded-full transition-all ${quota.isFull ? 'bg-red-500' : 'bg-blue-600'}`}
+              className={`h-full rounded-full transition-all ${quota.isFull ? 'bg-red-500' : 'bg-purple-600'}`}
               style={{ width: `${quotaPercent}%` }}
             />
           </div>
