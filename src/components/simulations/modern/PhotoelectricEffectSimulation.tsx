@@ -460,6 +460,21 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Wavelength λ = 200 nm (UV)', params: { wavelength: 200 }, durationMs: 700 },
+        { label: 'Wavelength λ = 240 nm (UV)', params: { wavelength: 240 }, durationMs: 700 },
+        { label: 'Wavelength λ = 280 nm (UV)', params: { wavelength: 280 }, durationMs: 700 },
+        { label: 'Wavelength λ = 320 nm (UV)', params: { wavelength: 320 }, durationMs: 700 },
+        { label: 'Wavelength λ = 360 nm (UV-Violet)', params: { wavelength: 360 }, durationMs: 700 },
+        { label: 'Wavelength λ = 400 nm (Violet)', params: { wavelength: 400 }, durationMs: 700 },
+        { label: 'Wavelength λ = 450 nm (Blue)', params: { wavelength: 450 }, durationMs: 700 },
+        { label: 'Wavelength λ = 500 nm (Cyan)', params: { wavelength: 500 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.wavelength !== undefined) setWavelength(p.wavelength);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'frequency',
       yAxis: 'stoppingPotential',
@@ -563,7 +578,8 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                   <button
                     key={metal.id}
                     onClick={() => setMetalId(metal.id)}
-                    className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all text-left flex flex-col justify-between ${
+                    disabled={recorder.isAutoRunning}
+                    className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all text-left flex flex-col justify-between disabled:opacity-40 ${
                       metalId === metal.id 
                         ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
                         : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
@@ -590,8 +606,9 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                 max="800"
                 step="5"
                 value={wavelength}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setWavelength(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <div className="flex justify-between text-[9px] text-slate-400 font-bold">
                 <span>200nm (UV)</span>
@@ -612,8 +629,9 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                 max="100"
                 step="5"
                 value={intensity}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setIntensity(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -629,8 +647,9 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                 max="6.0"
                 step="0.05"
                 value={voltage}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setVoltage(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -953,6 +972,10 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

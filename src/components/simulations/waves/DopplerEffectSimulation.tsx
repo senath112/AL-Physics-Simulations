@@ -272,6 +272,20 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Source Speed vₛ = 0 m/s', params: { sourceSpeed: 0 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 50 m/s', params: { sourceSpeed: 50 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 100 m/s', params: { sourceSpeed: 100 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 150 m/s', params: { sourceSpeed: 150 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 200 m/s', params: { sourceSpeed: 200 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 250 m/s', params: { sourceSpeed: 250 }, durationMs: 750 },
+        { label: 'Source Speed vₛ = 300 m/s', params: { sourceSpeed: 300 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.sourceSpeed !== undefined) setSourceSpeed(p.sourceSpeed);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'sourceSpeed',
       yAxis: 'observedFreqRight',
@@ -513,8 +527,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
                 max="400"
                 step="10"
                 value={sourceSpeed}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setSourceSpeed(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -530,8 +545,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
                 max="100"
                 step="5"
                 value={observerSpeedA}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setObserverSpeedA(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -547,8 +563,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
                 max="100"
                 step="5"
                 value={observerSpeedB}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setObserverSpeedB(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -564,8 +581,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
                 max="800"
                 step="25"
                 value={sourceFreq}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setSourceFreq(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -803,6 +821,10 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

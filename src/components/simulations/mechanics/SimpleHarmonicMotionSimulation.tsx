@@ -798,10 +798,31 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
         });
       }
     },
+    autoRunConfig: {
+      steps: mode === 'pendulum' ? [
+        { label: 'Pendulum Length L = 0.5 m', params: { length: 0.5 }, durationMs: 750 },
+        { label: 'Pendulum Length L = 1.0 m', params: { length: 1.0 }, durationMs: 750 },
+        { label: 'Pendulum Length L = 1.5 m', params: { length: 1.5 }, durationMs: 750 },
+        { label: 'Pendulum Length L = 2.0 m', params: { length: 2.0 }, durationMs: 750 },
+        { label: 'Pendulum Length L = 2.5 m', params: { length: 2.5 }, durationMs: 750 },
+        { label: 'Pendulum Length L = 3.0 m', params: { length: 3.0 }, durationMs: 750 },
+      ] : [
+        { label: 'Mass m = 0.5 kg', params: { mass: 0.5 }, durationMs: 750 },
+        { label: 'Mass m = 1.0 kg', params: { mass: 1.0 }, durationMs: 750 },
+        { label: 'Mass m = 2.0 kg', params: { mass: 2.0 }, durationMs: 750 },
+        { label: 'Mass m = 3.0 kg', params: { mass: 3.0 }, durationMs: 750 },
+        { label: 'Mass m = 4.0 kg', params: { mass: 4.0 }, durationMs: 750 },
+        { label: 'Mass m = 5.0 kg', params: { mass: 5.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.length !== undefined) setLength(p.length);
+        if (p.mass !== undefined) setMass(p.mass);
+      },
+    },
     defaultGraphConfig: {
       xAxis: mode === 'pendulum' ? 'length_m' : 'mass_kg',
       yAxis: 'periodSq_s2',
-      title: mode === 'pendulum' ? 'T² vs Length (Deduces g = 4π²/slope)' : 'T² vs Mass (Deduces k = 4π²/slope)',
+      title: mode === 'pendulum' ? 'T² vs Length L (Slope = 4π²/g)' : 'T² vs Mass m (Slope = 4π²/k)',
       showRegression: true,
     },
     notes,
@@ -858,11 +879,19 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           
           {/* System Mode Select */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Select SHM System</h3>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Select SHM System</span>
+              {recorder.isAutoRunning && (
+                <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                  🔒 Auto-Running
+                </span>
+              )}
+            </h3>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => { setMode('spring'); setAmplitude(1.2); handleReset(); }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'spring' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -870,7 +899,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
               </button>
               <button
                 onClick={() => { setMode('pendulum'); setAmplitude(45); handleReset(); }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'pendulum' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -895,8 +925,9 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                 max="5.0"
                 step="0.1"
                 value={mass}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setMass(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -913,8 +944,9 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                   max="50"
                   step="1"
                   value={springK}
+                  disabled={recorder.isAutoRunning}
                   onChange={(e) => setSpringK(parseInt(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               </div>
             ) : (
@@ -929,8 +961,9 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                   max="3.0"
                   step="0.1"
                   value={length}
+                  disabled={recorder.isAutoRunning}
                   onChange={(e) => setLength(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               </div>
             )}
@@ -1371,6 +1404,10 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

@@ -483,6 +483,20 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Velocity v = 2.0 m/s', params: { v: 2.0 }, durationMs: 750 },
+        { label: 'Velocity v = 3.0 m/s', params: { v: 3.0 }, durationMs: 750 },
+        { label: 'Velocity v = 4.0 m/s', params: { v: 4.0 }, durationMs: 750 },
+        { label: 'Velocity v = 5.0 m/s', params: { v: 5.0 }, durationMs: 750 },
+        { label: 'Velocity v = 6.0 m/s', params: { v: 6.0 }, durationMs: 750 },
+        { label: 'Velocity v = 7.0 m/s', params: { v: 7.0 }, durationMs: 750 },
+        { label: 'Velocity v = 8.0 m/s', params: { v: 8.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.v !== undefined) setV(p.v);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'velocity',
       yAxis: 'radius',
@@ -509,8 +523,13 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Mode Selector */}
@@ -519,7 +538,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             <div className="flex gap-2">
               <button
                 onClick={() => setMode('orbit')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'orbit' ? 'bg-blue-600 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -527,7 +547,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
               </button>
               <button
                 onClick={() => setMode('projected')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'projected' ? 'bg-purple-650 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -545,7 +566,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
               <div className="flex gap-2">
                 <button
                   onClick={() => setFullField(true)}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                  disabled={recorder.isAutoRunning}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer disabled:opacity-40 ${
                     fullField
                       ? 'bg-slate-800 border-slate-900 text-white'
                       : 'bg-white border-slate-250 text-slate-650 hover:bg-slate-50'
@@ -555,7 +577,8 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
                 </button>
                 <button
                   onClick={() => setFullField(false)}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                  disabled={recorder.isAutoRunning}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer disabled:opacity-40 ${
                     !fullField
                       ? 'bg-slate-800 border-slate-900 text-white'
                       : 'bg-white border-slate-250 text-slate-650 hover:bg-slate-50'
@@ -577,8 +600,9 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             </div>
             <input
               type="range" min="-2.0" max="2.0" step="0.5" value={q}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setQ(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -590,8 +614,9 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             </div>
             <input
               type="range" min="0.5" max="3.0" step="0.1" value={m}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setM(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -603,8 +628,9 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             </div>
             <input
               type="range" min="1.0" max="8.0" step="0.2" value={v}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setV(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -750,6 +776,10 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

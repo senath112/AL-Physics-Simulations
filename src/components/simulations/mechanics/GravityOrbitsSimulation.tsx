@@ -257,6 +257,22 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Radius r₀ = 0.6 AU', params: { r0: 0.6 }, durationMs: 750 },
+        { label: 'Radius r₀ = 0.8 AU', params: { r0: 0.8 }, durationMs: 750 },
+        { label: 'Radius r₀ = 1.0 AU', params: { r0: 1.0 }, durationMs: 750 },
+        { label: 'Radius r₀ = 1.2 AU', params: { r0: 1.2 }, durationMs: 750 },
+        { label: 'Radius r₀ = 1.4 AU', params: { r0: 1.4 }, durationMs: 750 },
+        { label: 'Radius r₀ = 1.6 AU', params: { r0: 1.6 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.r0 !== undefined) {
+          setR0(p.r0);
+          handleReset();
+        }
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'orbitalRadiusCubed',
       yAxis: 'orbitalPeriodSq',
@@ -281,8 +297,13 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       {/* Sidebar Controls */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Central star mass slider */}
@@ -293,8 +314,9 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             </div>
             <input
               type="range" min="1.0" max="10.0" step="0.2" value={M}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -306,8 +328,9 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             </div>
             <input
               type="range" min="0.6" max="1.8" step="0.05" value={r0}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setR0(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -319,8 +342,9 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             </div>
             <input
               type="range" min="0.5" max="3.5" step="0.05" value={vLaunch}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setVLaunch(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -411,6 +435,10 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

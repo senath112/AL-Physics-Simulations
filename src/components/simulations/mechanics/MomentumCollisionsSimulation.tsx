@@ -345,6 +345,21 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Cart 1 Vel u₁ = 1.0 m/s', params: { u1: 1.0 }, durationMs: 750 },
+        { label: 'Cart 1 Vel u₁ = 2.0 m/s', params: { u1: 2.0 }, durationMs: 750 },
+        { label: 'Cart 1 Vel u₁ = 3.0 m/s', params: { u1: 3.0 }, durationMs: 750 },
+        { label: 'Cart 1 Vel u₁ = 4.0 m/s', params: { u1: 4.0 }, durationMs: 750 },
+        { label: 'Cart 1 Vel u₁ = 5.0 m/s', params: { u1: 5.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.u1 !== undefined) {
+          setU1(p.u1);
+          handleReset();
+        }
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'initialMomentum',
       yAxis: 'finalMomentum',
@@ -373,8 +388,13 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       {/* Sidebar Controls */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Cart 1 Mass */}
@@ -385,8 +405,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="1" max="10" step="0.2" value={m1}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM1(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -398,8 +419,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="0" max="5" step="0.2" value={u1}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setU1(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -411,8 +433,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="1" max="10" step="0.2" value={m2}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM2(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -424,8 +447,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="-5" max="0" step="0.2" value={u2}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setU2(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -525,6 +549,10 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

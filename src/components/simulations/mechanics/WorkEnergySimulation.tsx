@@ -359,6 +359,21 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Cart Mass m = 1.0 kg', params: { m: 1.0 }, durationMs: 750 },
+        { label: 'Cart Mass m = 2.0 kg', params: { m: 2.0 }, durationMs: 750 },
+        { label: 'Cart Mass m = 3.0 kg', params: { m: 3.0 }, durationMs: 750 },
+        { label: 'Cart Mass m = 4.0 kg', params: { m: 4.0 }, durationMs: 750 },
+        { label: 'Cart Mass m = 5.0 kg', params: { m: 5.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.m !== undefined) {
+          setM(p.m);
+          handleReset();
+        }
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'height',
       yAxis: 'velocitySq',
@@ -458,8 +473,13 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Mass slider */}
@@ -470,8 +490,9 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             </div>
             <input
               type="range" min="0.5" max="5.0" step="0.1" value={m}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -494,8 +515,9 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             </div>
             <input
               type="range" min="0" max="0.3" step="0.01" value={mu}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setMu(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -507,8 +529,9 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             </div>
             <input
               type="range" min="1" max="20" step="0.1" value={g}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setG(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -628,6 +651,10 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

@@ -462,6 +462,18 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Incident Angle i = 15°', params: { incidentAngle: 15 }, durationMs: 750 },
+        { label: 'Incident Angle i = 30°', params: { incidentAngle: 30 }, durationMs: 750 },
+        { label: 'Incident Angle i = 45°', params: { incidentAngle: 45 }, durationMs: 750 },
+        { label: 'Incident Angle i = 60°', params: { incidentAngle: 60 }, durationMs: 750 },
+        { label: 'Incident Angle i = 75°', params: { incidentAngle: 75 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.incidentAngle !== undefined) setIncidentAngle(p.incidentAngle);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'sinI',
       yAxis: 'sinR',
@@ -714,8 +726,9 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
                     max="89.5"
                     step="0.5"
                     value={incidentAngle}
+                    disabled={recorder.isAutoRunning}
                     onChange={(e) => setIncidentAngle(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   />
                   <span className="text-[10px] text-slate-400 font-medium block">Tip: Drag the red laser handle directly on the viewport!</span>
                 </div>
@@ -900,6 +913,10 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={downloadPDFReport}
             onClearTrials={recorder.clearTrials}

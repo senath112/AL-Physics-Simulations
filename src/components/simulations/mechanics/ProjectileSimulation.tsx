@@ -135,6 +135,18 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Launch Angle θ = 15°', params: { angle: 15 }, durationMs: 800 },
+        { label: 'Launch Angle θ = 30°', params: { angle: 30 }, durationMs: 800 },
+        { label: 'Launch Angle θ = 45°', params: { angle: 45 }, durationMs: 800 },
+        { label: 'Launch Angle θ = 60°', params: { angle: 60 }, durationMs: 800 },
+        { label: 'Launch Angle θ = 75°', params: { angle: 75 }, durationMs: 800 },
+      ],
+      applyParams: (p) => {
+        setParams((prev) => ({ ...prev, ...p }));
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'angle',
       yAxis: 'range',
@@ -638,8 +650,13 @@ Hence, the maximum height reached is 5.0 m.`,
         
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Initial Velocity */}
@@ -654,8 +671,9 @@ Hence, the maximum height reached is 5.0 m.`,
               max="50"
               step="0.5"
               value={params.v0}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, v0: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -671,8 +689,9 @@ Hence, the maximum height reached is 5.0 m.`,
               max="90"
               step="1"
               value={params.angle}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, angle: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -688,8 +707,9 @@ Hence, the maximum height reached is 5.0 m.`,
               max="30"
               step="0.5"
               value={params.h0}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, h0: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -705,8 +725,9 @@ Hence, the maximum height reached is 5.0 m.`,
               max="25.0"
               step="0.1"
               value={params.g}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, g: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -799,6 +820,10 @@ Hence, the maximum height reached is 5.0 m.`,
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

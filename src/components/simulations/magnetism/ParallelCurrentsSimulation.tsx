@@ -161,6 +161,20 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Current I₁ = 2.0 A', params: { i1: 2.0 }, durationMs: 700 },
+        { label: 'Current I₁ = 4.0 A', params: { i1: 4.0 }, durationMs: 700 },
+        { label: 'Current I₁ = 6.0 A', params: { i1: 6.0 }, durationMs: 700 },
+        { label: 'Current I₁ = 8.0 A', params: { i1: 8.0 }, durationMs: 700 },
+        { label: 'Current I₁ = 10.0 A', params: { i1: 10.0 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.i1 !== undefined) setI1(p.i1);
+        if (p.i2 !== undefined) setI2(p.i2);
+        if (p.distance !== undefined) setDistance(p.distance);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'distance_mm',
       yAxis: 'forcePerLength_uN_m',
@@ -526,8 +540,9 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
                 max="10.0"
                 step="0.5"
                 value={i1}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setI1(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -543,8 +558,9 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
                 max="10.0"
                 step="0.5"
                 value={i2}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setI2(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -560,8 +576,9 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
                 max="100"
                 step="5"
                 value={distance}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setDistance(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -706,6 +723,10 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

@@ -306,6 +306,23 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       { key: 'topTension', label: 'Tension at Top', unit: 'N' },
       { key: 'bottomTension', label: 'Tension at Bottom', unit: 'N' },
     ],
+    autoRunConfig: {
+      steps: [
+        { label: 'Speed v = 2.0 m/s', params: { v: 2.0 }, durationMs: 750 },
+        { label: 'Speed v = 3.0 m/s', params: { v: 3.0 }, durationMs: 750 },
+        { label: 'Speed v = 4.0 m/s', params: { v: 4.0 }, durationMs: 750 },
+        { label: 'Speed v = 5.0 m/s', params: { v: 5.0 }, durationMs: 750 },
+        { label: 'Speed v = 6.0 m/s', params: { v: 6.0 }, durationMs: 750 },
+        { label: 'Speed v = 7.0 m/s', params: { v: 7.0 }, durationMs: 750 },
+        { label: 'Speed v = 8.0 m/s', params: { v: 8.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.v !== undefined) {
+          setV(p.v);
+          handleParamChange();
+        }
+      },
+    },
     getCurrentRow: () => ({
       speed: v,
       speedSq: parseFloat((v * v).toFixed(2)),
@@ -356,8 +373,13 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Mode Selector */}
@@ -366,7 +388,8 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             <div className="flex gap-2">
               <button
                 onClick={() => { setMode('horizontal'); handleParamChange(); }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'horizontal' ? 'bg-blue-600 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -374,7 +397,8 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
               </button>
               <button
                 onClick={() => { setMode('vertical'); handleParamChange(); }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   mode === 'vertical' ? 'bg-purple-600 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -386,13 +410,14 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
           {/* Mass slider */}
           <div className="space-y-1.5 border-t border-slate-100 pt-3">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-600">{t.mass}</span>
+              <span className="text-slate-650">{t.mass}</span>
               <span className="text-slate-700 font-mono">{m.toFixed(1)} kg</span>
             </div>
             <input
               type="range" min="0.5" max="8.0" step="0.1" value={m}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM(parseFloat(e.target.value)); handleParamChange(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -535,6 +560,10 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

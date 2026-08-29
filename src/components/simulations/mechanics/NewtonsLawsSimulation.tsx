@@ -145,6 +145,19 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Force F = 5 N', params: { force: 5 }, durationMs: 750 },
+        { label: 'Force F = 10 N', params: { force: 10 }, durationMs: 750 },
+        { label: 'Force F = 20 N', params: { force: 20 }, durationMs: 750 },
+        { label: 'Force F = 30 N', params: { force: 30 }, durationMs: 750 },
+        { label: 'Force F = 40 N', params: { force: 40 }, durationMs: 750 },
+        { label: 'Force F = 50 N', params: { force: 50 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        setParams((prev) => ({ ...prev, ...p }));
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'acceleration',
       yAxis: 'force',
@@ -535,8 +548,13 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Applied Force */}
@@ -551,8 +569,9 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
               max="50"
               step="1"
               value={params.force}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, force: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -568,8 +587,9 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
               max="15"
               step="0.5"
               value={params.mass}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, mass: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -585,8 +605,9 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
               max="0.9"
               step="0.02"
               value={params.muStatic}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => handleStaticFrictionChange(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -602,8 +623,9 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
               max="0.8"
               step="0.02"
               value={params.muKinetic}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => handleKineticFrictionChange(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -643,6 +665,10 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

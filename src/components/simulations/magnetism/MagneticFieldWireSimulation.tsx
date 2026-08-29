@@ -153,6 +153,20 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Probe Distance r = 15 mm', params: { probeDistance: 15 }, durationMs: 700 },
+        { label: 'Probe Distance r = 30 mm', params: { probeDistance: 30 }, durationMs: 700 },
+        { label: 'Probe Distance r = 45 mm', params: { probeDistance: 45 }, durationMs: 700 },
+        { label: 'Probe Distance r = 60 mm', params: { probeDistance: 60 }, durationMs: 700 },
+        { label: 'Probe Distance r = 75 mm', params: { probeDistance: 75 }, durationMs: 700 },
+        { label: 'Probe Distance r = 90 mm', params: { probeDistance: 90 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.probeDistance !== undefined) setProbeDistance(p.probeDistance);
+        if (p.current !== undefined) setCurrent(p.current);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'invDist_inv_m',
       yAxis: 'fieldStrength_uT',
@@ -613,8 +627,9 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                 max="10.0"
                 step="0.5"
                 value={current}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setCurrent(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -630,8 +645,9 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                 max="120"
                 step="5"
                 value={probeDistance}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setProbeDistance(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -797,6 +813,10 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

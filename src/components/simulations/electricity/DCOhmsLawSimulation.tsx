@@ -329,6 +329,20 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Voltage V = 1.0 V', params: { v: 1.0 }, durationMs: 700 },
+        { label: 'Voltage V = 2.0 V', params: { v: 2.0 }, durationMs: 700 },
+        { label: 'Voltage V = 4.0 V', params: { v: 4.0 }, durationMs: 700 },
+        { label: 'Voltage V = 6.0 V', params: { v: 6.0 }, durationMs: 700 },
+        { label: 'Voltage V = 8.0 V', params: { v: 8.0 }, durationMs: 700 },
+        { label: 'Voltage V = 10.0 V', params: { v: 10.0 }, durationMs: 700 },
+        { label: 'Voltage V = 12.0 V', params: { v: 12.0 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.v !== undefined) setV(p.v);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'voltage',
       yAxis: 'current_A',
@@ -352,8 +366,13 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Voltage slider */}
@@ -364,8 +383,9 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             </div>
             <input
               type="range" min="0.0" max="12.0" step="0.5" value={V}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setV(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -377,8 +397,9 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             </div>
             <input
               type="range" min="20" max="500" step="10" value={R}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setR(parseInt(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -388,7 +409,8 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             <div className="flex gap-2">
               <button
                 onClick={() => setFlowMode('conventional')}
-                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   flowMode === 'conventional' ? 'bg-slate-800 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -396,7 +418,8 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
               </button>
               <button
                 onClick={() => setFlowMode('electrons')}
-                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                disabled={recorder.isAutoRunning}
+                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-40 ${
                   flowMode === 'electrons' ? 'bg-slate-800 text-white shadow' : 'bg-slate-50 text-slate-650'
                 }`}
               >
@@ -530,6 +553,10 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

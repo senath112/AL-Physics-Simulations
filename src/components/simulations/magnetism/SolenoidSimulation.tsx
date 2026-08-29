@@ -380,6 +380,18 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Current I = 1.0 A', params: { i: 1.0 }, durationMs: 700 },
+        { label: 'Current I = 2.0 A', params: { i: 2.0 }, durationMs: 700 },
+        { label: 'Current I = 3.0 A', params: { i: 3.0 }, durationMs: 700 },
+        { label: 'Current I = 4.0 A', params: { i: 4.0 }, durationMs: 700 },
+        { label: 'Current I = 5.0 A', params: { i: 5.0 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.i !== undefined) setI(p.i);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'current',
       yAxis: 'field_mT',
@@ -404,8 +416,13 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Current Slider */}
@@ -418,8 +435,9 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
             </div>
             <input
               type="range" min="-5.0" max="5.0" step="0.2" value={I}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setI(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -542,6 +560,10 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

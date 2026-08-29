@@ -194,6 +194,19 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Volume V = 1.0 L', params: { volume: 1.0 }, durationMs: 750 },
+        { label: 'Volume V = 2.0 L', params: { volume: 2.0 }, durationMs: 750 },
+        { label: 'Volume V = 3.0 L', params: { volume: 3.0 }, durationMs: 750 },
+        { label: 'Volume V = 4.0 L', params: { volume: 4.0 }, durationMs: 750 },
+        { label: 'Volume V = 5.0 L', params: { volume: 5.0 }, durationMs: 750 },
+        { label: 'Volume V = 6.0 L', params: { volume: 6.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.volume !== undefined) setVolume(p.volume);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'invVolume',
       yAxis: 'pressure',
@@ -369,7 +382,8 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
               <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => { setGasMode('ideal'); }}
-                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                  disabled={recorder.isAutoRunning}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center disabled:opacity-40 ${
                     gasMode === 'ideal' 
                       ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
@@ -379,7 +393,8 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                 </button>
                 <button
                   onClick={() => { setGasMode('boyle'); }}
-                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                  disabled={recorder.isAutoRunning}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center disabled:opacity-40 ${
                     gasMode === 'boyle' 
                       ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
@@ -389,7 +404,8 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                 </button>
                 <button
                   onClick={() => { setGasMode('charles'); }}
-                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                  disabled={recorder.isAutoRunning}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center disabled:opacity-40 ${
                     gasMode === 'charles' 
                       ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
@@ -399,7 +415,8 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                 </button>
                 <button
                   onClick={() => { setGasMode('pressure'); }}
-                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center ${
+                  disabled={recorder.isAutoRunning}
+                  className={`py-1.5 px-2 text-[10px] font-bold rounded-lg border transition-all text-center disabled:opacity-40 ${
                     gasMode === 'pressure' 
                       ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
                       : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
@@ -421,8 +438,9 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                 min="10"
                 max="180"
                 value={moleculesCount}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => setMoleculesCount(parseInt(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -438,9 +456,9 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
                 max="7.0"
                 step="0.1"
                 value={volume}
-                disabled={gasMode === 'charles' || gasMode === 'pressure'}
+                disabled={gasMode === 'charles' || gasMode === 'pressure' || recorder.isAutoRunning}
                 onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -684,6 +702,10 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

@@ -2,6 +2,20 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLaboratory } from '../context/LaboratoryContext';
 import { DataColumn, DataRow, GraphConfig, PracticalCategory } from '../types/laboratory';
 
+export interface AutoRunStep<TParams = any> {
+  label: string;
+  params: TParams;
+  durationMs?: number; // Delay before capturing reading (default: 800ms)
+}
+
+export interface AutoRunConfig {
+  steps: AutoRunStep<any>[];
+  applyParams: (params: any) => void;
+  onStart?: () => void;
+  onStepComplete?: (stepIndex: number, total: number) => void;
+  onComplete?: () => void;
+}
+
 interface UseSimulationRecorderOptions {
   simulationId: string;
   simulationTitle: string;
@@ -9,6 +23,7 @@ interface UseSimulationRecorderOptions {
   columns: DataColumn[];
   getCurrentRow: () => DataRow;
   getSeriesData?: () => DataRow[];
+  autoRunConfig?: AutoRunConfig;
   defaultGraphConfig?: Partial<GraphConfig>;
   notes?: string;
 }
@@ -70,6 +85,7 @@ export function useSimulationRecorder({
   columns,
   getCurrentRow,
   getSeriesData,
+  autoRunConfig,
   defaultGraphConfig,
   notes = '',
 }: UseSimulationRecorderOptions) {
@@ -77,12 +93,19 @@ export function useSimulationRecorder({
 
   const [recordedRows, setRecordedRows] = useState<DataRow[]>([]);
   const [isAutoRecording, setIsAutoRecording] = useState<boolean>(false);
+  const [isAutoRunning, setIsAutoRunning] = useState<boolean>(false);
+  const [autoRunProgress, setAutoRunProgress] = useState<{ current: number; total: number; label: string } | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const autoRecordIntervalRef = useRef<number | null>(null);
+  const autoRunAbortControllerRef = useRef<boolean>(false);
+  const autoRunTimeoutRef = useRef<number | null>(null);
   const getCurrentRowRef = useRef(getCurrentRow);
   getCurrentRowRef.current = getCurrentRow;
+
+  const autoRunConfigRef = useRef(autoRunConfig);
+  autoRunConfigRef.current = autoRunConfig;
 
   // 1. Record single current snapshot trial
   const recordTrial = useCallback(() => {
@@ -191,25 +214,127 @@ export function useSimulationRecorder({
     }
   }, [isAutoRecording, startAutoRecord, stopAutoRecord]);
 
-  // Cleanup auto-record interval on unmount
+  // 5. Autonomous Auto-Run Execution (Sequentially changes parameters and captures points)
+  const cancelAutoRun = useCallback(() => {
+    autoRunAbortControllerRef.current = true;
+    if (autoRunTimeoutRef.current !== null) {
+      window.clearTimeout(autoRunTimeoutRef.current);
+      autoRunTimeoutRef.current = null;
+    }
+    setIsAutoRunning(false);
+    setAutoRunProgress(null);
+    setStatusMessage({
+      type: 'error',
+      text: 'Auto-run experiment cancelled by user.',
+    });
+  }, []);
+
+  const startAutoRun = useCallback(async () => {
+    const config = autoRunConfigRef.current;
+    if (!config || !config.steps || config.steps.length === 0) {
+      setStatusMessage({
+        type: 'error',
+        text: 'No Auto-Run experiment configuration defined for this simulation.',
+      });
+      return;
+    }
+
+    stopAutoRecord();
+    autoRunAbortControllerRef.current = false;
+    setIsAutoRunning(true);
+    setAutoRunProgress({
+      current: 1,
+      total: config.steps.length,
+      label: config.steps[0].label || 'Starting Step 1',
+    });
+    setStatusMessage({
+      type: 'success',
+      text: `Auto-run started: Autonomous testing across ${config.steps.length} configurations...`,
+    });
+
+    if (config.onStart) {
+      config.onStart();
+    }
+
+    const runNextStep = async (stepIdx: number) => {
+      if (autoRunAbortControllerRef.current) return;
+
+      if (stepIdx >= config.steps.length) {
+        setIsAutoRunning(false);
+        setAutoRunProgress(null);
+        setStatusMessage({
+          type: 'success',
+          text: `Auto-run complete! ${config.steps.length} experimental configurations evaluated & logged.`,
+        });
+        if (config.onComplete) {
+          config.onComplete();
+        }
+        return;
+      }
+
+      const step = config.steps[stepIdx];
+      setAutoRunProgress({
+        current: stepIdx + 1,
+        total: config.steps.length,
+        label: step.label || `Step ${stepIdx + 1}`,
+      });
+
+      // 1. Apply simulation parameter changes
+      config.applyParams(step.params);
+
+      // 2. Wait for physical motion & settling duration
+      const delay = step.durationMs || 900;
+      await new Promise<void>((resolve) => {
+        autoRunTimeoutRef.current = window.setTimeout(() => {
+          resolve();
+        }, delay);
+      });
+
+      if (autoRunAbortControllerRef.current) return;
+
+      // 3. Capture observation data point
+      const captured = cleanDataRow(getCurrentRowRef.current());
+      setRecordedRows((prev) => {
+        const lastRow = prev[prev.length - 1];
+        if (lastRow && isDuplicateOrNearRow(captured, lastRow)) {
+          return prev;
+        }
+        return [...prev, { trial: prev.length + 1, ...captured }];
+      });
+
+      if (config.onStepComplete) {
+        config.onStepComplete(stepIdx + 1, config.steps.length);
+      }
+
+      // 4. Advance to next step
+      runNextStep(stepIdx + 1);
+    };
+
+    runNextStep(0);
+  }, [stopAutoRecord]);
+
+  // Cleanup auto-run timeout on unmount
   useEffect(() => {
     return () => {
-      if (autoRecordIntervalRef.current !== null) {
-        window.clearInterval(autoRecordIntervalRef.current);
+      autoRunAbortControllerRef.current = true;
+      if (autoRunTimeoutRef.current !== null) {
+        window.clearTimeout(autoRunTimeoutRef.current);
       }
     };
   }, []);
 
-  // 5. Clear recorded trials
+  // 6. Clear recorded trials
   const clearTrials = useCallback(() => {
     stopAutoRecord();
+    cancelAutoRun();
     setRecordedRows([]);
     setStatusMessage(null);
-  }, [stopAutoRecord]);
+  }, [stopAutoRecord, cancelAutoRun]);
 
-  // 6. Send all recorded trials / multi-point run data to Laboratory Workspace
+  // 7. Send all recorded trials / multi-point run data to Laboratory Workspace
   const sendToLaboratory = useCallback(async (customTitle?: any) => {
     stopAutoRecord();
+    cancelAutoRun();
     let rowsToExport = recordedRows;
 
     // If no trials recorded yet, capture current state or series as first trial set
@@ -217,7 +342,7 @@ export function useSimulationRecorder({
       if (getSeriesData) {
         const series = getSeriesData();
         if (series && series.length > 0) {
-          rowsToExport = series.map((r, i) => ({ trial: i + 1, ...cleanDataRow(r) }));
+          rowsToExport = series.map((r: DataRow, i: number) => ({ trial: i + 1, ...cleanDataRow(r) }));
         } else {
           const captured = recordTrial();
           rowsToExport = [captured];
@@ -246,7 +371,7 @@ export function useSimulationRecorder({
       setStatusMessage(null);
 
       // Ensure trial column exists and all column keys are safe
-      const fullColumns: DataColumn[] = columns.some((c) => c.key === 'trial')
+      const fullColumns: DataColumn[] = columns.some((c: DataColumn) => c.key === 'trial')
         ? columns
         : [{ key: 'trial', label: 'Trial #' }, ...columns];
 
@@ -301,6 +426,11 @@ export function useSimulationRecorder({
     startAutoRecord,
     stopAutoRecord,
     toggleAutoRecord,
+    hasAutoRun: Boolean(autoRunConfig?.steps && autoRunConfig.steps.length > 0),
+    isAutoRunning,
+    autoRunProgress,
+    startAutoRun,
+    cancelAutoRun,
     clearTrials,
     sendToLaboratory,
     isSaving,

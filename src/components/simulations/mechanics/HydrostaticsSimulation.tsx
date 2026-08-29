@@ -679,6 +679,29 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
         });
       }
     },
+    autoRunConfig: {
+      steps: activeTab === 'pressure' ? [
+        { label: 'Depth h = 0.2 m', params: { probeDepth: 0.2 }, durationMs: 750 },
+        { label: 'Depth h = 0.5 m', params: { probeDepth: 0.5 }, durationMs: 750 },
+        { label: 'Depth h = 0.8 m', params: { probeDepth: 0.8 }, durationMs: 750 },
+        { label: 'Depth h = 1.1 m', params: { probeDepth: 1.1 }, durationMs: 750 },
+        { label: 'Depth h = 1.4 m', params: { probeDepth: 1.4 }, durationMs: 750 },
+        { label: 'Depth h = 1.7 m', params: { probeDepth: 1.7 }, durationMs: 750 },
+        { label: 'Depth h = 2.0 m', params: { probeDepth: 2.0 }, durationMs: 750 },
+      ] : [
+        { label: 'Submerged 15%', params: { immersionPercent: 15 }, durationMs: 750 },
+        { label: 'Submerged 30%', params: { immersionPercent: 30 }, durationMs: 750 },
+        { label: 'Submerged 45%', params: { immersionPercent: 45 }, durationMs: 750 },
+        { label: 'Submerged 60%', params: { immersionPercent: 60 }, durationMs: 750 },
+        { label: 'Submerged 75%', params: { immersionPercent: 75 }, durationMs: 750 },
+        { label: 'Submerged 90%', params: { immersionPercent: 90 }, durationMs: 750 },
+        { label: 'Submerged 100%', params: { immersionPercent: 100 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.probeDepth !== undefined) setProbeDepth(p.probeDepth);
+        if (p.immersionPercent !== undefined) setImmersionPercent(p.immersionPercent);
+      },
+    },
     defaultGraphConfig: {
       xAxis: activeTab === 'archimedes' ? 'submergedFraction' : 'depth_m',
       yAxis: activeTab === 'archimedes' ? 'buoyantForce_N' : 'gaugePressure_kPa',
@@ -723,14 +746,21 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
           <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
             <span>{t.paramsTitle}</span>
-            <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-mono">g = {g.toFixed(1)} m/s²</span>
+            {recorder.isAutoRunning ? (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            ) : (
+              <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-mono">g = {g.toFixed(1)} m/s²</span>
+            )}
           </h3>
 
           {/* Mode Switcher Tabs */}
           <div className="flex gap-1.5 p-1 bg-slate-100 rounded-lg">
             <button
               onClick={() => setActiveTab('archimedes')}
-              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              disabled={recorder.isAutoRunning}
+              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40 ${
                 activeTab === 'archimedes' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -739,7 +769,8 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             </button>
             <button
               onClick={() => setActiveTab('pressure')}
-              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              disabled={recorder.isAutoRunning}
+              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40 ${
                 activeTab === 'pressure' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -748,7 +779,8 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             </button>
             <button
               onClick={() => setActiveTab('utube')}
-              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              disabled={recorder.isAutoRunning}
+              className={`flex-1 py-1.5 px-2 rounded-md text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40 ${
                 activeTab === 'utube' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -768,8 +800,9 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
                 </div>
                 <input
                   type="range" min="0" max="100" step="1" value={immersionPercent}
+                  disabled={recorder.isAutoRunning}
                   onChange={(e) => setImmersionPercent(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -781,8 +814,9 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
                 </div>
                 <input
                   type="range" min="0.2" max="5.0" step="0.1" value={objMass}
+                  disabled={recorder.isAutoRunning}
                   onChange={(e) => setObjMass(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -1061,6 +1095,10 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

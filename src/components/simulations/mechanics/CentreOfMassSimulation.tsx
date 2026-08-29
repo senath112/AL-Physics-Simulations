@@ -254,6 +254,21 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Point Mass = 1.0 kg', params: { m: 1.0 }, durationMs: 700 },
+        { label: 'Point Mass = 2.5 kg', params: { m: 2.5 }, durationMs: 700 },
+        { label: 'Point Mass = 4.0 kg', params: { m: 4.0 }, durationMs: 700 },
+        { label: 'Point Mass = 6.0 kg', params: { m: 6.0 }, durationMs: 700 },
+        { label: 'Point Mass = 8.0 kg', params: { m: 8.0 }, durationMs: 700 },
+        { label: 'Point Mass = 10.0 kg', params: { m: 10.0 }, durationMs: 700 },
+      ],
+      applyParams: (p) => {
+        if (p.m !== undefined) {
+          handleWeightChange(p.m);
+        }
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'totalMass',
       yAxis: 'xCM',
@@ -278,8 +293,13 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
       {/* Sidebar Controls */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
@@ -295,8 +315,9 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
               </div>
               <input
                 type="range" min="0.5" max="10.0" step="0.1" value={selectedPoint.m}
+                disabled={recorder.isAutoRunning}
                 onChange={(e) => handleWeightChange(parseFloat(e.target.value))}
-                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-500"
+                className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-500 disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
           ) : (
@@ -369,6 +390,10 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

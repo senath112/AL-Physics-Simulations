@@ -382,6 +382,20 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
         inducedEMF_V: parseFloat((turnCount * dPhi_dt).toFixed(3)),
       }));
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Magnet Strength B₀ = 0.5 T', params: { b0: 0.5 }, durationMs: 750 },
+        { label: 'Magnet Strength B₀ = 1.0 T', params: { b0: 1.0 }, durationMs: 750 },
+        { label: 'Magnet Strength B₀ = 1.5 T', params: { b0: 1.5 }, durationMs: 750 },
+        { label: 'Magnet Strength B₀ = 2.0 T', params: { b0: 2.0 }, durationMs: 750 },
+        { label: 'Magnet Strength B₀ = 2.5 T', params: { b0: 2.5 }, durationMs: 750 },
+        { label: 'Magnet Strength B₀ = 3.0 T', params: { b0: 3.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.b0 !== undefined) setB0(p.b0);
+        if (p.n !== undefined) setN(p.n);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'turns_N',
       yAxis: 'inducedEMF_V',
@@ -406,8 +420,13 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
       {/* Parameters Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Magnet Strength slider */}
@@ -418,8 +437,9 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             </div>
             <input
               type="range" min="0.5" max="3.0" step="0.1" value={B0}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setB0(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -431,8 +451,9 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             </div>
             <input
               type="range" min="1" max="4" step="1" value={N}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setN(parseInt(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -444,8 +465,9 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             </div>
             <input
               type="range" min="0.5" max="1.5" step="0.1" value={area}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setArea(parseFloat(e.target.value))}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -581,6 +603,10 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

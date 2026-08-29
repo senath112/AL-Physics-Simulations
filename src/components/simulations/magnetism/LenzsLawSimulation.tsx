@@ -500,6 +500,19 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       }
       return seriesRows;
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Magnet Strength B₀ = 0.5 T', params: { magnetStrength: 0.5 }, durationMs: 800 },
+        { label: 'Magnet Strength B₀ = 1.0 T', params: { magnetStrength: 1.0 }, durationMs: 800 },
+        { label: 'Magnet Strength B₀ = 1.5 T', params: { magnetStrength: 1.5 }, durationMs: 800 },
+        { label: 'Magnet Strength B₀ = 2.0 T', params: { magnetStrength: 2.0 }, durationMs: 800 },
+        { label: 'Magnet Strength B₀ = 2.5 T', params: { magnetStrength: 2.5 }, durationMs: 800 },
+        { label: 'Magnet Strength B₀ = 3.0 T', params: { magnetStrength: 3.0 }, durationMs: 800 },
+      ],
+      applyParams: (p) => {
+        if (p.magnetStrength !== undefined) setMagnetStrength(p.magnetStrength);
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'time_s',
       yAxis: 'resultantCurrent_A',
@@ -1067,6 +1080,10 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

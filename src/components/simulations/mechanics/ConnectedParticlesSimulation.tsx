@@ -312,6 +312,22 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Hanging Mass m₂ = 1.0 kg', params: { m2: 1.0 }, durationMs: 750 },
+        { label: 'Hanging Mass m₂ = 2.0 kg', params: { m2: 2.0 }, durationMs: 750 },
+        { label: 'Hanging Mass m₂ = 3.0 kg', params: { m2: 3.0 }, durationMs: 750 },
+        { label: 'Hanging Mass m₂ = 4.0 kg', params: { m2: 4.0 }, durationMs: 750 },
+        { label: 'Hanging Mass m₂ = 5.0 kg', params: { m2: 5.0 }, durationMs: 750 },
+        { label: 'Hanging Mass m₂ = 6.0 kg', params: { m2: 6.0 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        if (p.m2 !== undefined) {
+          setM2(p.m2);
+          handleReset();
+        }
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'mass2',
       yAxis: 'acceleration',
@@ -343,8 +359,13 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
       {/* Parameters & Analytics Sidebar */}
       <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Mass 1 */}
@@ -355,8 +376,9 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="1" max="15" step="0.5" value={m1}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM1(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -368,8 +390,9 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="1" max="15" step="0.5" value={m2}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setM2(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -381,8 +404,9 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="0" max="0.9" step="0.05" value={mu}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setMu(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -394,8 +418,9 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
             <input
               type="range" min="1" max="20" step="0.1" value={g}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => { setG(parseFloat(e.target.value)); handleReset(); }}
-              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -482,6 +507,10 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

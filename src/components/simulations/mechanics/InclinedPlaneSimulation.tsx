@@ -153,6 +153,18 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         };
       });
     },
+    autoRunConfig: {
+      steps: [
+        { label: 'Incline Angle θ = 15°', params: { angle: 15 }, durationMs: 750 },
+        { label: 'Incline Angle θ = 25°', params: { angle: 25 }, durationMs: 750 },
+        { label: 'Incline Angle θ = 35°', params: { angle: 35 }, durationMs: 750 },
+        { label: 'Incline Angle θ = 45°', params: { angle: 45 }, durationMs: 750 },
+        { label: 'Incline Angle θ = 55°', params: { angle: 55 }, durationMs: 750 },
+      ],
+      applyParams: (p) => {
+        setParams((prev) => ({ ...prev, ...p }));
+      },
+    },
     defaultGraphConfig: {
       xAxis: 'sinAngle',
       yAxis: 'acceleration',
@@ -590,8 +602,13 @@ Hence, the critical angle is 30°.`,
         
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.paramsTitle}
+          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
+            <span>{t.paramsTitle}</span>
+            {recorder.isAutoRunning && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                🔒 Auto-Running
+              </span>
+            )}
           </h3>
 
           {/* Incline Angle */}
@@ -606,8 +623,9 @@ Hence, the critical angle is 30°.`,
               max="75"
               step="0.5"
               value={params.angle}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, angle: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -623,8 +641,9 @@ Hence, the critical angle is 30°.`,
               max="15"
               step="0.5"
               value={params.mass}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => setParams({ ...params, mass: parseFloat(e.target.value) })}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -640,8 +659,9 @@ Hence, the critical angle is 30°.`,
               max="0.9"
               step="0.02"
               value={params.muStatic}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => handleStaticFrictionChange(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -657,8 +677,9 @@ Hence, the critical angle is 30°.`,
               max="0.8"
               step="0.02"
               value={params.muKinetic}
+              disabled={recorder.isAutoRunning}
               onChange={(e) => handleKineticFrictionChange(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -697,6 +718,10 @@ Hence, the critical angle is 30°.`,
             onRecordFullRun={recorder.recordFullRun}
             isAutoRecording={recorder.isAutoRecording}
             onToggleAutoRecord={recorder.toggleAutoRecord}
+            isAutoRunning={recorder.isAutoRunning}
+            autoRunProgress={recorder.autoRunProgress}
+            onStartAutoRun={recorder.startAutoRun}
+            onCancelAutoRun={recorder.cancelAutoRun}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}
