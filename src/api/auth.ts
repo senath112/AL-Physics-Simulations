@@ -1,4 +1,4 @@
-import { User } from '../types/auth';
+import { User, getGoogleClientId } from '../types/auth';
 
 /**
  * Helper to generate internal user ID for new users (usr_...)
@@ -54,7 +54,7 @@ export async function verifyGoogleTokenAndLogin(idToken: string): Promise<User> 
     throw new Error('Invalid token issuer.');
   }
 
-  const expectedClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const expectedClientId = getGoogleClientId();
   if (expectedClientId && payload.aud !== expectedClientId) {
     throw new Error('Token audience does not match configured Google Client ID.');
   }

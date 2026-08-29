@@ -48,3 +48,11 @@ export interface AuthContextType extends AuthState {
   renderGoogleButton: (element: HTMLElement, options?: Record<string, any>) => void;
   modalPromptReason: string | null;
 }
+
+export const DEFAULT_GOOGLE_CLIENT_ID =
+  '390586089507-smgotc9kctkdhl201j9bjon149earu5j.apps.googleusercontent.com';
+
+export const getGoogleClientId = (): string => {
+  return import.meta.env.VITE_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
+};
+

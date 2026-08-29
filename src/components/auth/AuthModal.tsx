@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getGoogleClientId } from '../../types/auth';
 import { X, Sparkles, ShieldCheck, FileSpreadsheet, Lock, AlertCircle } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
@@ -14,7 +15,7 @@ export const AuthModal: React.FC = () => {
   } = useAuth();
 
   const googleButtonRef = useRef<HTMLDivElement>(null);
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId = getGoogleClientId();
 
   useEffect(() => {
     if (isAuthModalOpen && googleButtonRef.current && clientId) {

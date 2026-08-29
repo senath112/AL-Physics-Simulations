@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User, AuthContextType } from '../types/auth';
+import { User, AuthContextType, getGoogleClientId } from '../types/auth';
 import { verifyGoogleTokenAndLogin, fetchCurrentUser, logoutCurrentUser } from '../api/auth';
 
 declare global {
@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [modalPromptReason, setModalPromptReason] = useState<string | null>(null);
 
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const clientId = getGoogleClientId();
 
   // 1. Check existing session on initial load
   useEffect(() => {

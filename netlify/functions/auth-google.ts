@@ -72,7 +72,10 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
       };
     }
 
-    const expectedClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
+    const expectedClientId =
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.VITE_GOOGLE_CLIENT_ID ||
+      "390586089507-smgotc9kctkdhl201j9bjon149earu5j.apps.googleusercontent.com";
     if (expectedClientId && payload.aud !== expectedClientId) {
       return {
         statusCode: 401,
