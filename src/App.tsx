@@ -33,6 +33,9 @@ const CentreOfMassSimulation = lazy(() =>
 const GravityOrbitsSimulation = lazy(() =>
   import('./components/simulations/mechanics/GravityOrbitsSimulation').then(m => ({ default: m.GravityOrbitsSimulation }))
 );
+const HydrostaticsSimulation = lazy(() =>
+  import('./components/simulations/mechanics/HydrostaticsSimulation').then(m => ({ default: m.HydrostaticsSimulation }))
+);
 const GeometricalOpticsSimulation = lazy(() =>
   import('./components/simulations/optics/GeometricalOpticsSimulation').then(m => ({ default: m.GeometricalOpticsSimulation }))
 );
@@ -82,7 +85,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -122,6 +125,7 @@ const PATH_MAP: Record<PageType, string> = {
   energy_sim: '/work-energy-power',
   centre_mass_sim: '/centre-of-mass',
   orbits_sim: '/orbits',
+  hydrostatics_sim: '/hydrostatics',
   terms: '/terms',
   privacy: '/privacy'
 };
@@ -289,6 +293,17 @@ function App() {
       icon: Compass,
       status: 'active',
       pageLink: 'orbits_sim',
+    },
+    {
+      id: 'hydrostatics',
+      title: 'Hydrostatics & Buoyancy',
+      sinhalaTitle: "ද්‍රවස්ථිති විද්‍යාව සහ උත්ප්ලාවකතාව",
+      tamilTitle: "பாய்மநிலையியல் மற்றும் மிதத்தல்",
+      unit: 'mechanics',
+      description: "Perform Archimedes' principle buoyancy tests, fluid pressure vs depth measurements, and U-tube manometer density calculations.",
+      icon: Compass,
+      status: 'active',
+      pageLink: 'hydrostatics_sim',
     },
     {
       id: 'optics',
@@ -1440,6 +1455,27 @@ function App() {
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <GravityOrbitsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE HYDROSTATICS SIMULATION */}
+        {currentPage === 'hydrostatics_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Hydrostatics & Buoyancy</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ද්‍රවස්ථිති විද්‍යාව සහ උත්ප්ලාවකතාව • பாய்மநிலையியல் மற்றும் மிதத்தல்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <HydrostaticsSimulation lang={lang} />
                 </Suspense>
               </ErrorBoundary>
             </div>
