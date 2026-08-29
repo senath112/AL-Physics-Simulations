@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@tailwindcss/vite": "^4.3.3",
     "katex": "^0.18.4",
     "lucide-react": "^1.33.0",

@@ -1,7 +1,11 @@
 # Netlify Functions API rewrites
-/api/auth/google    /.netlify/functions/auth-google   200
-/api/auth/me        /.netlify/functions/auth-me       200
-/api/auth/logout    /.netlify/functions/auth-logout   200
+/api/auth/google          /.netlify/functions/auth-google           200
+/api/auth/me              /.netlify/functions/auth-me               200
+/api/auth/logout          /.netlify/functions/auth-logout           200
+/api/r2/presign-upload    /.netlify/functions/r2-presign-upload     200
+/api/r2/presign-download  /.netlify/functions/r2-presign-download   200
+/api/r2/delete            /.netlify/functions/r2-delete             200
+/api/r2/list              /.netlify/functions/r2-list               200
 
 # SPA catch-all fallback
-/*                  /index.html                       200
+/*                        /index.html                               200
