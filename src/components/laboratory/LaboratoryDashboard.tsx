@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLaboratory } from '../../context/LaboratoryContext';
+import { LaboratoryPractical, DataRow } from '../../types/laboratory';
+import { PlotlyGraph } from '../PlotlyGraph';
+import { BlockMath } from '../Math';
 import { 
   FileText, 
   TableProperties, 
@@ -7,8 +11,14 @@ import {
   Lock, 
   LogIn, 
   ArrowLeft, 
-  CheckCircle2, 
-  HardDrive 
+  HardDrive, 
+  Trash2, 
+  Plus, 
+  Download, 
+  Upload, 
+  BarChart2, 
+  FileDown, 
+  AlertCircle 
 } from 'lucide-react';
 
 interface LaboratoryDashboardProps {
@@ -18,67 +28,19 @@ interface LaboratoryDashboardProps {
 
 export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({ 
   onBackToSimulations, 
-  lang = 'en' 
+  lang: _lang = 'en' 
 }) => {
   const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { practicals, quota, deletePractical, updatePractical, uploadDiagramToR2 } = useLaboratory();
 
-  const LAB_TRANSLATIONS = {
-    en: {
-      title: 'Physics by Senath Laboratory Workspace',
-      subtitle: 'Your personal workspace for transforming simulation observations into formal lab reports and spreadsheet analytics.',
-      authRequiredTitle: 'Authentication Required to Enter the Laboratory',
-      authRequiredDesc: 'Guest users can explore all physics simulations freely. To create, edit, and save formal practical reports, please sign in with your Google account.',
-      signInBtn: 'Sign In to Access Laboratory',
-      quotaTitle: 'Laboratory Storage Quota',
-      quotaDesc: 'Each account has a quota of up to 10 saved editable practical reports with Cloudflare R2 cloud sync.',
-      quotaUsage: 'Saved Practicals',
-      reportEditorTitle: 'Word-like Report Editor',
-      reportEditorDesc: 'Write formal physics practical reports with KaTeX formulas, generated graphs, apparatus diagrams, and observation logs.',
-      statusComingSoon: 'Integration in Progress (Cloudflare R2 Backend)',
-      dataAnalyzerTitle: 'Excel-like Data Analyzer',
-      dataAnalyzerDesc: 'Perform regression analysis, error calculations, gradient slopes, and live tabular evaluations directly from logged simulation trials.',
-      cloudStorageTitle: 'Cloudflare R2 Cloud Sync',
-      cloudStorageDesc: 'All reports and data tables will be linked to your unique user ID and backed up directly to high-speed cloud storage.'
-    },
-    si: {
-      title: 'භෞතික විද්‍යා ප්‍රායෝගික පර්යේෂණාගාර වැඩබිම',
-      subtitle: 'සිමියුලේෂන් නිරීක්ෂණ නිල වාර්තා සහ පැතුරුම්පත් විශ්ලේෂණ බවට පත් කරන ඔබගේ පුද්ගලික වැඩබිම.',
-      authRequiredTitle: 'පර්යේෂණාගාරයට පිවිසීමට ගිණුමකට ඇතුළු වන්න',
-      authRequiredDesc: 'සියලුම සිමියුලේෂන් ආගන්තුක පරිශීලකයින්ට නොමිලේ විවෘතව පවතී. ප්‍රායෝගික වාර්තා සකස් කර සුරැකීමට කරුණාකර ඔබගේ Google ගිණුමෙන් ඇතුළු වන්න.',
-      signInBtn: 'ගිණුමට ඇතුළු වන්න',
-      quotaTitle: 'ප්‍රායෝගික වාර්තා ධාරිතාව',
-      quotaDesc: 'සෑම ගිණුමකටම Cloudflare R2 හරහා සුරැකිය හැකි සංස්කරණය කළ හැකි ප්‍රායෝගික වාර්තා 10 ක ඉඩ ප්‍රමාණයක් හිමිවේ.',
-      quotaUsage: 'සුරකින ලද වාර්තා',
-      reportEditorTitle: 'ප්‍රායෝගික වාර්තා සංස්කාරකය (Word ආකාරයේ)',
-      reportEditorDesc: 'KaTeX සූත්‍ර, ප්‍රස්තාර, උපකරණ රූප සටහන් සහ නිරීක්ෂණ ඇතුළත් නිල භෞතික විද්‍යා වාර්තා සකස් කරන්න.',
-      statusComingSoon: 'සංවර්ධනය වෙමින් පවතී (Cloudflare R2)',
-      dataAnalyzerTitle: 'දත්ත විශ්ලේෂකය (Excel ආකාරයේ)',
-      dataAnalyzerDesc: 'දත්ත ලඝු-සටහන් ඇසුරෙන් ප්‍රත්‍යයන විශ්ලේෂණය, දෝෂ ගණනය කිරීම් සහ අනුක්‍රමණ ගණනය කරන්න.',
-      cloudStorageTitle: 'Cloudflare R2 ක්ලවුඩ් සමමුහුර්තකරණය',
-      cloudStorageDesc: 'ඔබගේ සියලුම වාර්තා සහ දත්ත වගු ඔබගේ අභ්‍යන්තර ගිණුම් අංකයට ආරක්ෂිතව ක්ලවුඩ් මත සුරැකේ.'
-    },
-    ta: {
-      title: 'இயற்பியல் ஆய்வகப் பணியிடம்',
-      subtitle: 'உருவகப்படுத்துதல் அவதானிப்புகளை முறையான ஆய்வக அறிக்கைகள் மற்றும் விரிதாள் பகுப்பாய்வுகளாக மாற்றுவதற்கான உங்கள் தனிப்பயன் தளம்.',
-      authRequiredTitle: 'ஆய்வகத்தை அணுக உள்நுழையவும்',
-      authRequiredDesc: 'விருந்தினர்கள் அனைத்து இயற்பியல் உருவகப்படுத்துதல்களையும் பயன்படுத்தலாம். ஆய்வக அறிக்கைகளைத் திருத்த உங்கள் Google கணக்கில் உள்நுழையவும்.',
-      signInBtn: 'உள்நுழையவும்',
-      quotaTitle: 'ஆய்வக சேமிப்பக ஒதுக்கீடு',
-      quotaDesc: 'ஒவ்வொரு கணக்கிற்கும் Cloudflare R2 மேகக்கணி வழியாக 10 திருத்தக்கூடிய ஆய்வக அறிக்கைகள் வரை சேமிக்கலாம்.',
-      quotaUsage: 'சேமிக்கப்பட்ட அறிக்கைகள்',
-      reportEditorTitle: 'அறிக்கை திருத்தி (Word போன்றது)',
-      reportEditorDesc: 'KaTeX சூத்திரங்கள், வரைபடங்கள் மற்றும் அவதானிப்புக் குறிப்புகளுடன் முறையான ஆய்வக அறிக்கைகளை உருவாக்கவும்.',
-      statusComingSoon: 'உருவாக்கத்தில் உள்ளது (Cloudflare R2)',
-      dataAnalyzerTitle: 'தரவு பகுப்பாய்வி (Excel போன்றது)',
-      dataAnalyzerDesc: 'சோதனைப் பதிவுகளிலிருந்து பிழை கணிப்புகள் மற்றும் சாய்வு மதிப்பீடுகளைச் செய்யவும்.',
-      cloudStorageTitle: 'Cloudflare R2 மேகக்கணி ஒத்திசைவு',
-      cloudStorageDesc: 'உங்கள் அறிக்கைகள் அனைத்தும் உங்கள் தனித்துவமான பயனர் ஐடியுடன் பாதுகாப்பாகச் சேமிக்கப்படும்.'
-    }
-  };
+  const [selectedPracticalId, setSelectedPracticalId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'library' | 'analyzer' | 'report'>('library');
+  const [isUploadingDiagram, setIsUploadingDiagram] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const t = LAB_TRANSLATIONS[lang] || LAB_TRANSLATIONS.en;
+  const selectedPractical = practicals.find(p => p.id === selectedPracticalId) || practicals[0] || null;
 
-  // 1. GUEST / UNAUTHENTICATED GATE
+  // 1. GUEST GATE
   if (!isAuthenticated || !user) {
     return (
       <div className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-12 flex flex-col items-center justify-center text-center">
@@ -89,20 +51,20 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
 
           <div className="space-y-2">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              {t.authRequiredTitle}
+              Sign in to Access the Laboratory Workspace
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed">
-              {t.authRequiredDesc}
+              All physics simulations remain free for guests. To record, edit, analyze, and save formal practical reports to your account, please sign in with Google.
             </p>
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => openAuthModal('Access to the Laboratory Workspace requires an authenticated Google session.')}
+              onClick={() => openAuthModal('Sign in with your Google account to unlock the Laboratory Workspace.')}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
-              <span>{t.signInBtn}</span>
+              <span>Sign In with Google</span>
             </button>
             <button
               onClick={onBackToSimulations}
@@ -117,14 +79,78 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
     );
   }
 
-  // 2. AUTHENTICATED LABORATORY WORKSPACE
-  const savedPracticalsCount = user.savedPracticalsCount || 0;
-  const maxQuota = 10;
-  const quotaPercent = Math.min(100, (savedPracticalsCount / maxQuota) * 100);
+  // Quota percentage
+  const quotaPercent = Math.min(100, (quota.used / quota.max) * 100);
+
+  // Helper to calculate linear regression
+  const calculateRegression = (rows: DataRow[], xKey: string, yKey: string) => {
+    const validPairs = rows
+      .map(r => ({ x: Number(r[xKey]), y: Number(r[yKey]) }))
+      .filter(p => !isNaN(p.x) && !isNaN(p.y));
+
+    if (validPairs.length < 2) return null;
+
+    const n = validPairs.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+
+    for (const p of validPairs) {
+      sumX += p.x;
+      sumY += p.y;
+      sumXY += p.x * p.y;
+      sumX2 += p.x * p.x;
+      sumY2 += p.y * p.y;
+    }
+
+    const denominator = n * sumX2 - sumX * sumX;
+    if (denominator === 0) return null;
+
+    const slope = (n * sumXY - sumX * sumY) / denominator;
+    const intercept = (sumY - slope * sumX) / n;
+
+    // R2 correlation calculation
+    const numR = n * sumXY - sumX * sumY;
+    const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+    const r = denR !== 0 ? numR / denR : 0;
+    const r2 = r * r;
+
+    return { slope, intercept, r2, count: n };
+  };
+
+  // Diagram Upload Handler
+  const handleDiagramUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedPractical || !e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    try {
+      setIsUploadingDiagram(true);
+      setUploadError(null);
+      await uploadDiagramToR2(file, selectedPractical.id);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Failed to upload apparatus diagram to Cloudflare R2.');
+    } finally {
+      setIsUploadingDiagram(false);
+    }
+  };
+
+  // CSV Export Handler
+  const handleExportCSV = (practical: LaboratoryPractical) => {
+    const headers = practical.columns.map(c => `"${c.label} (${c.unit || ''})"`).join(',');
+    const rows = practical.data.map(r => 
+      practical.columns.map(c => `"${r[c.key] ?? ''}"`).join(',')
+    ).join('\n');
+
+    const csvContent = `data:text/csv;charset=utf-8,${encodeURIComponent(`${headers}\n${rows}`)}`;
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', `${practical.title.replace(/\s+/g, '_')}_data.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Top Header Banner */}
+      {/* Top Banner */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         
@@ -140,16 +166,18 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight">{user.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight">{user.name}'s Laboratory</h1>
                 <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full border border-white/20">
-                  Student Account
+                  Active Workspace
                 </span>
               </div>
-              <p className="text-xs text-blue-100 mt-1">{t.subtitle}</p>
+              <p className="text-xs text-blue-100 mt-1">
+                Perform regression analytics on recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.
+              </p>
               <div className="flex items-center gap-3 mt-2 text-[10px] text-blue-200 font-mono">
                 <span>Account ID: {user.id}</span>
                 <span>•</span>
-                <span>Email: {user.email}</span>
+                <span>Cloudflare R2: Connected</span>
               </div>
             </div>
           </div>
@@ -164,85 +192,531 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
         </div>
       </div>
 
-      {/* Quota Overview Card */}
+      {/* Storage Quota Card */}
       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">{t.quotaTitle}</h3>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Account Storage Quota</h3>
           </div>
-          <p className="text-xs text-slate-500 max-w-xl">{t.quotaDesc}</p>
+          <p className="text-xs text-slate-500 max-w-xl">
+            Each account can store up to <strong>{quota.max} saved editable practicals</strong> with direct Cloudflare R2 cloud sync.
+          </p>
         </div>
 
         <div className="w-full md:w-64 space-y-1.5 shrink-0">
           <div className="flex justify-between text-xs font-bold">
-            <span className="text-slate-600">{t.quotaUsage}</span>
-            <span className="text-blue-600 font-mono">{savedPracticalsCount} / {maxQuota}</span>
+            <span className="text-slate-600">Saved Experiments</span>
+            <span className={`font-mono ${quota.isFull ? 'text-red-600' : 'text-blue-600'}`}>
+              {quota.used} / {quota.max}
+            </span>
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-blue-600 rounded-full transition-all"
+              className={`h-full rounded-full transition-all ${quota.isFull ? 'bg-red-500' : 'bg-blue-600'}`}
               style={{ width: `${quotaPercent}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Laboratory Modules Grid (Placeholders for Upcoming Word/Excel/R2 Work) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Module 1: Word-like Report Editor */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-blue-300 transition-colors">
-          <div className="space-y-3">
-            <div className="w-10 h-10 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600 shadow-inner">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-900">{t.reportEditorTitle}</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{t.reportEditorDesc}</p>
-            </div>
-          </div>
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-              {t.statusComingSoon}
-            </span>
-          </div>
-        </div>
+      {/* Workspace Tabs Navigation */}
+      <div className="flex border-b border-slate-200 bg-white rounded-t-2xl px-4 pt-3 gap-2">
+        <button
+          onClick={() => setActiveTab('library')}
+          className={`px-4 py-2.5 text-xs font-extrabold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+            activeTab === 'library'
+              ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <HardDrive className="w-4 h-4" />
+          <span>Practicals Library ({practicals.length})</span>
+        </button>
 
-        {/* Module 2: Excel-like Data Analyzer */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-indigo-300 transition-colors">
-          <div className="space-y-3">
-            <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 shadow-inner">
-              <TableProperties className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-900">{t.dataAnalyzerTitle}</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{t.dataAnalyzerDesc}</p>
-            </div>
-          </div>
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-              {t.statusComingSoon}
-            </span>
-          </div>
-        </div>
+        {selectedPractical && (
+          <>
+            <button
+              onClick={() => setActiveTab('analyzer')}
+              className={`px-4 py-2.5 text-xs font-extrabold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'analyzer'
+                  ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <TableProperties className="w-4 h-4" />
+              <span>Data Analyzer & Regression</span>
+            </button>
 
-        {/* Module 3: Cloudflare R2 Sync */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4 relative overflow-hidden group hover:border-purple-300 transition-colors">
-          <div className="space-y-3">
-            <div className="w-10 h-10 bg-purple-50 border border-purple-100 rounded-xl flex items-center justify-center text-purple-600 shadow-inner">
-              <Cloud className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-900">{t.cloudStorageTitle}</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{t.cloudStorageDesc}</p>
-            </div>
-          </div>
-          <div className="pt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>ID Linked: {user.id}</span>
-          </div>
-        </div>
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`px-4 py-2.5 text-xs font-extrabold rounded-t-xl transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'report'
+                  ? 'border-purple-600 text-purple-600 bg-purple-50/50'
+                  : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Formal Practical Report</span>
+            </button>
+          </>
+        )}
       </div>
+
+      {/* TAB 1: PRACTICALS LIBRARY */}
+      {activeTab === 'library' && (
+        <div className="bg-white border border-slate-200 rounded-b-2xl p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-base font-black text-slate-900">Saved Physics Experiments</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Manage your recorded simulation trials or launch the spreadsheet analyzer.
+              </p>
+            </div>
+
+            <button
+              onClick={onBackToSimulations}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Record New Simulation Data</span>
+            </button>
+          </div>
+
+          {practicals.length === 0 ? (
+            <div className="p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl space-y-3">
+              <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400">
+                <TableProperties className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-sm text-slate-700">No recorded practicals yet</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                Open any simulation (e.g. Hydrostatics, Pendulum, or Ohm's Law), click <strong>"Record Trial"</strong> in the Data Recorder, and choose <strong>"Send to Laboratory"</strong>.
+              </p>
+              <button
+                onClick={onBackToSimulations}
+                className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Browse Simulations Catalog</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {practicals.map((prac) => (
+                <div
+                  key={prac.id}
+                  className={`border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all hover:shadow-md ${
+                    selectedPracticalId === prac.id ? 'border-blue-500 ring-2 ring-blue-100 bg-blue-50/20' : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                        {prac.simulationTitle}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {new Date(prac.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <h3 className="font-black text-sm text-slate-900 line-clamp-1">{prac.title}</h3>
+                    <p className="text-xs text-slate-500 line-clamp-2">
+                      {prac.notes || `${prac.data.length} recorded data trial points ready for regression analysis.`}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setSelectedPracticalId(prac.id);
+                          setActiveTab('analyzer');
+                        }}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        title="Open in Data Analyzer"
+                      >
+                        <BarChart2 className="w-3.5 h-3.5" />
+                        <span>Analyze</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedPracticalId(prac.id);
+                          setActiveTab('report');
+                        }}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        title="Open Report Editor"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Report</span>
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => deletePractical(prac.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title="Delete practical"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: DATA ANALYZER & REGRESSION */}
+      {activeTab === 'analyzer' && selectedPractical && (
+        <div className="bg-white border border-slate-200 rounded-b-2xl p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
+                  Spreadsheet Analytics
+                </span>
+                <span className="text-xs text-slate-400 font-mono">ID: {selectedPractical.id}</span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">{selectedPractical.title}</h2>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleExportCSV(selectedPractical)}
+                className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('report')}
+                className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Switch to Report</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Regression Slope Stats & Controls */}
+          {(() => {
+            const xKey = selectedPractical.graphConfig?.xAxis || selectedPractical.columns[0]?.key || 'trial';
+            const yKey = selectedPractical.graphConfig?.yAxis || selectedPractical.columns[1]?.key || 'value';
+            const reg = calculateRegression(selectedPractical.data, xKey, yKey);
+
+            return (
+              <div className="space-y-6">
+                {/* Axis Selectors */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center gap-4 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-700">X-Axis Variable:</span>
+                    <select
+                      value={xKey}
+                      onChange={(e) => {
+                        updatePractical(selectedPractical.id, {
+                          graphConfig: {
+                            ...selectedPractical.graphConfig,
+                            xAxis: e.target.value,
+                            yAxis: yKey,
+                            title: selectedPractical.graphConfig?.title || 'Experiment Graph',
+                            showRegression: selectedPractical.graphConfig?.showRegression ?? true,
+                          },
+                        });
+                      }}
+                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 outline-none"
+                    >
+                      {selectedPractical.columns.map((c) => (
+                        <option key={c.key} value={c.key}>{c.label} {c.unit ? `(${c.unit})` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-700">Y-Axis Variable:</span>
+                    <select
+                      value={yKey}
+                      onChange={(e) => {
+                        updatePractical(selectedPractical.id, {
+                          graphConfig: {
+                            ...selectedPractical.graphConfig,
+                            xAxis: xKey,
+                            yAxis: e.target.value,
+                            title: selectedPractical.graphConfig?.title || 'Experiment Graph',
+                            showRegression: selectedPractical.graphConfig?.showRegression ?? true,
+                          },
+                        });
+                      }}
+                      className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 outline-none"
+                    >
+                      {selectedPractical.columns.map((c) => (
+                        <option key={c.key} value={c.key}>{c.label} {c.unit ? `(${c.unit})` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {reg && (
+                    <div className="flex flex-wrap items-center gap-3 ml-auto text-xs font-mono font-bold">
+                      <span className="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-lg border border-indigo-200">
+                        Slope m: {reg.slope.toFixed(4)}
+                      </span>
+                      <span className="bg-slate-200 text-slate-800 px-2.5 py-1 rounded-lg">
+                        Intercept c: {reg.intercept.toFixed(4)}
+                      </span>
+                      <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200">
+                        R²: {reg.r2.toFixed(4)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Graph View */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-inner">
+                  {(() => {
+                    const xVals = selectedPractical.data.map(r => Number(r[xKey])).filter(v => !isNaN(v));
+                    const yVals = selectedPractical.data.map(r => Number(r[yKey])).filter(v => !isNaN(v));
+
+                    const traces: any[] = [
+                      {
+                        x: xVals,
+                        y: yVals,
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: 'Trial Data',
+                        marker: { color: '#4f46e5', size: 9 },
+                      },
+                    ];
+
+                    if (reg && xVals.length > 1) {
+                      const minX = Math.min(...xVals);
+                      const maxX = Math.max(...xVals);
+                      traces.push({
+                        x: [minX, maxX],
+                        y: [reg.slope * minX + reg.intercept, reg.slope * maxX + reg.intercept],
+                        mode: 'lines',
+                        type: 'scatter',
+                        name: `Fit: y = ${reg.slope.toFixed(3)}x + ${reg.intercept.toFixed(3)}`,
+                        line: { color: '#ef4444', dash: 'dot', width: 2 },
+                      });
+                    }
+
+                    const xColObj = selectedPractical.columns.find(c => c.key === xKey);
+                    const yColObj = selectedPractical.columns.find(c => c.key === yKey);
+
+                    return (
+                      <PlotlyGraph
+                        data={traces}
+                        layout={{
+                          title: { text: `<b>${yColObj?.label || yKey} vs ${xColObj?.label || xKey}</b>`, font: { size: 14 } },
+                          xaxis: { title: { text: `${xColObj?.label || xKey} ${xColObj?.unit ? `(${xColObj.unit})` : ''}` } },
+                          yaxis: { title: { text: `${yColObj?.label || yKey} ${yColObj?.unit ? `(${yColObj.unit})` : ''}` } },
+                          margin: { l: 55, r: 25, t: 40, b: 45 },
+                          height: 380,
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+
+                {/* Spreadsheet Editable Table */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
+                      Observation Data Matrix ({selectedPractical.data.length} Rows)
+                    </h3>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-xl overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                          <th className="py-2.5 px-3 border-r border-slate-200 w-12 text-center">#</th>
+                          {selectedPractical.columns.map((col) => (
+                            <th key={col.key} className="py-2.5 px-3 border-r border-slate-200 last:border-r-0 whitespace-nowrap">
+                              {col.label} {col.unit ? `(${col.unit})` : ''}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {selectedPractical.data.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-slate-50">
+                            <td className="py-2 px-3 border-r border-slate-100 text-center font-mono font-bold text-slate-400">
+                              {rIdx + 1}
+                            </td>
+                            {selectedPractical.columns.map((col) => {
+                              const val = row[col.key];
+                              return (
+                                <td key={col.key} className="py-2 px-3 border-r border-slate-100 last:border-r-0 font-mono text-slate-800">
+                                  {typeof val === 'number' ? val.toFixed(3) : String(val ?? '')}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* TAB 3: FORMAL PRACTICAL REPORT */}
+      {activeTab === 'report' && selectedPractical && (
+        <div className="bg-white border border-slate-200 rounded-b-2xl p-6 sm:p-10 shadow-xs space-y-8 max-w-4xl mx-auto">
+          {/* Report Header */}
+          <div className="border-b-2 border-slate-900 pb-4 text-center space-y-2">
+            <span className="text-xs font-bold tracking-widest uppercase text-blue-600">
+              Department of Advanced Level Physics • Formal Laboratory Report
+            </span>
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight">
+              {selectedPractical.title}
+            </h1>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-mono pt-1">
+              <span>Author: {user.name}</span>
+              <span>•</span>
+              <span>Student ID: {user.id}</span>
+              <span>•</span>
+              <span>Date: {new Date(selectedPractical.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          {/* Section 1: Objective */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+              1. Objective & Aim
+            </h3>
+            <p className="text-xs text-slate-700 leading-relaxed font-serif">
+              {selectedPractical.report?.objective || 'Investigate experimental physical parameters and verify theoretical governing laws.'}
+            </p>
+          </div>
+
+          {/* Section 2: Mathematical Theory & Formula */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+              2. Theoretical Principles & Governing Equations
+            </h3>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+              <p className="text-xs text-slate-600 font-serif">
+                Linear relationships can be verified by plotting dependent vs independent variables and evaluating the gradient $m$:
+              </p>
+              <div className="py-1">
+                <BlockMath math="y = m x + c \implies m = \frac{\Delta y}{\Delta x}" />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Apparatus & Setup Diagram (with Cloudflare R2 Sync) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                3. Apparatus & Setup Diagram (Cloudflare R2 Sync)
+              </h3>
+              <label className="px-3 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                <Upload className="w-3.5 h-3.5" />
+                <span>{isUploadingDiagram ? 'Uploading to R2...' : 'Upload Diagram to R2'}</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  onChange={handleDiagramUpload}
+                  className="hidden"
+                  disabled={isUploadingDiagram}
+                />
+              </label>
+            </div>
+
+            {uploadError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
+
+            {selectedPractical.diagramUrl ? (
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-2">
+                <img
+                  src={selectedPractical.diagramUrl}
+                  alt="Apparatus Diagram"
+                  className="max-h-64 rounded-xl mx-auto border border-slate-200 shadow-sm object-contain"
+                />
+                <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-700 font-mono">
+                  <Cloud className="w-3.5 h-3.5" />
+                  <span>Cloudflare R2 Synchronized ({selectedPractical.diagramKey || 'physicsbysenath-lab'})</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 space-y-1">
+                <p>No apparatus diagram attached.</p>
+                <p className="text-[11px]">Click "Upload Diagram to R2" to sync screenshots or apparatus drawings to your private bucket.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Section 4: Observation Results */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+              4. Tabulated Observation Readings
+            </h3>
+            <div className="border border-slate-200 rounded-xl overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs font-serif">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-slate-900 font-bold">
+                    <th className="py-2 px-3 border-r border-slate-200 text-center w-12">Trial</th>
+                    {selectedPractical.columns.map((c) => (
+                      <th key={c.key} className="py-2 px-3 border-r border-slate-200 last:border-r-0">
+                        {c.label} {c.unit ? `(${c.unit})` : ''}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {selectedPractical.data.map((r, i) => (
+                    <tr key={i}>
+                      <td className="py-1.5 px-3 border-r border-slate-100 text-center text-slate-500 font-bold">{i + 1}</td>
+                      {selectedPractical.columns.map((c) => (
+                        <td key={c.key} className="py-1.5 px-3 border-r border-slate-100 last:border-r-0 text-slate-800">
+                          {typeof r[c.key] === 'number' ? Number(r[c.key]).toFixed(2) : String(r[c.key] ?? '')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Section 5: Conclusion & Discussion */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-1">
+              5. Discussion & Conclusion
+            </h3>
+            <p className="text-xs text-slate-700 leading-relaxed font-serif">
+              {selectedPractical.notes || 'The recorded observations exhibit consistent linear trend alignment in accordance with physical theory.'}
+            </p>
+          </div>
+
+          {/* Bottom Action Footer */}
+          <div className="pt-6 border-t border-slate-200 flex items-center justify-between">
+            <button
+              onClick={() => setActiveTab('library')}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold transition-all cursor-pointer"
+            >
+              ← Back to Practicals Library
+            </button>
+
+            <button
+              onClick={() => handleExportCSV(selectedPractical)}
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md"
+            >
+              <FileDown className="w-4 h-4" />
+              <span>Export CSV Observations</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

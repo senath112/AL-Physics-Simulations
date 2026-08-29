@@ -9,10 +9,12 @@ import {
   Info, 
   Download,
   Plus,
-  Trash2
+  Trash2,
+  FlaskConical
 } from 'lucide-react';
 import { calculateSHMState, SHMParameters } from '../../../physics/shmPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useLaboratory } from '../../../context/LaboratoryContext';
 
 interface TrialLog {
   id: string;
@@ -145,6 +147,9 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
     ep: [],
     et: []
   });
+
+  const { savePractical } = useLaboratory();
+  const [labSaveStatus, setLabSaveStatus] = useState<string | null>(null);
 
   // Real-Time Integrity Monitor status
   const [healthStatus, setHealthStatus] = useState<{
@@ -798,6 +803,72 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
     );
   };
 
+  const handleUploadToLaboratory = async () => {
+    let rowsToSave = logs;
+    if (rowsToSave.length === 0) {
+      logTrial();
+      rowsToSave = [{
+        id: Math.random().toString(36).substring(2, 7),
+        timestamp: new Date().toLocaleTimeString(),
+        mode,
+        mass,
+        springK,
+        length,
+        damping,
+        amplitude,
+        period,
+        maxEnergy: shmState.totalEnergy
+      }];
+    }
+
+    const columns = [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'length', label: 'Length L', unit: 'm' },
+      { key: 'period', label: 'Period T', unit: 's' },
+      { key: 'periodSq', label: 'Period Squared (T²)', unit: 's²' },
+      { key: 'mass', label: 'Mass m', unit: 'kg' },
+      { key: 'springK', label: 'Spring Constant k', unit: 'N/m' },
+      { key: 'maxEnergy', label: 'Total Energy E', unit: 'J' },
+    ];
+
+    const formattedData = rowsToSave.map((log, idx) => ({
+      trial: idx + 1,
+      length: log.length,
+      period: parseFloat(log.period.toFixed(3)),
+      periodSq: parseFloat((log.period * log.period).toFixed(3)),
+      mass: log.mass,
+      springK: log.springK,
+      maxEnergy: parseFloat(log.maxEnergy.toFixed(3)),
+    }));
+
+    try {
+      setLabSaveStatus(null);
+      await savePractical({
+        title: `${mode === 'pendulum' ? 'Pendulum Period vs Length' : 'Mass-Spring Frequency'} Practical`,
+        simulationId: 'shm_sim',
+        simulationTitle: 'Simple Harmonic Motion',
+        category: 'mechanics',
+        columns,
+        data: formattedData,
+        notes,
+        graphConfig: {
+          xAxis: mode === 'pendulum' ? 'length' : 'mass',
+          yAxis: 'periodSq',
+          title: mode === 'pendulum' ? 'T² vs L (Linear Regression)' : 'T² vs m',
+          showRegression: true,
+        },
+      });
+
+      setLabSaveStatus('Saved to Laboratory Workspace! Redirecting...');
+      setTimeout(() => {
+        window.history.pushState(null, '', '/laboratory');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, 700);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to save practical.');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
@@ -1346,10 +1417,23 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                 className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                {t.downloadPDF}
+                <span>PDF</span>
+              </button>
+              <button
+                onClick={handleUploadToLaboratory}
+                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer shadow-xs"
+              >
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>Upload to Laboratory</span>
               </button>
             </div>
           </div>
+
+          {labSaveStatus && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg text-xs font-semibold">
+              {labSaveStatus}
+            </div>
+          )}
 
           <textarea
             placeholder="Log experimental observations, write deductions here. (e.g. Damping factor reduces total mechanical energy exponentially...)"

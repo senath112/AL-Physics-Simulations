@@ -86,6 +86,7 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LaboratoryProvider } from './context/LaboratoryContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
@@ -1767,8 +1768,10 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
-      <AuthModal />
+      <LaboratoryProvider>
+        <AppContent />
+        <AuthModal />
+      </LaboratoryProvider>
     </AuthProvider>
   );
 }

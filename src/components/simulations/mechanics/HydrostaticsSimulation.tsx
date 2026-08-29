@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, ClipboardList, Trash2, FileDown, Layers, Gauge, Pipette } from 'lucide-react';
+import { RotateCcw, ClipboardList, Trash2, FileDown, Layers, Gauge, Pipette, FlaskConical, CheckCircle2 } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
+import { useLaboratory } from '../../../context/LaboratoryContext';
 
 export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const { savePractical, quota } = useLaboratory();
+  const [labSaveSuccess, setLabSaveSuccess] = useState<string | null>(null);
   const TRANSLATIONS = {
     en: {
       title: 'Hydrostatics & Buoyancy Laboratory',
@@ -649,6 +652,94 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
     downloadReportAsPDF('Hydrostatics & Buoyancy Laboratory Report', reportParams, loggedData, labNotes);
   };
 
+  const handleUploadToLaboratory = async () => {
+    let rowsToSave = loggedData;
+    if (rowsToSave.length === 0) {
+      handleLogDataPoint();
+      rowsToSave = [
+        activeTab === 'archimedes' ? {
+          trial: 1,
+          mode: 'archimedes',
+          mass: objMass,
+          fluidDensity: liquidDensity,
+          submergedFraction: immersionPercent,
+          weightAir: weightAir,
+          buoyantForce: buoyantForce,
+          scaleReading: apparentWeight
+        } : activeTab === 'pressure' ? {
+          trial: 1,
+          mode: 'pressure',
+          fluidDensity: pressureLiquidDensity,
+          depth: probeDepth,
+          hydroPressure: hydroGaugePressure / 1000,
+          totalPressure: totalPressure / 1000
+        } : {
+          trial: 1,
+          mode: 'utube',
+          refDensity: refDensity,
+          testHeight: testHeight * 100,
+          refHeight: refHeight * 100,
+          calculatedDensity: calculatedTestDensity
+        }
+      ];
+    }
+
+    try {
+      setLabSaveSuccess(null);
+      let columns: any[] = [];
+      let practicalTitle = '';
+
+      if (activeTab === 'archimedes') {
+        practicalTitle = "Archimedes' Principle & Buoyancy Practical";
+        columns = [
+          { key: 'trial', label: 'Trial #' },
+          { key: 'mass', label: 'Object Mass', unit: 'kg' },
+          { key: 'fluidDensity', label: 'Fluid Density', unit: 'kg/m³' },
+          { key: 'submergedFraction', label: 'Submerged %', unit: '%' },
+          { key: 'weightAir', label: 'Weight in Air', unit: 'N' },
+          { key: 'buoyantForce', label: 'Buoyant Force', unit: 'N' },
+          { key: 'scaleReading', label: 'Apparent Weight', unit: 'N' },
+        ];
+      } else if (activeTab === 'pressure') {
+        practicalTitle = 'Pressure vs Depth in Fluids Practical';
+        columns = [
+          { key: 'trial', label: 'Trial #' },
+          { key: 'depth', label: 'Depth (h)', unit: 'm' },
+          { key: 'fluidDensity', label: 'Liquid Density', unit: 'kg/m³' },
+          { key: 'hydroPressure', label: 'Gauge Pressure', unit: 'kPa' },
+          { key: 'totalPressure', label: 'Absolute Pressure', unit: 'kPa' },
+        ];
+      } else {
+        practicalTitle = 'U-Tube Manometer Liquid Density Practical';
+        columns = [
+          { key: 'trial', label: 'Trial #' },
+          { key: 'testHeight', label: 'Test Column (h2)', unit: 'cm' },
+          { key: 'refHeight', label: 'Water Column (h1)', unit: 'cm' },
+          { key: 'refDensity', label: 'Water Density', unit: 'kg/m³' },
+          { key: 'calculatedDensity', label: 'Calculated Density', unit: 'kg/m³' },
+        ];
+      }
+
+      await savePractical({
+        title: practicalTitle,
+        simulationId: 'hydrostatics_sim',
+        simulationTitle: 'Hydrostatics & Buoyancy',
+        category: 'mechanics',
+        columns,
+        data: rowsToSave,
+        notes: labNotes,
+      });
+
+      setLabSaveSuccess('Saved to Laboratory Workspace! Redirecting to /laboratory...');
+      setTimeout(() => {
+        window.history.pushState(null, '', '/laboratory');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      }, 700);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to save practical.');
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 h-full">
       {/* Parameters Sidebar */}
@@ -988,28 +1079,45 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
           />
 
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <button
+                onClick={handleLogDataPoint}
+                className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
+              >
+                {t.logData}
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
+              >
+                <FileDown className="w-3.5 h-3.5" />
+                <span>PDF</span>
+              </button>
+              <button
+                onClick={() => setLoggedData([])}
+                disabled={loggedData.length === 0}
+                className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                title="Clear logged trials"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             <button
-              onClick={handleLogDataPoint}
-              className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1"
+              onClick={handleUploadToLaboratory}
+              className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center justify-center gap-1.5 shadow-sm"
             >
-              {t.logData}
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>Upload to Laboratory Workspace ({quota.used}/{quota.max})</span>
             </button>
-            <button
-              onClick={handleDownloadPDF}
-              className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-all flex items-center justify-center gap-1 shadow-sm"
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              {t.downloadPDF}
-            </button>
-            <button
-              onClick={() => setLoggedData([])}
-              disabled={loggedData.length === 0}
-              className="p-2 border border-slate-200 hover:bg-red-50 text-red-600 rounded disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-              title="Clear logged trials"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+
+            {labSaveSuccess && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg text-[11px] flex items-center gap-1.5 animate-fade-in">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span>{labSaveSuccess}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
