@@ -55,7 +55,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
       <div className="flex flex-wrap items-center gap-2">
         {/* 1. Single Snapshot Trial Button */}
         <button
-          onClick={onRecordTrial}
+          onClick={() => onRecordTrial()}
           className="flex-1 min-w-[110px] py-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-250 text-slate-850 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
           title="Record a single snapshot data point at current parameters"
         >
@@ -66,7 +66,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
         {/* 2. Live Auto-Record Continuous Run Toggle */}
         {onToggleAutoRecord && (
           <button
-            onClick={onToggleAutoRecord}
+            onClick={() => onToggleAutoRecord()}
             className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
               isAutoRecording
                 ? 'bg-red-600 border-red-700 text-white animate-pulse'
@@ -82,7 +82,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
         {/* 3. Record Full Run / Multi-Point Sweep (if simulation has a generator) */}
         {onRecordFullRun && (
           <button
-            onClick={onRecordFullRun}
+            onClick={() => onRecordFullRun()}
             className="py-1.5 px-2.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             title="Record complete multi-point parameter run"
           >
@@ -94,7 +94,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
         {/* 4. PDF Download */}
         {onDownloadPDF && (
           <button
-            onClick={onDownloadPDF}
+            onClick={() => onDownloadPDF()}
             className="py-1.5 px-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             title="Download PDF report"
           >
@@ -106,7 +106,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
         {/* 5. Clear Records */}
         {onClearTrials && (
           <button
-            onClick={onClearTrials}
+            onClick={() => onClearTrials()}
             disabled={trialCount === 0}
             className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             title="Clear all recorded data points"
@@ -119,7 +119,7 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
       {/* Dataset status & Send to Laboratory Button */}
       <div className="space-y-1.5">
         <button
-          onClick={onSendToLaboratory}
+          onClick={() => onSendToLaboratory()}
           disabled={isSaving}
           className="w-full py-2 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
         >

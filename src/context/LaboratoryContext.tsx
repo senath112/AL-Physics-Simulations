@@ -14,6 +14,37 @@ import {
 const MAX_PRACTICALS = 10;
 const LaboratoryContext = createContext<LaboratoryContextType | null>(null);
 
+// Safe JSON serialization helper preventing circular references, DOM objects, or event leaks
+function safeJsonStringify(obj: any): string {
+  const seen = new WeakSet();
+  try {
+    return JSON.stringify(obj, (_key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        // Exclude DOM nodes, Window, Events, React fibers
+        if (
+          (typeof Node !== 'undefined' && value instanceof Node) ||
+          (typeof Window !== 'undefined' && value instanceof Window) ||
+          (typeof Event !== 'undefined' && value instanceof Event) ||
+          (value as any)?._reactName !== undefined ||
+          (value as any)?.nativeEvent !== undefined
+        ) {
+          return undefined;
+        }
+        if (seen.has(value)) {
+          return undefined; // Cyclic reference removed
+        }
+        seen.add(value);
+      }
+      if (typeof value === 'function') {
+        return undefined;
+      }
+      return value;
+    });
+  } catch (_e) {
+    return '[]';
+  }
+}
+
 export const LaboratoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const [practicals, setPracticals] = useState<LaboratoryPractical[]>([]);
@@ -35,10 +66,14 @@ export const LaboratoryProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [storageKey]);
 
-  // Persist practicals helper
+  // Persist practicals helper with cyclic-safe serialization
   const persistPracticals = useCallback((newPracticals: LaboratoryPractical[]) => {
     setPracticals(newPracticals);
-    localStorage.setItem(storageKey, JSON.stringify(newPracticals));
+    try {
+      localStorage.setItem(storageKey, safeJsonStringify(newPracticals));
+    } catch (e) {
+      console.warn('Failed to persist practicals safely to localStorage:', e);
+    }
   }, [storageKey]);
 
   // Quota calculation
@@ -70,6 +105,12 @@ export const LaboratoryProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const now = new Date().toISOString();
     const newId = `prac_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
+    // Safe string title & notes
+    const safeTitle = typeof params.title === 'string' && params.title.trim().length > 0
+      ? params.title.trim()
+      : `${params.simulationTitle || 'Physics'} Practical Trial`;
+    const safeNotes = typeof params.notes === 'string' ? params.notes : '';
+
     // Default graph configuration if columns available
     const xCol = params.columns[0]?.key || 'trial';
     const yCol = params.columns[1]?.key || params.columns[0]?.key || 'value';
@@ -84,23 +125,40 @@ export const LaboratoryProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       ...params.report,
     };
 
+    // Sanitize rows
+    const cleanData: DataRow[] = Array.isArray(params.data)
+      ? params.data.map((r, i) => {
+          if (!r || typeof r !== 'object') return { trial: i + 1 };
+          const rowObj: DataRow = {};
+          for (const [k, v] of Object.entries(r)) {
+            if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean' || v === null) {
+              rowObj[k] = v;
+            } else {
+              rowObj[k] = String(v ?? '');
+            }
+          }
+          if (rowObj.trial === undefined) rowObj.trial = i + 1;
+          return rowObj;
+        })
+      : [];
+
     const newPractical: LaboratoryPractical = {
       id: newId,
       userId: user?.id || 'guest_user',
-      title: params.title || `${params.simulationTitle} Practical Trial`,
+      title: safeTitle,
       simulationId: params.simulationId,
       simulationTitle: params.simulationTitle,
       category: params.category || 'mechanics',
       createdAt: now,
       updatedAt: now,
       columns: params.columns,
-      data: params.data,
-      notes: params.notes || '',
+      data: cleanData,
+      notes: safeNotes,
       report: defaultReport,
       graphConfig: {
         xAxis: xCol,
         yAxis: yCol,
-        title: `${params.title || params.simulationTitle} Graph Analysis`,
+        title: `${safeTitle} Graph Analysis`,
         showRegression: true,
         ...params.graphConfig,
       },
