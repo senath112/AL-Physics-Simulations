@@ -82,10 +82,15 @@ import {
   Thermometer, 
   Cpu, 
   Search, 
-  ArrowRight
+  ArrowRight,
+  FlaskConical
 } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthModal } from './components/auth/AuthModal';
+import { UserMenu } from './components/auth/UserMenu';
+import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'laboratory' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -126,6 +131,7 @@ const PATH_MAP: Record<PageType, string> = {
   centre_mass_sim: '/centre-of-mass',
   orbits_sim: '/orbits',
   hydrostatics_sim: '/hydrostatics',
+  laboratory: '/laboratory',
   terms: '/terms',
   privacy: '/privacy'
 };
@@ -149,7 +155,8 @@ const getPageFromPath = (path: string): PageType => {
   return entry ? (entry[0] as PageType) : 'home';
 };
 
-function App() {
+function AppContent() {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
     return getPageFromPath(window.location.pathname || window.location.hash || '/');
   });
@@ -478,7 +485,32 @@ function App() {
 
 
           {/* Right Action buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Laboratory Workspace Button */}
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  openAuthModal('Access to the Laboratory Workspace requires signing in with your Google account.');
+                } else {
+                  setCurrentPage('laboratory');
+                }
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer ${
+                currentPage === 'laboratory'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/60'
+              }`}
+              title={isAuthenticated ? "Laboratory Workspace" : "Sign in to access Laboratory"}
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Laboratory</span>
+              {!isAuthenticated && (
+                <span className="text-[9px] bg-purple-200/80 text-purple-800 px-1 rounded-sm font-semibold">
+                  Auth
+                </span>
+              )}
+            </button>
+
             {/* Visual Segmented Pill Language Switcher */}
             <div className="flex items-center gap-0.5 bg-slate-100/80 border border-slate-200 p-0.5 rounded-full shadow-sm">
               <button
@@ -515,6 +547,7 @@ function App() {
                 தமிழ்
               </button>
             </div>
+
             <button 
               onClick={() => setCurrentPage('sims')}
               className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
@@ -522,22 +555,9 @@ function App() {
               Explore Sims
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-            <a 
-              href="https://senathsethmika.lk" 
-              target="_blank" 
-              rel="noreferrer"
-              className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 block shrink-0"
-              title="Physics by Senath Profile"
-            >
-              <img 
-                src="https://github.com/senath112.png" 
-                alt="Avatar" 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80";
-                }}
-              />
-            </a>
+
+            {/* User Profile / Google Sign-In Menu */}
+            <UserMenu onNavigateToLaboratory={() => setCurrentPage('laboratory')} />
           </div>
 
         </div>
@@ -1482,6 +1502,14 @@ function App() {
           </div>
         )}
 
+        {/* ACTIVE LABORATORY WORKSPACE (PROTECTED) */}
+        {currentPage === 'laboratory' && (
+          <LaboratoryDashboard 
+            onBackToSimulations={() => setCurrentPage('sims')} 
+            lang={lang} 
+          />
+        )}
+
 
 
         {/* TERMS AND CONDITIONS PAGE */}
@@ -1736,4 +1764,12 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+      <AuthModal />
+    </AuthProvider>
+  );
+}
+

@@ -1,1 +1,7 @@
-/*    /index.html   200
+# Netlify Functions API rewrites
+/api/auth/google    /.netlify/functions/auth-google   200
+/api/auth/me        /.netlify/functions/auth-me       200
+/api/auth/logout    /.netlify/functions/auth-logout   200
+
+# SPA catch-all fallback
+/*                  /index.html                       200
