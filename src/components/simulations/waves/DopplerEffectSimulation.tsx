@@ -256,6 +256,22 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         machNumber: mach,
       };
     },
+    getSeriesData: () => {
+      const speeds = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300];
+      return speeds.map((spd, idx) => {
+        const fR = spd >= speedOfSound ? 9999 : sourceFreq * ((speedOfSound - observerSpeedB) / (speedOfSound - spd));
+        const fL = sourceFreq * ((speedOfSound + observerSpeedA) / (speedOfSound + spd));
+        return {
+          trial: idx + 1,
+          sourceSpeed: spd,
+          sourceFreq,
+          speedOfSound,
+          observedFreqRight: parseFloat(fR.toFixed(1)),
+          observedFreqLeft: parseFloat(fL.toFixed(1)),
+          machNumber: parseFloat((spd / speedOfSound).toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'sourceSpeed',
       yAxis: 'observedFreqRight',
@@ -784,6 +800,9 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

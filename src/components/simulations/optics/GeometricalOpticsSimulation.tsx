@@ -441,6 +441,27 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
         status: mode === 'fibre' ? (fibreRay.isGuided ? 'GUIDED' : 'LOSS') : (rayState.isTIR ? 'TIR' : 'REFRACTED'),
       };
     },
+    getSeriesData: () => {
+      const angles = [10, 20, 30, 40, 50, 60, 70, 80];
+      return angles.map((ang, idx) => {
+        const iRad = (ang * Math.PI) / 180;
+        const sinI = Math.sin(iRad);
+        const ratio = (n1 * sinI) / n2;
+        const isTir = ratio > 1;
+        const rRad = isTir ? null : Math.asin(ratio);
+        const rDeg = rRad !== null ? (rRad * 180) / Math.PI : null;
+        return {
+          trial: idx + 1,
+          incidentAngleDeg: ang,
+          sinI: parseFloat(sinI.toFixed(4)),
+          refractedAngleDeg: rDeg !== null ? parseFloat(rDeg.toFixed(2)) : 'TIR',
+          sinR: rRad !== null ? parseFloat(Math.sin(rRad).toFixed(4)) : 0,
+          n1,
+          n2,
+          status: isTir ? 'TIR' : 'REFRACTED',
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'sinI',
       yAxis: 'sinR',
@@ -876,6 +897,9 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={downloadPDFReport}
             onClearTrials={recorder.clearTrials}

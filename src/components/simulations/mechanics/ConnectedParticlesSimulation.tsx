@@ -292,6 +292,26 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
       frictionCoeff: mu,
       frictionForce: parseFloat(actualFriction.toFixed(2)),
     }),
+    getSeriesData: () => {
+      const m2Vals = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
+      const g = 9.8;
+      return m2Vals.map((massHanging, idx) => {
+        const pull = massHanging * g;
+        const maxFric = mu * m1 * g;
+        const netF = Math.max(0, pull - maxFric);
+        const a = netF / (m1 + massHanging);
+        const t = massHanging * (g - a);
+        return {
+          trial: idx + 1,
+          mass2: massHanging,
+          mass1: m1,
+          acceleration: parseFloat(a.toFixed(2)),
+          tension: parseFloat(t.toFixed(2)),
+          frictionCoeff: mu,
+          frictionForce: parseFloat(maxFric.toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'mass2',
       yAxis: 'acceleration',
@@ -459,6 +479,9 @@ export function ConnectedParticlesSimulation({ lang = 'en' }: { lang?: 'en' | 's
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

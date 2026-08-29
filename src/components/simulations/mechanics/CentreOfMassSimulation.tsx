@@ -239,6 +239,21 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
       xCM: parseFloat(xCM.toFixed(2)),
       yCM: parseFloat(yCM.toFixed(2)),
     }),
+    getSeriesData: () => {
+      const massSteps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      return massSteps.map((mVal, idx) => {
+        // Vary mass of selected or first point
+        const totalM = 10 + mVal;
+        const x_cm = (mVal * 4 + 10 * (-2)) / totalM;
+        return {
+          trial: idx + 1,
+          pointCount: 2,
+          totalMass: parseFloat(totalM.toFixed(2)),
+          xCM: parseFloat(x_cm.toFixed(2)),
+          yCM: 0,
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'totalMass',
       yAxis: 'xCM',
@@ -351,6 +366,9 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

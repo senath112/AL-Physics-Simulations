@@ -363,6 +363,23 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
         field_mT: parseFloat(BFieldVal.toFixed(2)),
       };
     },
+    getSeriesData: () => {
+      const currents = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const lengthMeters = L / 1000;
+      const n = lengthMeters > 0 ? N / lengthMeters : 0;
+      const mu0 = 4 * Math.PI * 1e-7;
+      return currents.map((cur, idx) => {
+        const bTesla = mu0 * n * cur;
+        return {
+          trial: idx + 1,
+          current: cur,
+          turns_N: N,
+          length_mm: L,
+          turnsPerMeter: parseFloat(n.toFixed(1)),
+          field_mT: parseFloat((bTesla * 1000).toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'current',
       yAxis: 'field_mT',
@@ -522,6 +539,9 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

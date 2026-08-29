@@ -241,6 +241,22 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         centralMass: M,
       };
     },
+    getSeriesData: () => {
+      const aVals = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
+      return aVals.map((radiusVal, idx) => {
+        const per = Math.sqrt(Math.pow(radiusVal, 3) / M);
+        const spd = Math.sqrt((30 * 30 * M) / radiusVal);
+        return {
+          trial: idx + 1,
+          orbitalRadius: radiusVal,
+          orbitalRadiusCubed: parseFloat(Math.pow(radiusVal, 3).toFixed(2)),
+          orbitalPeriod: parseFloat(per.toFixed(2)),
+          orbitalPeriodSq: parseFloat(Math.pow(per, 2).toFixed(2)),
+          orbitalSpeed: parseFloat(spd.toFixed(2)),
+          centralMass: M,
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'orbitalRadiusCubed',
       yAxis: 'orbitalPeriodSq',
@@ -392,6 +408,9 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

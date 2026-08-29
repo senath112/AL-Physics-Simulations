@@ -370,6 +370,18 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
       magneticFlux_Wb: parseFloat(fluxVal.toFixed(3)),
       inducedEMF_V: parseFloat(inducedEMF.toFixed(3)),
     }),
+    getSeriesData: () => {
+      const turns = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
+      const dPhi_dt = Math.abs(inducedEMF) / (N || 1);
+      return turns.map((turnCount, idx) => ({
+        trial: idx + 1,
+        turns_N: turnCount,
+        magnetStrength_T: B0,
+        coilArea: area,
+        magneticFlux_Wb: parseFloat(fluxVal.toFixed(3)),
+        inducedEMF_V: parseFloat((turnCount * dPhi_dt).toFixed(3)),
+      }));
+    },
     defaultGraphConfig: {
       xAxis: 'turns_N',
       yAxis: 'inducedEMF_V',
@@ -566,6 +578,9 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

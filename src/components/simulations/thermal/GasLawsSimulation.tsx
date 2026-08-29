@@ -177,6 +177,23 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
         pvOverT: parseFloat(ratio.toFixed(4)),
       };
     },
+    getSeriesData: () => {
+      const volumes = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0];
+      const k = (moleculesCount * 0.05 * temperature) / 300;
+      return volumes.map((v, idx) => {
+        const p = k / v;
+        return {
+          trial: idx + 1,
+          gasMode: "BOYLE'S LAW",
+          volume: v,
+          invVolume: parseFloat((1 / v).toFixed(3)),
+          temperature,
+          pressure: parseFloat(p.toFixed(3)),
+          moleculesCount,
+          pvOverT: parseFloat(((p * v) / temperature).toFixed(4)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'invVolume',
       yAxis: 'pressure',
@@ -664,6 +681,9 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

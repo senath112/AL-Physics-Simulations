@@ -341,6 +341,24 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         totalEnergy: parseFloat(totalE.toFixed(2)),
       };
     },
+    getSeriesData: () => {
+      const hVals = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0];
+      return hVals.map((h, idx) => {
+        const pe = m * g * h;
+        const ke = pe;
+        const spd = Math.sqrt((2 * ke) / m);
+        return {
+          trial: idx + 1,
+          height: h,
+          velocity: parseFloat(spd.toFixed(2)),
+          velocitySq: parseFloat((spd * spd).toFixed(2)),
+          potentialEnergy: parseFloat(pe.toFixed(2)),
+          kineticEnergy: parseFloat(ke.toFixed(2)),
+          thermalEnergy: 0,
+          totalEnergy: parseFloat(pe.toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'height',
       yAxis: 'velocitySq',
@@ -607,6 +625,9 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

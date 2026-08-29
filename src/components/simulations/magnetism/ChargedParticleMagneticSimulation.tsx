@@ -465,6 +465,24 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
         period: parseFloat(period.toFixed(4)),
       };
     },
+    getSeriesData: () => {
+      const vels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const cycFreq = (Math.abs(q) * B) / (2 * Math.PI * m);
+      const cycPeriod = cycFreq > 0 ? 1 / cycFreq : 0;
+      return vels.map((vel, idx) => {
+        const rad = (m * vel) / (Math.abs(q) * B);
+        return {
+          trial: idx + 1,
+          velocity: vel,
+          radius: parseFloat(rad.toFixed(2)),
+          charge: q,
+          mass: m,
+          bField: B,
+          frequency: parseFloat(cycFreq.toFixed(2)),
+          period: parseFloat(cycPeriod.toFixed(4)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'velocity',
       yAxis: 'radius',
@@ -729,6 +747,9 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

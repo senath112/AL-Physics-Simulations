@@ -144,10 +144,27 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
         interactionType: typeLabel,
       };
     },
+    getSeriesData: () => {
+      const distances = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+      const mu0 = 4 * Math.PI * 1e-7;
+      return distances.map((dist, idx) => {
+        const dM = dist / 1000;
+        const fL = (mu0 * Math.abs(i1 * i2)) / (2 * Math.PI * dM);
+        return {
+          trial: idx + 1,
+          i1,
+          i2,
+          currentProduct: parseFloat((i1 * i2).toFixed(2)),
+          distance_mm: dist,
+          forcePerLength_uN_m: parseFloat((fL * 1e6).toFixed(3)),
+          interactionType: interactionType.toUpperCase(),
+        };
+      });
+    },
     defaultGraphConfig: {
-      xAxis: 'currentProduct',
+      xAxis: 'distance_mm',
       yAxis: 'forcePerLength_uN_m',
-      title: 'F/L vs I₁·I₂ (F/L = μ₀I₁I₂/2πd, Slope = μ₀/2πd)',
+      title: 'F/L vs d (Parallel Conductors Interaction Force)',
       showRegression: true,
     },
     notes,
@@ -686,6 +703,9 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

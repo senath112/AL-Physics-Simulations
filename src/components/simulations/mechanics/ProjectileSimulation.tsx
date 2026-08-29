@@ -120,6 +120,21 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       flightTime: parseFloat(tFlight.toFixed(2)),
       gravity: params.g,
     }),
+    getSeriesData: () => {
+      const angles = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85];
+      return angles.map((ang, i) => {
+        const p = { ...params, angle: ang };
+        return {
+          trial: i + 1,
+          angle: ang,
+          velocity: p.v0,
+          range: parseFloat(calculateRange(p).toFixed(2)),
+          maxHeight: parseFloat(calculateMaxHeight(p).toFixed(2)),
+          flightTime: parseFloat(calculateFlightTime(p).toFixed(2)),
+          gravity: p.g,
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'angle',
       yAxis: 'range',
@@ -781,6 +796,9 @@ Hence, the maximum height reached is 5.0 m.`,
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

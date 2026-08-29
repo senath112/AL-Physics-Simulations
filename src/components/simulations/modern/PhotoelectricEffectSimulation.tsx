@@ -438,6 +438,28 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
         emission: physicsState.hasEmission ? 'Ejected' : 'No Emission',
       };
     },
+    getSeriesData: () => {
+      const wavelengths = [200, 240, 280, 320, 360, 400, 450, 500, 550, 600];
+      return wavelengths.map((wl, idx) => {
+        const state = calculatePhotoelectricState({
+          wavelength: wl,
+          intensity: 50,
+          metalWorkFunction: activeMetal.workFunction,
+          voltage: 0,
+        });
+        const f14 = (3e8 / (wl * 1e-9)) / 1e14;
+        return {
+          trial: idx + 1,
+          metal: activeMetal.name,
+          frequency: parseFloat(f14.toFixed(2)),
+          wavelength: wl,
+          stoppingPotential: parseFloat(state.stoppingPotential.toFixed(2)),
+          workFunction: activeMetal.workFunction,
+          photocurrent: parseFloat(state.photocurrent.toFixed(3)),
+          emission: state.hasEmission ? 'Ejected' : 'No Emission',
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'frequency',
       yAxis: 'stoppingPotential',
@@ -928,6 +950,9 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

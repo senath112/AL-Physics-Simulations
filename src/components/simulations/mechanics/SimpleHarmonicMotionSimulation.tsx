@@ -7,27 +7,12 @@ import {
   RotateCcw, 
   Sparkles, 
   Info, 
-  Download,
-  Plus,
-  Trash2,
-  FlaskConical
+  Plus
 } from 'lucide-react';
 import { calculateSHMState, SHMParameters } from '../../../physics/shmPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { useLaboratory } from '../../../context/LaboratoryContext';
-
-interface TrialLog {
-  id: string;
-  timestamp: string;
-  mode: string;
-  mass: number;
-  springK: number;
-  length: number;
-  damping: number;
-  amplitude: number;
-  period: number;
-  maxEnergy: number;
-}
+import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -121,9 +106,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   const timeRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Lab Notes & trial logs
+  // Lab Notes
   const [notes, setNotes] = useState<string>('');
-  const [logs, setLogs] = useState<TrialLog[]>([]);
 
   // Canvas interaction
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,9 +131,6 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
     ep: [],
     et: []
   });
-
-  const { savePractical } = useLaboratory();
-  const [labSaveStatus, setLabSaveStatus] = useState<string | null>(null);
 
   // Real-Time Integrity Monitor status
   const [healthStatus, setHealthStatus] = useState<{
@@ -754,27 +735,79 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
     }
   };
 
-  // Log trial log
-  const logTrial = () => {
-    const newLog: TrialLog = {
-      id: Math.random().toString(36).substring(2, 7),
-      timestamp: new Date().toLocaleTimeString(),
-      mode,
-      mass,
-      springK,
-      length,
-      damping,
-      amplitude,
-      period,
-      maxEnergy: shmState.totalEnergy
-    };
-    setLogs(prev => [newLog, ...prev]);
-  };
+  // Universal Simulation Data Recorder & Laboratory Transfer
+  const recorder = useSimulationRecorder({
+    simulationId: 'shm_sim',
+    simulationTitle: 'Simple Harmonic Motion',
+    category: 'mechanics',
+    columns: [
+      { key: 'trial', label: 'Trial #' },
+      { key: 'mode', label: 'Oscillator Mode', unit: '' },
+      { key: 'length_m', label: 'Pendulum Length (L)', unit: 'm' },
+      { key: 'mass_kg', label: 'Mass (m)', unit: 'kg' },
+      { key: 'springK_N_m', label: 'Spring Const (k)', unit: 'N/m' },
+      { key: 'period_s', label: 'Period (T)', unit: 's' },
+      { key: 'periodSq_s2', label: 'Period Squared (T²)', unit: 's²' },
+      { key: 'amplitude', label: 'Amplitude (A)', unit: mode === 'spring' ? 'm' : '°' },
+      { key: 'totalEnergy_J', label: 'Total Energy (E)', unit: 'J' },
+    ],
+    getCurrentRow: () => ({
+      mode: mode === 'spring' ? 'Spring-Mass' : 'Simple Pendulum',
+      length_m: length,
+      mass_kg: mass,
+      springK_N_m: springK,
+      period_s: parseFloat(period.toFixed(3)),
+      periodSq_s2: parseFloat((period * period).toFixed(3)),
+      amplitude: parseFloat(amplitude.toFixed(2)),
+      totalEnergy_J: parseFloat(shmState.totalEnergy.toFixed(3)),
+    }),
+    getSeriesData: () => {
+      if (mode === 'pendulum') {
+        const lengths = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0];
+        return lengths.map((len, idx) => {
+          const w = Math.sqrt(10 / len);
+          const per = 2 * Math.PI / w;
+          return {
+            trial: idx + 1,
+            mode: 'Simple Pendulum',
+            length_m: len,
+            mass_kg: mass,
+            springK_N_m: springK,
+            period_s: parseFloat(per.toFixed(3)),
+            periodSq_s2: parseFloat((per * per).toFixed(3)),
+            amplitude: parseFloat(amplitude.toFixed(2)),
+            totalEnergy_J: parseFloat(shmState.totalEnergy.toFixed(3)),
+          };
+        });
+      } else {
+        const masses = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
+        return masses.map((m, idx) => {
+          const w = Math.sqrt(springK / m);
+          const per = 2 * Math.PI / w;
+          return {
+            trial: idx + 1,
+            mode: 'Spring-Mass',
+            length_m: length,
+            mass_kg: m,
+            springK_N_m: springK,
+            period_s: parseFloat(per.toFixed(3)),
+            periodSq_s2: parseFloat((per * per).toFixed(3)),
+            amplitude: parseFloat(amplitude.toFixed(2)),
+            totalEnergy_J: parseFloat(shmState.totalEnergy.toFixed(3)),
+          };
+        });
+      }
+    },
+    defaultGraphConfig: {
+      xAxis: mode === 'pendulum' ? 'length_m' : 'mass_kg',
+      yAxis: 'periodSq_s2',
+      title: mode === 'pendulum' ? 'T² vs Length (Deduces g = 4π²/slope)' : 'T² vs Mass (Deduces k = 4π²/slope)',
+      showRegression: true,
+    },
+    notes,
+  });
 
-  const clearLogs = () => setLogs([]);
-
-  // Generate PDF report
-  const downloadPDFReport = () => {
+  const handleDownloadPDF = () => {
     const parameterMap = {
       'Simulation Mode': mode === 'spring' ? 'Mass-Spring System' : 'Simple Pendulum',
       'Mass (m)': `${mass.toFixed(2)} kg`,
@@ -783,90 +816,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       'Calculated Period (T)': `${period.toFixed(3)} s`,
       'Total Energy (E)': `${shmState.totalEnergy.toFixed(3)} J`
     };
-
-    const printableLogs = logs.map(log => ({
-      Timestamp: log.timestamp,
-      Mode: log.mode === 'spring' ? 'Spring' : 'Pendulum',
-      Mass: `${log.mass.toFixed(1)}kg`,
-      'K / Length': log.mode === 'spring' ? `${log.springK}N/m` : `${log.length}m`,
-      Damping: `${log.damping}`,
-      Amp: `${log.amplitude.toFixed(2)}`,
-      Period: `${log.period.toFixed(2)}s`,
-      'Max E': `${log.maxEnergy.toFixed(2)}J`
-    }));
-
-    downloadReportAsPDF(
-      'Simple Harmonic Motion Lab Report',
-      parameterMap,
-      printableLogs,
-      notes
-    );
-  };
-
-  const handleUploadToLaboratory = async () => {
-    let rowsToSave = logs;
-    if (rowsToSave.length === 0) {
-      logTrial();
-      rowsToSave = [{
-        id: Math.random().toString(36).substring(2, 7),
-        timestamp: new Date().toLocaleTimeString(),
-        mode,
-        mass,
-        springK,
-        length,
-        damping,
-        amplitude,
-        period,
-        maxEnergy: shmState.totalEnergy
-      }];
-    }
-
-    const columns = [
-      { key: 'trial', label: 'Trial #' },
-      { key: 'length', label: 'Length L', unit: 'm' },
-      { key: 'period', label: 'Period T', unit: 's' },
-      { key: 'periodSq', label: 'Period Squared (T²)', unit: 's²' },
-      { key: 'mass', label: 'Mass m', unit: 'kg' },
-      { key: 'springK', label: 'Spring Constant k', unit: 'N/m' },
-      { key: 'maxEnergy', label: 'Total Energy E', unit: 'J' },
-    ];
-
-    const formattedData = rowsToSave.map((log, idx) => ({
-      trial: idx + 1,
-      length: log.length,
-      period: parseFloat(log.period.toFixed(3)),
-      periodSq: parseFloat((log.period * log.period).toFixed(3)),
-      mass: log.mass,
-      springK: log.springK,
-      maxEnergy: parseFloat(log.maxEnergy.toFixed(3)),
-    }));
-
-    try {
-      setLabSaveStatus(null);
-      await savePractical({
-        title: `${mode === 'pendulum' ? 'Pendulum Period vs Length' : 'Mass-Spring Frequency'} Practical`,
-        simulationId: 'shm_sim',
-        simulationTitle: 'Simple Harmonic Motion',
-        category: 'mechanics',
-        columns,
-        data: formattedData,
-        notes,
-        graphConfig: {
-          xAxis: mode === 'pendulum' ? 'length' : 'mass',
-          yAxis: 'periodSq',
-          title: mode === 'pendulum' ? 'T² vs L (Linear Regression)' : 'T² vs m',
-          showRegression: true,
-        },
-      });
-
-      setLabSaveStatus('Saved to Laboratory Workspace! Redirecting...');
-      setTimeout(() => {
-        window.history.pushState(null, '', '/laboratory');
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      }, 700);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to save practical.');
-    }
+    downloadReportAsPDF('Simple Harmonic Motion Lab Report', parameterMap, recorder.recordedRows, notes);
   };
 
   return (
@@ -1058,7 +1008,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           {/* Action trigger button */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2">
             <button
-              onClick={logTrial}
+              onClick={recorder.recordTrial}
               className="w-full py-2 bg-slate-900 hover:bg-slate-850 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1399,41 +1349,14 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           </div>
         </div>
 
-        {/* Lab Notes Card */}
+        {/* Lab Notes & Laboratory Workspace */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.labNotes}</h3>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={clearLogs}
-                className="text-slate-400 hover:text-red-500 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                title="Clear notebook logs"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {t.clearLogs}
-              </button>
-              <button
-                onClick={downloadPDFReport}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>PDF</span>
-              </button>
-              <button
-                onClick={handleUploadToLaboratory}
-                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-bold flex items-center gap-1 cursor-pointer shadow-xs"
-              >
-                <FlaskConical className="w-3.5 h-3.5" />
-                <span>Upload to Laboratory</span>
-              </button>
-            </div>
+            <span className="text-xs font-mono text-slate-400 font-bold">
+              {recorder.trialCount} Data Points Logged
+            </span>
           </div>
-
-          {labSaveStatus && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 rounded-lg text-xs font-semibold">
-              {labSaveStatus}
-            </div>
-          )}
 
           <textarea
             placeholder="Log experimental observations, write deductions here. (e.g. Damping factor reduces total mechanical energy exponentially...)"
@@ -1442,34 +1365,19 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
             className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-indigo-500 transition-colors custom-scrollbar"
           />
 
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Logged Trials ({logs.length})</h4>
-            <div className="border border-slate-100 rounded-lg max-h-36 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
-              {logs.length > 0 ? (
-                logs.map((log) => (
-                  <div key={log.id} className="p-2.5 flex items-center justify-between text-[10px] text-slate-600 hover:bg-slate-50 transition-colors">
-                    <div>
-                      <span className="font-bold text-indigo-600">#{log.id}</span>
-                      <span className="text-slate-400 ml-1.5">({log.timestamp})</span>
-                      <div className="mt-0.5">
-                        Mode: <span className="font-semibold text-slate-800">{log.mode}</span> | 
-                        Mass: <span className="font-semibold text-slate-800">{log.mass.toFixed(1)}kg</span> | 
-                        T: <span className="font-semibold text-slate-800">{log.period.toFixed(2)}s</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div>Max E: <span className="font-bold text-slate-800">{log.maxEnergy.toFixed(2)} J</span></div>
-                      <div className="text-[9px] text-slate-400">Damping: {log.damping}</div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-4 text-center text-slate-400 text-xs">
-                  No snapshots logged yet. Adjust variables and click "Log Trial Snapshot" above.
-                </div>
-              )}
-            </div>
-          </div>
+          <SimulationLabBar
+            trialCount={recorder.trialCount}
+            onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
+            onSendToLaboratory={recorder.sendToLaboratory}
+            onDownloadPDF={handleDownloadPDF}
+            onClearTrials={recorder.clearTrials}
+            isSaving={recorder.isSaving}
+            statusMessage={recorder.statusMessage}
+            quota={recorder.quota}
+          />
         </div>
 
       </div>

@@ -136,10 +136,27 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
         fieldStrength_T: parseFloat(fieldStrengthTesla.toExponential(4)),
       };
     },
+    getSeriesData: () => {
+      const distances = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+      const mu0 = 4 * Math.PI * 1e-7;
+      return distances.map((dist, idx) => {
+        const rM = dist / 1000;
+        const bTesla = (mu0 * Math.abs(current)) / (2 * Math.PI * rM);
+        const invR = 1 / rM;
+        return {
+          trial: idx + 1,
+          current,
+          probeDist_mm: dist,
+          invDist_inv_m: parseFloat(invR.toFixed(2)),
+          fieldStrength_uT: parseFloat((bTesla * 1e6).toFixed(3)),
+          fieldStrength_T: parseFloat(bTesla.toExponential(4)),
+        };
+      });
+    },
     defaultGraphConfig: {
-      xAxis: 'current',
+      xAxis: 'invDist_inv_m',
       yAxis: 'fieldStrength_uT',
-      title: 'B vs Current I (B = μ₀I / 2πr, Slope = μ₀ / 2πr)',
+      title: 'B vs 1/r (Linear Fit, Slope = μ₀I / 2π)',
       showRegression: true,
     },
     notes,
@@ -777,6 +794,9 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

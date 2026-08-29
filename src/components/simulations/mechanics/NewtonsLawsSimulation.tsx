@@ -131,6 +131,20 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       friction: parseFloat(currentDynamics.frictionForce.toFixed(2)),
       normalForce: parseFloat(currentDynamics.normalForce.toFixed(2)),
     }),
+    getSeriesData: () => {
+      const forces = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+      return forces.map((f, idx) => {
+        const dyn = calculateForcesAndKinematics({ position: 0, velocity: 1 }, { ...params, force: f });
+        return {
+          trial: idx + 1,
+          force: f,
+          mass: params.mass,
+          acceleration: parseFloat(dyn.acceleration.toFixed(2)),
+          friction: parseFloat(dyn.frictionForce.toFixed(2)),
+          normalForce: parseFloat(dyn.normalForce.toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'acceleration',
       yAxis: 'force',
@@ -626,6 +640,9 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

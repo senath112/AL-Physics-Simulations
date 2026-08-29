@@ -315,6 +315,22 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       topTension: parseFloat(tensionTop.toFixed(2)),
       bottomTension: parseFloat(tensionBottom.toFixed(2)),
     }),
+    getSeriesData: () => {
+      const speeds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      return speeds.map((spd, idx) => {
+        const f_c = (m * spd * spd) / r;
+        return {
+          trial: idx + 1,
+          speed: spd,
+          speedSq: parseFloat((spd * spd).toFixed(2)),
+          radius: r,
+          mass: m,
+          centripetalForce: parseFloat(f_c.toFixed(2)),
+          topTension: parseFloat(Math.max(0, f_c - m * 9.8).toFixed(2)),
+          bottomTension: parseFloat((f_c + m * 9.8).toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'speedSq',
       yAxis: 'centripetalForce',
@@ -516,6 +532,9 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

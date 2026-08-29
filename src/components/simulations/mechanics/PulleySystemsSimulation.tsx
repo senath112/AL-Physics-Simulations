@@ -311,6 +311,23 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         gravity: g,
       };
     },
+    getSeriesData: () => {
+      const m2Vals = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
+      return m2Vals.map((rightM, idx) => {
+        const diffRatio = (rightM - m1) / (m1 + rightM);
+        const a = diffRatio * g;
+        const t = (2 * m1 * rightM * g) / (m1 + rightM);
+        return {
+          trial: idx + 1,
+          massDifferenceRatio: parseFloat(diffRatio.toFixed(3)),
+          mass1: m1,
+          mass2: rightM,
+          acceleration: parseFloat(a.toFixed(2)),
+          tension: parseFloat(t.toFixed(2)),
+          gravity: g,
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'massDifferenceRatio',
       yAxis: 'acceleration',
@@ -458,6 +475,9 @@ export function PulleySystemsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

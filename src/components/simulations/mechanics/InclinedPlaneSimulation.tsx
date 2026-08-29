@@ -134,10 +134,29 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
         frictionForce: parseFloat(currentDynamics.frictionForce.toFixed(2)),
       };
     },
+    getSeriesData: () => {
+      const angles = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+      return angles.map((ang, idx) => {
+        const rad = (ang * Math.PI) / 180;
+        const gVal = params.g || 10;
+        const netA = Math.max(0, gVal * (Math.sin(rad) - params.muKinetic * Math.cos(rad)));
+        const rNorm = params.mass * gVal * Math.cos(rad);
+        const fFric = params.muKinetic * rNorm;
+        return {
+          trial: idx + 1,
+          angle: ang,
+          sinAngle: parseFloat(Math.sin(rad).toFixed(3)),
+          mass: params.mass,
+          acceleration: parseFloat(netA.toFixed(2)),
+          normalForce: parseFloat(rNorm.toFixed(2)),
+          frictionForce: parseFloat(fFric.toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
-      xAxis: 'angle',
+      xAxis: 'sinAngle',
       yAxis: 'acceleration',
-      title: 'Incline Angle vs Acceleration',
+      title: 'Acceleration vs sin(θ) (Slope = g)',
       showRegression: true,
     },
     notes: labNotes,
@@ -675,6 +694,9 @@ Hence, the critical angle is 30°.`,
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

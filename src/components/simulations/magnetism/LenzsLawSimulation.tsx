@@ -38,7 +38,10 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       autoDrop: 'Gravity Auto-Drop',
       manualDrag: 'Interactive Manual Drag',
       comesChart: 'Induced Current: Magnet Approaching (Comes)',
-      goesChart: 'Induced Current: Magnet Leaving (Goes)'
+      goesChart: 'Induced Current: Magnet Leaving (Goes)',
+      resultantCurrent: 'Resultant Induced Current (I_res)',
+      circulationDir: 'Circulation Direction',
+      combinedChart: 'Resultant Induced Current vs Time (Full Waveform)'
     },
     si: {
       controls: 'ප්‍රේරණ පාලන පුවරුව',
@@ -62,7 +65,10 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       autoDrop: 'ගුරුත්වාකර්ෂණ වැටීම',
       manualDrag: 'අන්තර්ක්‍රියාකාරී ඇදීම',
       comesChart: 'ප්‍රේරිත ධාරාව: ඇතුල් වන විට (ප්‍රවේශය)',
-      goesChart: 'ප්‍රේරිත ධාරාව: පිටවන විට (නික්මීම)'
+      goesChart: 'ප්‍රේරිත ධාරාව: පිටවන විට (නික්මීම)',
+      resultantCurrent: 'ප්‍රතිඵල ප්‍රේරිත ධාරාව (I_res)',
+      circulationDir: 'ධාරා සංසරණ දිශාව',
+      combinedChart: 'ප්‍රතිඵල ධාරාව කාලය සමග තරංගය'
     },
     ta: {
       controls: 'மின்தூண்டல் கட்டுப்பாடு',
@@ -86,7 +92,10 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       autoDrop: 'ஈர்ப்பு வீழ்ச்சி (தானியங்கி)',
       manualDrag: 'ஊடாடும் இழுவை (கையால்)',
       comesChart: 'மின்னோட்டம்: நுழையும் போது',
-      goesChart: 'மின்னோட்டம்: வெளியேறும் போது'
+      goesChart: 'மின்னோட்டம்: வெளியேறும் போது',
+      resultantCurrent: 'விளைவு தூண்டப்பட்ட மின்னோட்டம் (I_res)',
+      circulationDir: 'சுழற்சி திசை',
+      combinedChart: 'விளைவு மின்னோட்டம் vs நேரம்'
     }
   };
 
@@ -108,13 +117,6 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
   const [inducedEMF, setInducedEMF] = useState<number>(0);
   const [magneticForce, setMagneticForce] = useState<number>(0);
 
-  // History buffers for plotting (max 150 entries)
-  const [history, setHistory] = useState<{ t: number[]; emf: number[]; current: number[]; force: number[] }>({
-    t: [],
-    emf: [],
-    current: [],
-    force: []
-  });
 
   // Separate comes and goes histories
   const [comesHistory, setComesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
@@ -158,7 +160,6 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     setInducedCurrent(0);
     setInducedEMF(0);
     setMagneticForce(0);
-    setHistory({ t: [], emf: [], current: [], force: [] });
     setComesHistory({ t: [], current: [] });
     setGoesHistory({ t: [], current: [] });
     timeAccumulatorRef.current = 0;
@@ -226,17 +227,6 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
 
         // Update charts history trail
         timeAccumulatorRef.current += dt;
-        setHistory(prev => {
-          const nextT = [...prev.t, timeAccumulatorRef.current];
-          const nextEmf = [...prev.emf, state.inducedEMF];
-          const nextI = [...prev.current, state.inducedCurrent];
-          const nextF = [...prev.force, state.magneticForce];
-
-          if (nextT.length > 250) {
-            nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
-          }
-          return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
-        });
 
         if (currentY <= 220) {
           setComesHistory(prev => {
@@ -306,7 +296,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
         ctx.stroke();
       }
 
-      // 4. LED bulb representation
+      // 4. LED bulb representation (Left Side)
       const ledX = centerX - 120;
       const ledY = coilY;
       ctx.strokeStyle = '#64748b';
@@ -343,13 +333,98 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
       ctx.fill();
       ctx.stroke();
 
-      // Current direction arrows on wires if current is flowing
+      // LED label
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 8px font-sans';
+      ctx.textAlign = 'center';
+      ctx.fillText('LOAD (LED)', ledX, ledY + 20);
+
+      // 5. Galvanometer Meter (Right Side) - Visualizes Resultant Induced Current
+      const galvX = centerX + 120;
+      const galvY = coilY;
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      // Wire from coil to Galvanometer
+      ctx.moveTo(centerX + coilRadius, coilY - 15);
+      ctx.lineTo(galvX, coilY - 15);
+      ctx.lineTo(galvX, galvY - 22);
+      ctx.moveTo(centerX + coilRadius, coilY + 15);
+      ctx.lineTo(galvX, coilY + 15);
+      ctx.lineTo(galvX, galvY + 22);
+      ctx.stroke();
+
+      // Galvanometer Body Dial
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(galvX - 28, galvY - 26, 56, 52, [6]);
+      ctx.fill();
+      ctx.stroke();
+
+      // Dial scale arc
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(galvX, galvY + 10, 22, Math.PI * 1.2, Math.PI * 1.8);
+      ctx.stroke();
+
+      // Scale markings: -G, 0, +G
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 7px font-sans';
+      ctx.textAlign = 'center';
+      ctx.fillText('-I', galvX - 16, galvY - 10);
+      ctx.fillText('0', galvX, galvY - 14);
+      ctx.fillText('+I', galvX + 16, galvY - 10);
+      ctx.fillText('GALVANOMETER', galvX, galvY + 20);
+
+      // Needle Deflection based on Resultant Induced Current
+      const maxCurrentRef = 1.5;
+      const normalizedCurrent = Math.max(-1, Math.min(1, state.inducedCurrent / maxCurrentRef));
+      const needleAngle = -Math.PI / 2 + normalizedCurrent * (Math.PI / 3.5);
+      const needleLength = 18;
+
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(galvX, galvY + 10);
+      ctx.lineTo(galvX + Math.cos(needleAngle) * needleLength, (galvY + 10) + Math.sin(needleAngle) * needleLength);
+      ctx.stroke();
+
+      // Needle center pivot
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(galvX, galvY + 10, 2.5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // 6. Dynamic Lenz Polarity Badge & Current Circulation Indicator
       if (Math.abs(state.inducedCurrent) > 0.005) {
-        ctx.fillStyle = '#fbbf24';
-        
+        // Circulating arrows & flow particles
+        const flowTime = performance.now() * 0.005;
+        const isCCW = state.inducedCurrent < 0;
+        const particleOffset = isCCW ? -flowTime : flowTime;
+        const pAngle = (particleOffset % (2 * Math.PI));
+        const px = centerX + Math.cos(pAngle) * coilRadius;
+        const py = coilY + Math.sin(pAngle) * 12;
+
+        ctx.fillStyle = isCCW ? '#38bdf8' : '#fbbf24';
         ctx.beginPath();
-        ctx.arc(centerX - coilRadius - 40, coilY - 15, 3, 0, 2 * Math.PI);
+        ctx.arc(px, py, 3.5, 0, 2 * Math.PI);
         ctx.fill();
+
+        // Lenz Polarity Indicator on Top / Bottom of Coil
+        ctx.font = 'bold 9px font-sans';
+        ctx.textAlign = 'center';
+        if (magY < coilY) {
+          // Approaching: Induced North pole on top (Repelling North)
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
+          ctx.fillText('⚡ INDUCED N-POLE (REPELLING)', centerX, coilY - coilHeight / 2 - 8);
+        } else {
+          // Leaving: Induced South pole on top (Attracting North)
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.9)';
+          ctx.fillText('⚡ INDUCED S-POLE (ATTRACTING)', centerX, coilY + coilHeight / 2 + 16);
+        }
       }
 
       ctx.restore();
@@ -368,36 +443,68 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
     simulationTitle: "Lenz's Law & Eddy Current Damping",
     category: 'fields',
     columns: [
-      { key: 'trial', label: 'Trial #' },
-      { key: 'coilTurns', label: 'Turns (N)', unit: '' },
-      { key: 'circuitState', label: 'Circuit State', unit: '' },
-      { key: 'resistance_ohm', label: 'Resistance (R)', unit: 'Ω' },
-      { key: 'magnetStrength_T', label: 'Magnet Strength (B₀)', unit: 'T' },
-      { key: 'magnetMass_kg', label: 'Magnet Mass (m)', unit: 'kg' },
-      { key: 'peakEMF_V', label: 'Peak EMF (ℰ)', unit: 'V' },
-      { key: 'peakCurrent_A', label: 'Peak Current (I)', unit: 'A' },
-      { key: 'brakingForce_N', label: 'Braking Force', unit: 'N' },
+      { key: 'trial', label: 'Point #' },
+      { key: 'time_s', label: 'Time (t)', unit: 's' },
+      { key: 'magnetY_cm', label: 'Position (z)', unit: 'cm' },
+      { key: 'velocity_m_s', label: 'Velocity (v)', unit: 'm/s' },
+      { key: 'inducedEMF_V', label: 'Induced EMF (ℰ)', unit: 'V' },
+      { key: 'resultantCurrent_A', label: 'Resultant Current (I_res)', unit: 'A' },
+      { key: 'currentDirection', label: 'Circulation Direction', unit: '' },
+      { key: 'brakingForce_N', label: 'Braking Force (F_mag)', unit: 'N' },
     ],
     getCurrentRow: () => {
-      const maxEMF = history.emf.length > 0 ? Math.max(...history.emf.map(Math.abs)) : Math.abs(inducedEMF);
-      const maxCurrent = history.current.length > 0 ? Math.max(...history.current.map(Math.abs)) : Math.abs(inducedCurrent);
-      const maxForce = history.force.length > 0 ? Math.max(...history.force.map(Math.abs)) : Math.abs(magneticForce);
+      const z_cm = parseFloat(((magnetY - 220) * 0.05 * 100).toFixed(1));
+      const dirText = Math.abs(inducedCurrent) < 0.002
+        ? 'Zero (Neutral)'
+        : inducedCurrent < 0
+        ? 'CCW ↺ (Opposing North)'
+        : 'CW ↻ (Attracting South)';
+
       return {
-        coilTurns,
-        circuitState: isClosedCircuit ? 'Closed Circuit' : 'Open Circuit',
-        resistance_ohm: isClosedCircuit ? coilResistance : 999999,
-        magnetStrength_T: magnetStrength,
-        magnetMass_kg: magnetMass,
-        peakEMF_V: parseFloat(maxEMF.toFixed(3)),
-        peakCurrent_A: parseFloat(maxCurrent.toFixed(3)),
-        brakingForce_N: parseFloat(maxForce.toFixed(3)),
+        time_s: parseFloat((timeAccumulatorRef.current).toFixed(2)),
+        magnetY_cm: z_cm,
+        velocity_m_s: parseFloat(velocity.toFixed(2)),
+        inducedEMF_V: parseFloat(inducedEMF.toFixed(3)),
+        resultantCurrent_A: parseFloat(inducedCurrent.toFixed(3)),
+        currentDirection: dirText,
+        brakingForce_N: parseFloat(Math.abs(magneticForce).toFixed(3)),
       };
     },
+    // Multi-point full run generator: samples 30 points across a complete descent cycle
+    getSeriesData: () => {
+      const seriesRows = [];
+      let simY = 30;
+      let simVy = 0;
+      const dt = 0.015;
+      for (let step = 0; step < 40; step++) {
+        const stepState = calculateLenzStep(simY, simVy, currentParams, dt);
+        simY = stepState.magnetY;
+        simVy = stepState.velocity;
+        const z_cm = parseFloat(((simY - 220) * 0.05 * 100).toFixed(1));
+        const dir = Math.abs(stepState.inducedCurrent) < 0.002
+          ? 'Zero (Neutral)'
+          : stepState.inducedCurrent < 0
+          ? 'CCW ↺ (Opposing North)'
+          : 'CW ↻ (Attracting South)';
+
+        seriesRows.push({
+          trial: step + 1,
+          time_s: parseFloat((step * dt).toFixed(3)),
+          magnetY_cm: z_cm,
+          velocity_m_s: parseFloat(stepState.velocity.toFixed(2)),
+          inducedEMF_V: parseFloat(stepState.inducedEMF.toFixed(3)),
+          resultantCurrent_A: parseFloat(stepState.inducedCurrent.toFixed(3)),
+          currentDirection: dir,
+          brakingForce_N: parseFloat(Math.abs(stepState.magneticForce).toFixed(3)),
+        });
+      }
+      return seriesRows;
+    },
     defaultGraphConfig: {
-      xAxis: 'coilTurns',
-      yAxis: 'peakEMF_V',
-      title: "Lenz's Law: Peak Induced EMF vs Coil Turns N (ℰ ∝ N)",
-      showRegression: true,
+      xAxis: 'time_s',
+      yAxis: 'resultantCurrent_A',
+      title: "Lenz's Law: Resultant Induced Current vs Time (I_res vs t)",
+      showRegression: false,
     },
     notes,
   });
@@ -465,16 +572,6 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
 
       // Record histories
       timeAccumulatorRef.current += dt;
-      setHistory(prev => {
-        const nextT = [...prev.t, timeAccumulatorRef.current];
-        const nextEmf = [...prev.emf, inducedEMF];
-        const nextI = [...prev.current, inducedCurrent];
-        const nextF = [...prev.force, magneticForce];
-        if (nextT.length > 250) {
-          nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
-        }
-        return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
-      });
 
       if (newY <= 220) {
         setComesHistory(prev => {
@@ -561,16 +658,6 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
 
       // Record histories
       timeAccumulatorRef.current += dt;
-      setHistory(prev => {
-        const nextT = [...prev.t, timeAccumulatorRef.current];
-        const nextEmf = [...prev.emf, inducedEMF];
-        const nextI = [...prev.current, inducedCurrent];
-        const nextF = [...prev.force, magneticForce];
-        if (nextT.length > 250) {
-          nextT.shift(); nextEmf.shift(); nextI.shift(); nextF.shift();
-        }
-        return { t: nextT, emf: nextEmf, current: nextI, force: nextF };
-      });
 
       if (newY <= 220) {
         setComesHistory(prev => {
@@ -782,26 +869,44 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Calculation readings (4 Cols) */}
-            <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3.5">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
                 {t.physicsCalculations}
               </h4>
               
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2.5 text-xs">
+                {/* Resultant Induced Current */}
+                <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-150 space-y-1">
+                  <div className="flex justify-between font-bold text-slate-700">
+                    <span>{t.resultantCurrent}:</span>
+                    <span className="font-mono text-emerald-700 font-extrabold text-sm">
+                      {inducedCurrent > 0 ? `+${inducedCurrent.toFixed(3)}` : inducedCurrent.toFixed(3)} A
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-emerald-800 font-medium flex items-center justify-between">
+                    <span>{t.circulationDir}:</span>
+                    <span className="font-bold">
+                      {Math.abs(inducedCurrent) < 0.002
+                        ? '0.00 A (Neutral)'
+                        : inducedCurrent < 0
+                        ? '↺ CCW (Opposing N-Top)'
+                        : '↻ CW (Attracting S-Top)'}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="flex justify-between font-medium">
                   <span className="text-slate-500">{t.emf}:</span>
                   <span className="font-mono text-blue-600 font-extrabold">{inducedEMF.toFixed(3)} V</span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.current}:</span>
-                  <span className="font-mono text-emerald-600 font-bold">{inducedCurrent.toFixed(3)} A</span>
-                </div>
+                
                 <div className="flex justify-between font-medium">
                   <span className="text-slate-500">{t.braking}:</span>
                   <span className="font-mono text-red-650 font-bold">
                     {magneticForce !== 0 ? `${Math.abs(magneticForce).toFixed(3)} N (Up)` : '0.000 N'}
                   </span>
                 </div>
+
                 <div className="flex justify-between font-medium border-t border-slate-100 pt-2">
                   <span className="text-slate-500">{t.velocity}:</span>
                   <span className="font-mono text-slate-850 font-bold">{velocity.toFixed(2)} m/s</span>
@@ -809,7 +914,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               </div>
             </div>
 
-            {/* Two separate Plotly line charts (8 Cols) */}
+            {/* Plotly line charts (8 Cols) */}
             <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
               
               {/* Approaching (Comes) Chart */}
@@ -825,7 +930,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
                         y: comesHistory.current,
                         type: 'scatter',
                         mode: 'lines',
-                        name: 'I_in (A)',
+                        name: 'I_res (A)',
                         line: { color: '#3b82f6', width: 2.5 }
                       }
                     ]}
@@ -855,7 +960,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
                         y: goesHistory.current,
                         type: 'scatter',
                         mode: 'lines',
-                        name: 'I_out (A)',
+                        name: 'I_res (A)',
                         line: { color: '#ef4444', width: 2.5 }
                       }
                     ]}
@@ -902,9 +1007,9 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               <p>
                 <strong>Lenz's Law (ලෙන්ස්ගේ නියමය):</strong> The direction of the induced current is always such that it opposes the change in magnetic flux that created it:
               </p>
-              <BlockMath math="F_{\text{magnetic}} = N I \frac{d\Phi_B}{dz}" />
+              <BlockMath math="I_{\text{resultant}} = \frac{\mathcal{E}}{R} = -\frac{N}{R}\frac{d\Phi_B}{dt}, \quad F_{\text{oppose}} = N I \frac{d\Phi_B}{dz}" />
               <p>
-                As the North pole of the magnet falls towards the top of the coil, the coil sets up a North pole at its top to repel the approaching magnet, doing work against the magnetic repelling force. As the magnet exits, the coil sets up a South pole at its top to attract the retreating magnet. This creates a retarding mechanical force.
+                As the North pole of the magnet falls towards the top of the coil, the coil sets up a North pole at its top (Counter-Clockwise current) to repel the approaching magnet. As the magnet exits, the coil reverses its current to Clockwise, setting up a South pole to attract the retreating magnet.
               </p>
             </div>
           </div>
@@ -952,13 +1057,16 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               {t.trialHistory}
             </h3>
             <span className="text-xs font-mono text-slate-400 font-bold">
-              {recorder.trialCount} Trials Recorded
+              {recorder.trialCount} Data Points
             </span>
           </div>
 
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleExportPDF}
             onClearTrials={recorder.clearTrials}

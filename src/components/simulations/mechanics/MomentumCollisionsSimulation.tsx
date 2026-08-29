@@ -321,6 +321,30 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
         energyLoss: parseFloat(keLoss.toFixed(2)),
       };
     },
+    getSeriesData: () => {
+      const u1Vals = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+      return u1Vals.map((vel1, idx) => {
+        const pInit = m1 * vel1 + m2 * u2;
+        const v1 = ((m1 - e * m2) * vel1 + (1 + e) * m2 * u2) / (m1 + m2);
+        const v2 = ((1 + e) * m1 * vel1 + (m2 - e * m1) * u2) / (m1 + m2);
+        const pFin = m1 * v1 + m2 * v2;
+        const initialKE = 0.5 * m1 * vel1 * vel1 + 0.5 * m2 * u2 * u2;
+        const finalKE = 0.5 * m1 * v1 * v1 + 0.5 * m2 * v2 * v2;
+        return {
+          trial: idx + 1,
+          initialMomentum: parseFloat(pInit.toFixed(2)),
+          finalMomentum: parseFloat(pFin.toFixed(2)),
+          mass1: m1,
+          vel1Initial: vel1,
+          vel1Final: parseFloat(v1.toFixed(2)),
+          mass2: m2,
+          vel2Initial: u2,
+          vel2Final: parseFloat(v2.toFixed(2)),
+          restitution: e,
+          energyLoss: parseFloat(Math.max(0, initialKE - finalKE).toFixed(2)),
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'initialMomentum',
       yAxis: 'finalMomentum',
@@ -498,6 +522,9 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}

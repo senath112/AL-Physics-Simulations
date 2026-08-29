@@ -315,6 +315,20 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       resistance: R,
       calculatedR: I_amps > 0 ? parseFloat((V / I_amps).toFixed(2)) : R,
     }),
+    getSeriesData: () => {
+      const voltages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      return voltages.map((volt, idx) => {
+        const i_a = R > 0 ? volt / R : 0;
+        return {
+          trial: idx + 1,
+          voltage: volt,
+          current_mA: parseFloat((i_a * 1000).toFixed(2)),
+          current_A: parseFloat(i_a.toFixed(4)),
+          resistance: R,
+          calculatedR: R,
+        };
+      });
+    },
     defaultGraphConfig: {
       xAxis: 'voltage',
       yAxis: 'current_A',
@@ -513,6 +527,9 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
           <SimulationLabBar
             trialCount={recorder.trialCount}
             onRecordTrial={recorder.recordTrial}
+            onRecordFullRun={recorder.recordFullRun}
+            isAutoRecording={recorder.isAutoRecording}
+            onToggleAutoRecord={recorder.toggleAutoRecord}
             onSendToLaboratory={recorder.sendToLaboratory}
             onDownloadPDF={handleDownloadPDF}
             onClearTrials={recorder.clearTrials}
