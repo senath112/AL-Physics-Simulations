@@ -46,9 +46,33 @@ const SHM_THEORY_NOTES = {
       'Overdamped: Sluggishly returns to equilibrium without oscillating.'
     ],
 
-    eqTitle: 'Essential Syllabus Equations',
+    eqTitle: 'Essential Syllabus Equations & Verbal Meaning',
     kinematicsTitle: 'Kinematics Equations',
-    energiesTitle: 'Energy Equations',
+    energiesTitle: 'Energy & Period Equations',
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+    
+    eqExpl: {
+      accel: 'Verbal Meaning: Acceleration (a) is proportional to displacement (x) from equilibrium, but acts in the opposite direction (- sign).',
+      vel: 'Verbal Meaning: Speed (v) is maximum at equilibrium (x = 0, v = ωA) and drops to zero at the turning endpoints (x = ±A).',
+      springT: 'Verbal Meaning: Period (T) increases with larger mass m and decreases with a stiffer spring k.',
+      pendT: 'Verbal Meaning: Period (T) increases with longer pendulum length L. Notice that pendulum period does NOT depend on bob mass m.',
+      energy: 'Verbal Meaning: Total mechanical energy stays constant, continuously converting between Ek (max at x=0) and Ep (max at x=±A).'
+    },
+
+    vars: [
+      { sym: 'a', name: 'Acceleration', unit: 'm/s²' },
+      { sym: 'x', name: 'Displacement from equilibrium', unit: 'm' },
+      { sym: 'A', name: 'Amplitude (Max displacement)', unit: 'm' },
+      { sym: 'v', name: 'Instantaneous Velocity', unit: 'm/s' },
+      { sym: 'ω', name: 'Angular Frequency (2πf)', unit: 'rad/s' },
+      { sym: 'f', name: 'Frequency', unit: 'Hz (s⁻¹)' },
+      { sym: 'T', name: 'Time Period', unit: 's' },
+      { sym: 'm', name: 'Mass of body', unit: 'kg' },
+      { sym: 'k', name: 'Spring Stiffness Constant', unit: 'N/m' },
+      { sym: 'L', name: 'Pendulum Length', unit: 'm' },
+      { sym: 'g', name: 'Gravitational Acceleration', unit: 'm/s²' },
+      { sym: 'Ek, Ep', name: 'Kinetic & Potential Energy', unit: 'J (Joules)' },
+    ],
 
     tipsTitle: 'G.C.E. A/L Exam Key Insights',
     tips: [
@@ -83,9 +107,33 @@ const SHM_THEORY_NOTES = {
       'අධි අවපාතන: දෝලනය නොවී ඉතා සෙමින් සමතුලිතතාවට පැමිණේ.'
     ],
 
-    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+    eqTitle: 'ප්‍රධාන සමීකරණ සහ ඒවායේ භෞතික අර්ථය',
     kinematicsTitle: 'SHM චලිත විද්‍යාත්මක සමීකරණ',
-    energiesTitle: 'ශක්ති සමීකරණ',
+    energiesTitle: 'ශක්තිය සහ ආවර්ත කාල සමීකරණ',
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+
+    eqExpl: {
+      accel: 'වචනාර්ථය: ත්වරණය විස්ථාපනයට සමානුපාතික වන අතර සැමවිටම සමතුලිත ලක්ෂ්‍යය දෙසට යොමුවේ (- ලකුණ).',
+      vel: 'වචනාර්ථය: ප්‍රවේගය සමතුලිත ලක්ෂ්‍යයේදී (x = 0) උපරිම වන අතර (v = ωA) කෙළවර ලක්ෂ්‍යවලදී (x = ±A) ශූන්‍ය වේ.',
+      springT: 'වචනාර්ථය: ස්කන්ධය m වැඩිවන විට ආවර්ත කාලය T වැඩිවේ; දුන්නෙහි තදබව k වැඩිවන විට ආවර්ත කාලය අඩුවේ.',
+      pendT: 'වචනාර්ථය: දිග L වැඩිවන විට ආවර්ත කාලය T වැඩිවේ. ලෝලකයේ ආවර්ත කාලය ස්කන්ධය මත රඳා නොපවතී.',
+      energy: 'වචනාර්ථය: මුළු යාන්ත්‍රික ශක්තිය නියතව පවතින අතර ගති ශක්තිය සහ විභව ශක්තිය අතර නිරන්තරයෙන් පරිවර්තනය වේ.'
+    },
+
+    vars: [
+      { sym: 'a', name: 'ත්වරණය', unit: 'm/s²' },
+      { sym: 'x', name: 'සමතුලිත ලක්ෂ්‍යයේ සිට විස්ථාපනය', unit: 'm' },
+      { sym: 'A', name: 'විස්තාරය (උපරිම විස්ථාපනය)', unit: 'm' },
+      { sym: 'v', name: 'ක්ෂණික ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'ω', name: 'කෝණික සංඛ්‍යාතය (2πf)', unit: 'rad/s' },
+      { sym: 'f', name: 'සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'T', name: 'ආවර්ත කාලය', unit: 's' },
+      { sym: 'm', name: 'වස්තුවේ ස්කන්ධය', unit: 'kg' },
+      { sym: 'k', name: 'දුන්නෙහි නියතය', unit: 'N/m' },
+      { sym: 'L', name: 'ලෝලකයේ දිග', unit: 'm' },
+      { sym: 'g', name: 'ගුරුත්වජ ත්වරණය', unit: 'm/s²' },
+      { sym: 'Ek, Ep', name: 'ගති සහ විභව ශක්තිය', unit: 'J (ජූල්)' },
+    ],
 
     tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
     tips: [
@@ -120,9 +168,33 @@ const SHM_THEORY_NOTES = {
       'அதிக தணிப்பு: அலைவுறாமல் மெதுவாக சமநிலையை அடைகிறது.'
     ],
 
-    eqTitle: 'முக்கிய பாடத்திட்ட சமன்பாடுகள்',
+    eqTitle: 'முக்கிய சமன்பாடுகள் மற்றும் விளக்கம்',
     kinematicsTitle: 'SHM இயக்கவியல் சமன்பாடுகள்',
-    energiesTitle: 'ஆற்றல் சமன்பாடுகள்',
+    energiesTitle: 'ஆற்றல் மற்றும் அலைவுக் கால சமன்பாடுகள்',
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+
+    eqExpl: {
+      accel: 'விளக்கம்: முடுக்கம் சமநிலையிலிருந்து இடப்பெயர்ச்சிக்கு நேர்விகிதசமமானது, எப்போதும் சமநிலையை நோக்கியது (- அடையாளம்).',
+      vel: 'விளக்கம்: சமநிலையில் (x = 0) திசைவேகம் அதிகம் (v = ωA), நுனிகளில் (x = ±A) சுழியம்.',
+      springT: 'விளக்கம்: திணிவு m அதிகரிக்கும் போது அலைவுக்காலம் T அதிகரிக்கும்; வில் மாறிலி k அதிகரிக்கும் போது குறையும்.',
+      pendT: 'விளக்கம்: நீளம் L அதிகரிக்கும் போது அலைவுக்காலம் T அதிகரிக்கும். திணிவு m இல் தங்கியிருக்காது.',
+      energy: 'விளக்கம்: மொத்த ஆற்றல் மாறாது, இயக்க ஆற்றலும் நிலை ஆற்றலும் ஒன்றுக்கொன்று மாறுகின்றன.'
+    },
+
+    vars: [
+      { sym: 'a', name: 'முடுக்கம்', unit: 'm/s²' },
+      { sym: 'x', name: 'சமநிலையிலிருந்து இடப்பெயர்ச்சி', unit: 'm' },
+      { sym: 'A', name: 'வீச்சு (அதிகபட்ச இடப்பெயர்ச்சி)', unit: 'm' },
+      { sym: 'v', name: 'கணநேர திசைவேகம்', unit: 'm/s' },
+      { sym: 'ω', name: 'கோண அதிர்வெண் (2πf)', unit: 'rad/s' },
+      { sym: 'f', name: 'அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'T', name: 'அலைவுக் காலம்', unit: 's' },
+      { sym: 'm', name: 'திணிவு', unit: 'kg' },
+      { sym: 'k', name: 'வில் மாறிலி', unit: 'N/m' },
+      { sym: 'L', name: 'ஊசல் நீளம்', unit: 'm' },
+      { sym: 'g', name: 'புவியீர்ப்பு முடுக்கம்', unit: 'm/s²' },
+      { sym: 'Ek, Ep', name: 'இயக்க & நிலை ஆற்றல்', unit: 'J (ஜூல்)' },
+    ],
 
     tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
     tips: [
@@ -1041,21 +1113,49 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
 
           {/* Tab 2: Equations & SI Units */}
           {activeTheoryTab === 'formulas' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-indigo-700 text-xs">{tn.kinematicsTitle}</h4>
-                  <BlockMath math="x(t) = A \cos(\omega t + \phi)" />
-                  <BlockMath math="v(t) = -\omega A \sin(\omega t + \phi) = \pm \omega \sqrt{A^2 - x^2}" />
-                  <BlockMath math="a(t) = -\omega^2 A \cos(\omega t + \phi) = -\omega^2 x" />
+                  <div>
+                    <BlockMath math="a(t) = -\omega^2 x" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.accel}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="v(t) = \pm \omega \sqrt{A^2 - x^2}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.vel}</p>
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-emerald-700 text-xs">{tn.energiesTitle}</h4>
-                  <BlockMath math="E_k = \frac{1}{2} m v^2 = \frac{1}{2} m \omega^2 (A^2 - x^2)" />
-                  <BlockMath math="E_p = \frac{1}{2} m \omega^2 x^2" />
-                  <BlockMath math="E_{total} = E_k + E_p = \frac{1}{2} m \omega^2 A^2 = \text{Constant}" />
+                  <div>
+                    <BlockMath math="T_{\text{spring}} = 2\pi\sqrt{\frac{m}{k}}, \quad T_{\text{pendulum}} = 2\pi\sqrt{\frac{L}{g}}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.springT}</p>
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150 mt-1">{tn.eqExpl.pendT}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="E_{\text{total}} = E_k + E_p = \frac{1}{2} m \omega^2 A^2" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.energy}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v, idx) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -42,7 +42,27 @@ const PHOTOELECTRIC_THEORY_NOTES = {
       'Frequency Effect: Increasing light frequency (f) increases photon energy and Stopping Potential (V_s).'
     ],
 
-    eqTitle: 'Essential Photoelectric Equations',
+    eqTitle: 'Essential Photoelectric Equations & Verbal Meaning',
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+
+    eqExpl: {
+      einstein: 'Verbal Meaning: Incoming photon energy hf is split into unbinding energy Φ (work function) and kinetic energy K_max.',
+      stopping: 'Verbal Meaning: Stopping potential V_s is the reverse voltage needed to halt the fastest photoelectrons (e V_s = K_max).',
+      line: 'Verbal Meaning: V_s vs f line has universal slope h/e for all metals, x-intercept f_0, and y-intercept -Φ/e.'
+    },
+
+    vars: [
+      { sym: 'E', name: 'Photon Energy', unit: 'J or eV' },
+      { sym: 'h', name: 'Planck Constant', unit: '6.63×10⁻³⁴ J·s' },
+      { sym: 'f', name: 'Incident Light Frequency', unit: 'Hz (s⁻¹)' },
+      { sym: 'λ', name: 'Incident Light Wavelength', unit: 'nm or m' },
+      { sym: 'Φ, W₀', name: 'Metal Work Function', unit: 'eV or J' },
+      { sym: 'f₀', name: 'Threshold Frequency', unit: 'Hz (s⁻¹)' },
+      { sym: 'K_max', name: 'Max Kinetic Energy of Electron', unit: 'eV or J' },
+      { sym: 'Vs', name: 'Stopping Voltage / Potential', unit: 'Volts (V)' },
+      { sym: 'e', name: 'Electron Charge', unit: '1.60×10⁻¹⁹ C' },
+      { sym: 'I', name: 'Photocurrent', unit: 'mA or A' },
+    ],
 
     tipsTitle: 'G.C.E. A/L Exam Key Insights',
     tips: [
@@ -73,7 +93,27 @@ const PHOTOELECTRIC_THEORY_NOTES = {
       'සංඛ්‍යාතයේ බලපෑම: ආලෝකයේ සංඛ්‍යාතය (f) වැඩි කරන විට නැවැත්වීමේ විභවය (V_s) වැඩි වේ.'
     ],
 
-    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ සහ ඒවායේ අර්ථය',
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+
+    eqExpl: {
+      einstein: 'වචනාර්ථය: ෆෝටෝන ශක්තිය hf යනු ඉලෙක්ට්‍රෝනය නිදහස් කර ගැනීමට යන ශක්තිය Φ සහ එහි ගති ශක්තිය K_max හි එකතුවයි.',
+      stopping: 'වචනාර්ථය: නැවැත්වීමේ විභවය V_s යනු වේගවත්ම ඉලෙක්ට්‍රෝන පවා නැවැත්වීමට දෙන ඍණ වෝල්ටීයතාවයි (e V_s = K_max).',
+      line: 'වචනාර්ථය: V_s එදිරිව f ප්‍රස්ථාරයේ අනුක්‍රමණය h/e වන අතර එය සියලුම ලෝහ සඳහා පොදු නියතයකි.'
+    },
+
+    vars: [
+      { sym: 'E', name: 'ෆෝටෝන ශක්තිය', unit: 'J හෝ eV' },
+      { sym: 'h', name: 'ප්ලාන්ක් නියතය', unit: '6.63×10⁻³⁴ J·s' },
+      { sym: 'f', name: 'පතන ආලෝකයේ සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'λ', name: 'පතන ආලෝකයේ තරංග ආයාමය', unit: 'nm හෝ m' },
+      { sym: 'Φ, W₀', name: 'ලෝහයේ කාර්ය ශ්‍රිතය', unit: 'eV හෝ J' },
+      { sym: 'f₀', name: 'සීමාකාරී සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'K_max', name: 'උපරිම ගති ශක්තිය', unit: 'eV හෝ J' },
+      { sym: 'Vs', name: 'නැවැත්වීමේ විභවය', unit: 'Volts (V)' },
+      { sym: 'e', name: 'ඉලෙක්ට්‍රෝන ආරෝපණය', unit: '1.60×10⁻¹⁹ C' },
+      { sym: 'I', name: 'ප්‍රකාශ විද්‍යුත් ධාරාව', unit: 'mA හෝ A' },
+    ],
 
     tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
     tips: [
@@ -105,6 +145,26 @@ const PHOTOELECTRIC_THEORY_NOTES = {
     ],
 
     eqTitle: 'முக்கிய ஒளிமின் சமன்பாடுகள்',
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+
+    eqExpl: {
+      einstein: 'விளக்கம்: போட்டான் ஆற்றல் hf என்பது வேலைச் சார்பு Φ மற்றும் இயக்க ஆற்றல் K_max ஆகியவற்றின் கூட்டுத்தொகையாகும்.',
+      stopping: 'விளக்கம்: நிறுத்த மின்னழுத்தம் V_s என்பது வேகமான எலக்ட்ரான்களையும் நிறுத்தும் எதிர் மின்னழுத்தமாகும் (e V_s = K_max).',
+      line: 'விளக்கம்: V_s மற்றும் f வரைபடத்தின் சாய்வு h/e அனைத்து உலோகங்களுக்கும் மாறிலியாகும்.'
+    },
+
+    vars: [
+      { sym: 'E', name: 'போட்டான் ஆற்றல்', unit: 'J அல்லது eV' },
+      { sym: 'h', name: 'பிளாங்க் மாறிலி', unit: '6.63×10⁻³⁴ J·s' },
+      { sym: 'f', name: 'படு ஒளி அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'λ', name: 'படு ஒளி அலைநீளம்', unit: 'nm அல்லது m' },
+      { sym: 'Φ, W₀', name: 'உலோக வேலைச் சார்பு', unit: 'eV அல்லது J' },
+      { sym: 'f₀', name: 'தொடக்க அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'K_max', name: 'அதிகபட்ச இயக்க ஆற்றல்', unit: 'eV அல்லது J' },
+      { sym: 'Vs', name: 'நிறுத்த மின்னழுத்தம்', unit: 'Volts (V)' },
+      { sym: 'e', name: 'எலக்ட்ரான் மின்னேற்றம்', unit: '1.60×10⁻¹⁹ C' },
+      { sym: 'I', name: 'ஒளிமின் மின்னோட்டம்', unit: 'mA அல்லது A' },
+    ],
 
     tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
     tips: [
@@ -692,19 +752,44 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
 
           {/* Tab 2: Equations & SI Units */}
           {activeTheoryTab === 'formulas' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-blue-700 text-xs">Einstein Photoelectric Equations</h4>
-                  <BlockMath math="h f = \Phi + K_{max} = h f_0 + \frac{1}{2} m v_{max}^2" />
-                  <BlockMath math="e V_s = K_{max} = h f - \Phi" />
+                  <div>
+                    <BlockMath math="h f = \Phi + K_{max} = h f_0 + \frac{1}{2} m v_{max}^2" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.einstein}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="e V_s = K_{max} = h f - \Phi" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.stopping}</p>
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-indigo-700 text-xs">Stopping Voltage vs Frequency Line</h4>
-                  <BlockMath math="V_s = \left(\frac{h}{e}\right) f - \frac{\Phi}{e}" />
-                  <p className="text-[11px] text-slate-500">Slope = h/e, X-intercept = f₀, Y-intercept = -Φ/e.</p>
+                  <div>
+                    <BlockMath math="V_s = \left(\frac{h}{e}\right) f - \frac{\Phi}{e}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.line}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v, idx) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

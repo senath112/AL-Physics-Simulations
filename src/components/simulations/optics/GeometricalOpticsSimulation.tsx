@@ -29,7 +29,29 @@ const OPTICS_THEORY_NOTES = {
     fibreTitle: '3. Optical Fibre Guidance',
     fibreBody: 'Optical fibres transmit light signals over long distances via repeated total internal reflections inside a high-index core (n_core) surrounded by lower-index cladding (n_cladding < n_core). The maximum entry angle into the fibre core is the Acceptance Angle (θ_a):',
 
-    eqTitle: 'Essential Optics Equations',
+    eqTitle: 'Essential Optics Equations & Verbal Meaning',
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+
+    eqExpl: {
+      snell: 'Verbal Meaning: When light enters a denser medium (n₂ > n₁), it slows down and bends towards the normal line.',
+      tir: 'Verbal Meaning: Critical angle θ_c is the incident angle where refraction reaches 90°. For θ₁ > θ_c, light cannot escape and reflects 100% back inside.',
+      relIndex: 'Verbal Meaning: Relative refractive index ₁n₂ represents speed ratio v₁/v₂ and wavelength ratio λ₁/λ₂ across the boundary.',
+      depth: 'Verbal Meaning: Apparent shift Δx is the apparent upward displacement of an underwater object of thickness t.',
+      fibre: 'Verbal Meaning: Acceptance angle θ_a is the maximum entry cone angle for light to stay guided inside an optical fibre core.'
+    },
+
+    vars: [
+      { sym: 'n', name: 'Absolute Refractive Index', unit: 'Dimensionless' },
+      { sym: 'c', name: 'Speed of Light in Vacuum', unit: '3×10⁸ m/s' },
+      { sym: 'v', name: 'Speed of Light in Medium', unit: 'm/s' },
+      { sym: 'θ₁, i', name: 'Angle of Incidence', unit: 'degrees' },
+      { sym: 'θ₂, r', name: 'Angle of Refraction', unit: 'degrees' },
+      { sym: 'θc', name: 'Critical Angle', unit: 'degrees' },
+      { sym: 'θa', name: 'Fibre Acceptance Angle', unit: 'degrees' },
+      { sym: 't', name: 'Thickness of glass/medium', unit: 'm' },
+      { sym: 'Δx', name: 'Apparent Shift in Depth', unit: 'm' },
+      { sym: 'n_core, n_cladding', name: 'Fibre Core & Cladding Indices', unit: 'Dimensionless' },
+    ],
 
     tipsTitle: 'G.C.E. A/L Exam Key Insights',
     tips: [
@@ -60,7 +82,29 @@ const OPTICS_THEORY_NOTES = {
     fibreTitle: '3. ප්‍රකාශ තන්තු (Optical Fibre) තාක්ෂණය',
     fibreBody: 'ප්‍රකාශ තන්තු මගින් ආලෝක සංඥා පූර්ණ අභ්‍යන්තර පරාවර්තනය මගින් ගමන් කරවයි. මෙහිදී අභ්‍යන්තර මාධ්‍යයේ වර්තනාංකය (n_core) පිටත මාධ්‍යයේ වර්තනාංකයට (n_cladding) වඩා වැඩිවේ:',
 
-    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ සහ ඒවායේ අර්ථය',
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+
+    eqExpl: {
+      snell: 'වචනාර්ථය: ආලෝකය ප්‍රකාශ ඝන මාධ්‍යයකට ඇතුළු වන විට (n₂ > n₁), එහි ප්‍රවේගය අඩුවී අභිලම්බය දෙසට නැමේ.',
+      tir: 'වචනාර්ථය: ඡේදක කෝණය θ_c යනු වර්තන කෝණය 90° වන පතන කෝණයයි. θ₁ > θ_c වන විට ආලෝකය 100% ක් පූර්ණ අභ්‍යන්තරව පරාවර්තනය වේ.',
+      relIndex: 'වචනාර්ථය: සාපේක්ෂ වර්තනාංකය ₁n₂ මගින් මාධ්‍යයන් දෙක අතර ප්‍රවේග අනුපාතය v₁/v₂ සහ තරංග ආයාම අනුපාතය λ₁/λ₂ නිරූපණය කරයි.',
+      depth: 'වචනාර්ථය: අතථ්‍ය විස්ථාපනය Δx යනු ජලයේ හෝ වීදුරු පුවරුවක ඇති වස්තුවක් ඉහළට එසවී පෙනෙන ප්‍රමාණයයි.',
+      fibre: 'වචනාර්ථය: පිළිගැනීමේ කෝණය θ_a යනු ප්‍රකාශ තන්තු අභ්‍යන්තරයේ ආලෝකය රැඳී පැවතීමට අභ්‍යන්තරයට ඇතුළු විය හැකි උපරිම කෝණයයි.'
+    },
+
+    vars: [
+      { sym: 'n', name: 'නිරපේක්ෂ වර්තනාංකය', unit: 'ඒකක නැත' },
+      { sym: 'c', name: 'ශූන්‍යයේ ආලෝකයේ ප්‍රවේගය', unit: '3×10⁸ m/s' },
+      { sym: 'v', name: 'මාධ්‍යයේ ආලෝකයේ ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'θ₁, i', name: 'පතන කෝණය', unit: 'අංශක' },
+      { sym: 'θ₂, r', name: 'වර්තන කෝණය', unit: 'අංශක' },
+      { sym: 'θc', name: 'ඡේදක කෝණය', unit: 'අංශක' },
+      { sym: 'θa', name: 'ප්‍රකාශ තන්තු පිළිගැනීමේ කෝණය', unit: 'අංශක' },
+      { sym: 't', name: 'මාධ්‍යයේ ඝනකම', unit: 'm' },
+      { sym: 'Δx', name: 'අතථ්‍ය විස්ථාපනය', unit: 'm' },
+      { sym: 'n_core, n_cladding', name: 'තන්තු අභ්‍යන්තර සහ පිටත වර්තනාංක', unit: 'ඒකක නැත' },
+    ],
 
     tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
     tips: [
@@ -92,6 +136,28 @@ const OPTICS_THEORY_NOTES = {
     fibreBody: 'ஒளி இழைகள் முழு அக எதிரொளிப்பு மூலம் ஒளி சிக்னல்களை கடத்துகின்றன. இதில் உள்ளக முறிவு எண் (n_core) வெளிப்பூச்சின் முறிவு எண்ணை (n_cladding) விட அதிகமாகும்:',
 
     eqTitle: 'முக்கிய ஒளியியல் சமன்பாடுகள்',
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+
+    eqExpl: {
+      snell: 'விளக்கம்: ஒளி அடர்வு கூடிய ஊடகத்தில் (n₂ > n₁) நுழையும் போது வேகம் குறைந்து செங்குத்து கோட்டை நோக்கி வளையும்.',
+      tir: 'விளக்கம்: மாறுநிலைக் கோணம் θ_c என்பது முறிவுக் கோணம் 90° ஆகும் படுகோணமாகும். θ₁ > θ_c எனில் ஒளி 100% முழு அக எதிரொளிப்படையும்.',
+      relIndex: 'விளக்கம்: சார்பு முறிவு எண் ₁n₂ இரு ஊடகங்களுக்கு இடையிலான வேக விகிதம் v₁/v₂ மற்றும் அலைநீள விகிதத்தைக் குறிக்கும்.',
+      depth: 'விளக்கம்: தோற்ற இடப்பெயர்ச்சி Δx என்பது தண்ணீரில் உள்ள பொருள் மேலே உயர்ந்து தோன்றும் அளவாகும்.',
+      fibre: 'விளக்கம்: ஏற்புக் கோணம் θ_a என்பது ஒளி இழைக்குள் ஒளி தங்குவதற்கு நுழையக்கூடிய அதிகபட்சக் கோணமாகும்.'
+    },
+
+    vars: [
+      { sym: 'n', name: 'தனி முறிவு எண்', unit: 'அலகற்றது' },
+      { sym: 'c', name: 'வெற்றிடத்தில் ஒளியின் வேகம்', unit: '3×10⁸ m/s' },
+      { sym: 'v', name: 'ஊடகத்தில் ஒளியின் வேகம்', unit: 'm/s' },
+      { sym: 'θ₁, i', name: 'படுகோணம்', unit: 'பாகை' },
+      { sym: 'θ₂, r', name: 'முறிவுக் கோணம்', unit: 'பாகை' },
+      { sym: 'θc', name: 'மாறுநிலைக் கோணம்', unit: 'பாகை' },
+      { sym: 'θa', name: 'ஏற்புக் கோணம்', unit: 'பாகை' },
+      { sym: 't', name: 'ஊடகத்தின் தடிமன்', unit: 'm' },
+      { sym: 'Δx', name: 'தோற்ற இடப்பெயர்ச்சி', unit: 'm' },
+      { sym: 'n_core, n_cladding', name: 'உள்ளக மற்றும் வெளிப்பூச்சு முறிவு எண்கள்', unit: 'அலகற்றது' },
+    ],
 
     tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
     tips: [
@@ -698,21 +764,52 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
 
           {/* Tab 2: Equations & SI Units */}
           {activeTheoryTab === 'formulas' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-blue-700 text-xs">Refraction & Critical Angle</h4>
-                  <BlockMath math="n_1 \sin\theta_1 = n_2 \sin\theta_2" />
-                  <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} = \frac{1}{n}" />
-                  <BlockMath math="{}_1 n_2 = \frac{n_2}{n_1} = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}" />
+                  <div>
+                    <BlockMath math="n_1 \sin\theta_1 = n_2 \sin\theta_2" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.snell}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} = \frac{1}{n}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.tir}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="{}_1 n_2 = \frac{n_2}{n_1} = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.relIndex}</p>
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-indigo-700 text-xs">Depth & Fibre Equations</h4>
-                  <BlockMath math="n = \frac{\text{Real Depth}}{\text{Apparent Depth}}" />
-                  <BlockMath math="\Delta x = t \left(1 - \frac{1}{n}\right)" />
-                  <BlockMath math="\sin\theta_{acceptance} = \sqrt{n_1^2 - n_2^2}" />
+                  <div>
+                    <BlockMath math="\Delta x = t \left(1 - \frac{1}{n}\right)" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.depth}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="\sin\theta_{acceptance} = \sqrt{n_{\text{core}}^2 - n_{\text{cladding}}^2}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.fibre}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v, idx) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

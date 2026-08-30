@@ -38,8 +38,26 @@ const DOPPLER_THEORY_NOTES = {
       'Mach Cone Angle: sin(θ) = v / v_s = 1 / M, where M is the Mach number.'
     ],
 
-    eqTitle: 'Essential Doppler Syllabus Equations',
+    eqTitle: 'Essential Doppler Syllabus Equations & Verbal Meaning',
     generalEq: 'General Doppler Equation:',
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+
+    eqExpl: {
+      doppler: 'Verbal Meaning: Observed frequency f\' increases when source and observer approach each other (upper signs +, -), and decreases when receding (lower signs -, +).',
+      statObs: 'Verbal Meaning: When observer is stationary (v_o = 0), f\' depends purely on sound speed v and source speed v_s.',
+      mach: 'Verbal Meaning: Mach number M > 1 means supersonic flight, creating a Mach Cone of half-angle sin(θ) = 1/M.'
+    },
+
+    vars: [
+      { sym: "f'", name: 'Observed Frequency', unit: 'Hz (s⁻¹)' },
+      { sym: 'fs', name: 'Source Frequency', unit: 'Hz (s⁻¹)' },
+      { sym: 'v', name: 'Speed of Sound in Medium', unit: 'm/s' },
+      { sym: 'vs', name: 'Speed of Source', unit: 'm/s' },
+      { sym: 'vo', name: 'Speed of Observer', unit: 'm/s' },
+      { sym: 'λ, λ\'', name: 'Actual vs Apparent Wavelength', unit: 'm' },
+      { sym: 'M', name: 'Mach Number (vs / v)', unit: 'Dimensionless' },
+      { sym: 'θ', name: 'Mach Cone Half-Angle', unit: 'degrees' },
+    ],
 
     tipsTitle: 'G.C.E. A/L Exam Key Insights',
     tips: [
@@ -72,8 +90,26 @@ const DOPPLER_THEORY_NOTES = {
       'මාක් කෝතුවේ කෝණය: sin(θ) = v / v_s = 1 / M (මෙහි M යනු මාක් අංකයයි).'
     ],
 
-    eqTitle: 'විෂය නිර්දේශයේ ඩොප්ලර් සමීකරණ',
+    eqTitle: 'විෂය නිර්දේශයේ ඩොප්ලර් සමීකරණ සහ ඒවායේ අර්ථය',
     generalEq: 'පොදු ඩොප්ලර් සමීකරණය:',
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+
+    eqExpl: {
+      doppler: 'වචනාර්ථය: ප්‍රභවය සහ නිරීක්ෂකයා එකිනෙකට ළඟාවන විට ඇසෙන සංඛ්‍යාතය f\' වැඩිවේ (+, -); ඈත්වන විට සංඛ්‍යාතය f\' අඩුවේ (-, +).',
+      statObs: 'වචනාර්ථය: නිරීක්ෂකයා නිශ්චල විට (v_o = 0), f\' රඳා පවතින්නේ ධ්වනි ප්‍රවේගය v සහ ප්‍රභවයේ ප්‍රවේගය v_s මත පමණි.',
+      mach: 'වචනාර්ථය: මාක් අංකය M > 1 වන විට සුපිරිධ්වනි ගමන සිදු වන අතර මාක් කෝතුවේ කෝණය sin(θ) = 1/M වේ.'
+    },
+
+    vars: [
+      { sym: "f'", name: 'නිරීක්ෂිත (ඇසෙන) සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'fs', name: 'ප්‍රභවයේ මුල් සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'v', name: 'මාධ්‍යයේ ධ්වනි ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'vs', name: 'ප්‍රභවයේ ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'vo', name: 'නිරීක්ෂකයාගේ ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'λ, λ\'', name: 'සැබෑ සහ ආභාසී තරංග ආයාමය', unit: 'm' },
+      { sym: 'M', name: 'මාක් අංකය (vs / v)', unit: 'ඒකක නැත' },
+      { sym: 'θ', name: 'මාක් කෝතුවේ අර්ධ කෝණය', unit: 'අංශක' },
+    ],
 
     tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
     tips: [
@@ -108,6 +144,24 @@ const DOPPLER_THEORY_NOTES = {
 
     eqTitle: 'முக்கிய டாப்ளர் பாடத்திட்ட சமன்பாடுகள்',
     generalEq: 'பொது டாப்ளர் சமன்பாடு:',
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+
+    eqExpl: {
+      doppler: 'விளக்கம்: முதலும் பார்வையாளரும் அணுகும்போது உணரப்படும் அதிர்வெண் f\' அதிகரிக்கும்; விலகும்போது குறையும்.',
+      statObs: 'விளக்கம்: பார்வையாளர் நிலையாக இருக்கும்போது (v_o = 0), f\' ஒலியின் வேகம் v மற்றும் முதலின் வேகம் v_s இல் தங்கியுள்ளது.',
+      mach: 'விளக்கம்: மாக் எண் M > 1 என்பது மீயொலிப் பயணத்தைக் குறிக்கிறது, மாக் கூம்புக் கோணம் sin(θ) = 1/M.'
+    },
+
+    vars: [
+      { sym: "f'", name: 'உணரப்படும் அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'fs', name: 'முதலின் உண்மையான அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'v', name: 'ஒலியின் வேகம்', unit: 'm/s' },
+      { sym: 'vs', name: 'முதலின் வேகம்', unit: 'm/s' },
+      { sym: 'vo', name: 'பார்வையாளரின் வேகம்', unit: 'm/s' },
+      { sym: 'λ, λ\'', name: 'உண்மையான vs தோற்ற அலைநீளம்', unit: 'm' },
+      { sym: 'M', name: 'மாக் எண் (vs / v)', unit: 'அலகற்றது' },
+      { sym: 'θ', name: 'மாக் கூம்புக் கோணம்', unit: 'பாகை' },
+    ],
 
     tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
     tips: [
@@ -711,20 +765,43 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
           {/* Tab 2: Equations & SI Units */}
           {activeTheoryTab === 'formulas' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
                 <h4 className="font-bold text-blue-700 text-xs">{tn.generalEq}</h4>
-                <BlockMath math="f' = f_s \left( \frac{v \pm v_o}{v \mp v_s} \right)" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
-                  <div className="bg-white border border-slate-200 p-3 rounded-lg">
+                <div>
+                  <BlockMath math="f' = f_s \left( \frac{v \pm v_o}{v \mp v_s} \right)" />
+                  <p className="text-[11px] text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200 mt-1">{tn.eqExpl.doppler}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+                  <div className="bg-white border border-slate-200 p-3 rounded-xl space-y-2">
                     <span className="font-bold text-slate-800">Stationary Observer (v_o = 0):</span>
                     <BlockMath math="f' = f_s \left( \frac{v}{v \mp v_s} \right)" />
+                    <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-150">{tn.eqExpl.statObs}</p>
                   </div>
-                  <div className="bg-white border border-slate-200 p-3 rounded-lg">
+                  <div className="bg-white border border-slate-200 p-3 rounded-xl space-y-2">
                     <span className="font-bold text-slate-800">Mach Number & Cone Angle:</span>
                     <BlockMath math="M = \frac{v_s}{v}, \quad \sin(\theta) = \frac{1}{M}" />
+                    <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-150">{tn.eqExpl.mach}</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v, idx) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
