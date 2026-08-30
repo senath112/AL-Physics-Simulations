@@ -14,8 +14,12 @@ import r2Router from './routes/r2';
 import laboratoryRouter from './routes/laboratory';
 import { authMiddleware } from './middleware/auth';
 
+// Automatic, Passenger-compatible Port Selection:
+// Uses process.env.PORT directly when provided dynamically by Plesk / Phusion Passenger.
+// Fallbacks to 3001 for local development when process.env.PORT is omitted.
+const PORT = process.env.PORT || 3001;
+
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Security & Parsing Middleware
 app.use(cors({
@@ -58,13 +62,18 @@ app.get('*', (req, res) => {
   }
 });
 
-// Start Server
+// Start Server (Single listener on dynamic process.env.PORT or fallback port 3001)
 app.listen(PORT, () => {
+  const isPassenger = typeof PORT === 'string' && (PORT === 'passenger' || PORT.startsWith('/'));
+  const listenInfo = isPassenger ? `Passenger Socket (${PORT})` : `http://localhost:${PORT}`;
+
   console.log(`=================================================================`);
-  console.log(`Physics by Senath - Production Node.js / Plesk Server Running`);
+  console.log(`Physics by Senath - Node.js / Plesk Server Running`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Listening on: http://localhost:${PORT}`);
-  console.log(`Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`Listening on: ${listenInfo}`);
+  if (!isPassenger) {
+    console.log(`Health Check: http://localhost:${PORT}/api/health`);
+  }
   console.log(`=================================================================`);
 });
 
