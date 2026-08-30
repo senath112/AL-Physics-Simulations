@@ -703,10 +703,10 @@ Hence, the critical angle is 30°.`,
       </div>
 
       {/* Interactive Simulation Viewport + Graphs (6/8 cols) */}
-      <div className={`flex flex-col gap-3 h-full min-h-0 ${isLearnExpanded ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
+      <div className={`flex flex-col gap-4 ${isLearnExpanded ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
         
         {/* Simulation Canvas Card */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden">
           {/* Header */}
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50 rounded-t-lg shrink-0">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inclined Plane Viewport</span>
@@ -723,7 +723,7 @@ Hence, the critical angle is 30°.`,
           </div>
 
           {/* Canvas Wrapper */}
-          <div className="flex-1 relative bg-slate-50/20 canvas-grid-bg min-h-0">
+          <div className="relative bg-slate-50/20 canvas-grid-bg min-h-[440px]">
             <canvas
               ref={canvasRef}
               onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}

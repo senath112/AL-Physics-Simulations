@@ -386,14 +386,14 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       </div>
 
       {/* Visual Canvas and Lab Notes */}
-      <div className="lg:col-span-8 flex flex-col gap-4 h-full">
+      <div className="lg:col-span-8 flex flex-col gap-4">
         {/* Canvas box */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0 overflow-hidden relative">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden relative">
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="flex items-center justify-center p-4 min-h-[380px]">
             <canvas ref={canvasRef} className="border border-slate-100 rounded-lg bg-slate-50/20" />
           </div>
 

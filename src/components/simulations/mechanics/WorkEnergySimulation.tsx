@@ -581,8 +581,8 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       </div>
 
       {/* Visual Canvas and Notes */}
-      <div className="lg:col-span-8 flex flex-col gap-4 h-full">
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0 overflow-hidden relative">
+      <div className="lg:col-span-8 flex flex-col gap-4">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden relative">
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
             <span className="text-[10px] font-semibold text-blue-650 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
@@ -590,7 +590,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             </span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="flex items-center justify-center p-4 min-h-[380px]">
             <canvas 
               ref={canvasRef} 
               onMouseDown={handleMouseDown}

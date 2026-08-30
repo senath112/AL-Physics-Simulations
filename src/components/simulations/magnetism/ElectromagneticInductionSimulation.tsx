@@ -506,15 +506,15 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
       </div>
 
       {/* Visual Canvas and Lab Notes */}
-      <div className="lg:col-span-8 flex flex-col gap-4 h-full">
+      <div className="lg:col-span-8 flex flex-col gap-4">
         {/* Canvas viewports */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-0 overflow-hidden relative">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden relative">
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
             <span className="text-[10px] text-slate-400 font-semibold italic">Drag the magnet horizontally to induce EMF!</span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="flex items-center justify-center p-4 min-h-[380px]">
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}
