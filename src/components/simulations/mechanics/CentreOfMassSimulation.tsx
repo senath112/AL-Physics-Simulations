@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { centreOfMassGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface PointMass {
@@ -365,10 +367,20 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
               className="px-4 py-1.5 bg-slate-600 hover:bg-slate-700 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              {t.reset}
             </button>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={centreOfMassGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ totalMass: sumMass, xCM, yCM }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation notebook */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

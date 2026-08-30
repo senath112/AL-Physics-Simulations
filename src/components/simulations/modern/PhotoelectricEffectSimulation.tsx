@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
@@ -13,6 +12,8 @@ import {
 import { calculatePhotoelectricState, PhotoelectricParameters } from '../../../physics/photoelectricPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { photoelectricGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Particle {
@@ -133,7 +134,6 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   const [intensity, setIntensity] = useState<number>(50); // %
   const [voltage, setVoltage] = useState<number>(1.5); // V
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [activeGraphTab, setActiveGraphTab] = useState<'iv' | 'vsf' | 'energy'>('iv');
   const [explainMode, setExplainMode] = useState<boolean>(true);
 
   // Lab Notes
@@ -159,12 +159,6 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   const physicsState = useMemo(() => {
     return calculatePhotoelectricState(currentParams);
   }, [wavelength, intensity, metalId, voltage]);
-
-  // Frequency in 10^14 Hz
-  const frequency14 = useMemo(() => {
-    const freq = (2.99792e17 / wavelength) / 1e14;
-    return freq;
-  }, [wavelength]);
 
   // Particle emission loop
   useEffect(() => {
@@ -502,54 +496,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
     );
   };
 
-  // Generate data for I-V graph curve
-  const ivGraphData = useMemo(() => {
-    const vVals: number[] = [];
-    const iVals: number[] = [];
-    const step = 0.1;
-    const Vs = physicsState.stoppingPotential;
 
-    for (let v = -4.0; v <= 4.0; v += step) {
-      vVals.push(parseFloat(v.toFixed(2)));
-      if (!physicsState.hasEmission) {
-        iVals.push(0);
-      } else {
-        if (v < -Vs) {
-          iVals.push(0);
-        } else if (v >= 2.0) {
-          iVals.push((intensity / 100) * 10);
-        } else {
-          const num = v + Vs;
-          const den = 2.0 + Vs;
-          iVals.push(parseFloat(((intensity / 100) * 10 * Math.pow(num / den, 1.5)).toFixed(3)));
-        }
-      }
-    }
-
-    return { x: vVals, y: iVals };
-  }, [physicsState, intensity]);
-
-  // Generate data for Vs-f graph curve
-  const vsfGraphData = useMemo(() => {
-    const fVals: number[] = [];
-    const vsVals: number[] = [];
-    
-    // Frequency ranges from 3e14 Hz to 15e14 Hz (corresponding to ~1000nm to ~200nm)
-    const thresholdFreq14 = (activeMetal.workFunction / 4.1356e-15) / 1e14;
-    
-    for (let f = 3.0; f <= 15.0; f += 0.25) {
-      fVals.push(f);
-      if (f < thresholdFreq14) {
-        vsVals.push(0);
-      } else {
-        // Vs = (h/e) * f - WorkFunction/e
-        const vs = 4.1356 * f * 1e14 * 1e-14 - activeMetal.workFunction;
-        vsVals.push(parseFloat(vs.toFixed(2)));
-      }
-    }
-
-    return { x: fVals, y: vsVals };
-  }, [activeMetal]);
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
@@ -754,14 +701,6 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                     {physicsState.stoppingPotential > 0 ? `-${physicsState.stoppingPotential.toFixed(2)} V` : '0.00 V'}
                   </span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.lightFrequency}:</span>
-                  <span className="font-mono text-slate-850">{frequency14.toFixed(2)} x10¹⁴ Hz</span>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.thresholdFrequency}:</span>
-                  <span className="font-mono text-slate-850">{(physicsState.thresholdFrequency / 1e14).toFixed(2)} x10¹⁴ Hz</span>
-                </div>
                 
                 <div className="border-t border-slate-100 pt-2.5 flex items-center justify-between font-extrabold">
                   <span className="text-slate-600">{t.emissionStatus}:</span>
@@ -774,130 +713,18 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
               </div>
             </div>
 
-            {/* Graph tabs card (8 Cols) */}
-            <div className="md:col-span-8 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col h-72">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setActiveGraphTab('iv')}
-                    className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer ${
-                      activeGraphTab === 'iv' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    I - V Curve
-                  </button>
-                  <button
-                    onClick={() => setActiveGraphTab('vsf')}
-                    className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer ${
-                      activeGraphTab === 'vsf' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    Vs - f Line
-                  </button>
-                  <button
-                    onClick={() => setActiveGraphTab('energy')}
-                    className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer ${
-                      activeGraphTab === 'energy' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >
-                    Energy Partition
-                  </button>
-                </div>
-                <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider">Live plot</span>
-              </div>
-
-              <div className="flex-1 min-h-0">
-                {activeGraphTab === 'iv' && (
-                  <PlotlyGraph
-                    data={[
-                      {
-                        x: ivGraphData.x,
-                        y: ivGraphData.y,
-                        type: 'scatter',
-                        mode: 'lines',
-                        name: 'Theoretical I-V',
-                        line: { color: '#3b82f6', width: 2 }
-                      },
-                      {
-                        x: [voltage],
-                        y: [physicsState.photocurrent],
-                        type: 'scatter',
-                        mode: 'markers',
-                        name: 'Current Operating State',
-                        marker: { color: '#ef4444', size: 10, symbol: 'circle' }
-                      }
-                    ]}
-                    layout={{
-                      autosize: true,
-                      margin: { l: 45, r: 15, t: 15, b: 40 },
-                      xaxis: { title: { text: 'Voltage V (V)' } },
-                      yaxis: { title: { text: 'Photocurrent I (mA)' } },
-                      legend: { orientation: 'h', y: -0.25 },
-                      paper_bgcolor: 'rgba(0,0,0,0)',
-                      plot_bgcolor: 'rgba(0,0,0,0)'
-                    }}
-                    className="w-full h-full"
-                  />
-                )}
-
-                {activeGraphTab === 'vsf' && (
-                  <PlotlyGraph
-                    data={[
-                      {
-                        x: vsfGraphData.x,
-                        y: vsfGraphData.y,
-                        type: 'scatter',
-                        mode: 'lines',
-                        name: 'Vs vs f boundary',
-                        line: { color: '#8b5cf6', width: 2 }
-                      },
-                      {
-                        x: [frequency14],
-                        y: [physicsState.stoppingPotential],
-                        type: 'scatter',
-                        mode: 'markers',
-                        name: 'Operating State',
-                        marker: { color: '#ef4444', size: 10 }
-                      }
-                    ]}
-                    layout={{
-                      autosize: true,
-                      margin: { l: 45, r: 15, t: 15, b: 40 },
-                      xaxis: { title: { text: 'Frequency f (x10¹⁴ Hz)' } },
-                      yaxis: { title: { text: 'Stopping Potential Vs (V)' } },
-                      legend: { orientation: 'h', y: -0.25 },
-                      paper_bgcolor: 'rgba(0,0,0,0)',
-                      plot_bgcolor: 'rgba(0,0,0,0)'
-                    }}
-                    className="w-full h-full"
-                  />
-                )}
-
-                {activeGraphTab === 'energy' && (
-                  <PlotlyGraph
-                    data={[
-                      {
-                        x: ['Photon Energy (E)', 'Work Function (Φ)', 'Kinetic Energy (Kmax)'],
-                        y: [physicsState.photonEnergy, activeMetal.workFunction, physicsState.maxKineticEnergy],
-                        type: 'bar',
-                        marker: {
-                          color: ['#3b82f6', '#eab308', '#ef4444']
-                        }
-                      }
-                    ]}
-                    layout={{
-                      autosize: true,
-                      margin: { l: 45, r: 15, t: 15, b: 40 },
-                      yaxis: { title: { text: 'Energy (eV)' } },
-                      paper_bgcolor: 'rgba(0,0,0,0)',
-                      plot_bgcolor: 'rgba(0,0,0,0)'
-                    }}
-                    className="w-full h-full"
-                  />
-                )}
-              </div>
+            {/* Scientific Graph Laboratory */}
+            <div className="md:col-span-7">
+              <ScientificGraphLab
+                graphs={photoelectricGraphs}
+                trials={recorder.recordedRows}
+                simulationParams={{ wavelength, intensity, workFunction: activeMetal.workFunction, voltage }}
+                onRecordTrial={recorder.recordTrial}
+                onClearTrials={recorder.clearTrials}
+                columns={recorder.columns}
+                height={260}
+              />
             </div>
-
           </div>
 
         </div>

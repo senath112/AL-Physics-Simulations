@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { chargedParticleGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -755,6 +757,17 @@ export function ChargedParticleMagneticSimulation({ lang = 'en' }: { lang?: 'en'
             </div>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={chargedParticleGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ charge: q, mass: m, velocity: v, bField: B }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

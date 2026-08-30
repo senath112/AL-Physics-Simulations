@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { circularMotionGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -539,6 +541,17 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
             </div>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={circularMotionGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ mass: m, radius: r, velocity: v, gravity: g }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

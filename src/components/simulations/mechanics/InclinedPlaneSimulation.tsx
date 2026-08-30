@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSimulation } from '../../../hooks/useSimulation';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { EducationalPanel } from '../../EducationalPanel';
 import {
   calculateInclinedForces,
@@ -8,8 +7,10 @@ import {
   InclinedPlaneParameters,
 } from '../../../physics/inclinedPlanePhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, Maximize2, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { inclinedPlaneGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -104,7 +105,6 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   const [showVectors, setShowVectors] = useState(true);
   const [isLearnExpanded, setIsLearnExpanded] = useState(true);
-  const [expandedGraph, setExpandedGraph] = useState<'pvt' | 'vvt' | 'avt' | null>(null);
 
   // Lab Notes State
   const [labNotes, setLabNotes] = useState('');
@@ -512,36 +512,6 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
 
 
-  // 5. Graphs Data
-  const timeAxis = history.map(h => h.t);
-  const distVals = history.map(h => h.pos);
-  const velVals = history.map(h => h.vel);
-  const accVals = history.map(h => h.acc);
-
-  const distPlotData = [
-    { x: timeAxis, y: distVals, mode: 'lines' as const, name: 'Distance s (m)', line: { color: '#ef4444', width: 2.5 } },
-  ];
-
-  const velocityPlotData = [
-    { x: timeAxis, y: velVals, mode: 'lines' as const, name: 'Velocity (m/s)', line: { color: '#3b82f6', width: 2.5 } },
-  ];
-
-  const accelPlotData = [
-    { x: timeAxis, y: accVals, mode: 'lines' as const, name: 'Accel (m/s²)', line: { color: '#f59e0b', width: 2.5 } },
-  ];
-
-  const graphLayoutTemplate = (title: string, xaxis: string, yaxis: string): Partial<Plotly.Layout> => ({
-    title: { text: title, font: { size: 12, family: 'Outfit, sans-serif' } },
-    margin: { l: 45, r: 15, t: 35, b: 35 },
-    xaxis: { title: { text: xaxis }, gridcolor: '#f1f5f9', zerolinecolor: '#cbd5e1' },
-    yaxis: { title: { text: yaxis }, gridcolor: '#f1f5f9', zerolinecolor: '#cbd5e1' },
-    plot_bgcolor: '#ffffff',
-    paper_bgcolor: '#ffffff',
-    showlegend: true,
-    legend: { orientation: 'h', y: -0.2, font: { size: 10 } },
-    hovermode: 'closest',
-  });
-
   // 6. Educational Notes
   const conceptText = (
     <div className="space-y-3">
@@ -826,60 +796,18 @@ Hence, the critical angle is 30°.`,
           </div>
         </div>
 
-        {/* Scientific Graphs */}
-        <div className="h-[210px] shrink-0 grid grid-cols-1 md:grid-cols-3 gap-3 min-h-0">
-          
-          {/* Position vs Time */}
-          <div 
-            onClick={() => setExpandedGraph('pvt')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Position graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={distPlotData}
-                layout={graphLayoutTemplate('Distance along Slope vs Time', 'Time t (s)', 'Distance s (m)')}
-              />
-            </div>
-          </div>
-
-          {/* Velocity vs Time */}
-          <div 
-            onClick={() => setExpandedGraph('vvt')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Velocity graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={velocityPlotData}
-                layout={graphLayoutTemplate('Velocity vs Time', 'Time t (s)', 'Velocity (m/s)')}
-              />
-            </div>
-          </div>
-
-          {/* Acceleration vs Time */}
-          <div 
-            onClick={() => setExpandedGraph('avt')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Acceleration graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={accelPlotData}
-                layout={graphLayoutTemplate('Acceleration vs Time', 'Time t (s)', 'Acceleration (m/s²)')}
-              />
-            </div>
-          </div>
-
+        {/* Scientific Graph Laboratory */}
+        <div className="shrink-0 min-h-[300px]">
+          <ScientificGraphLab
+            graphs={inclinedPlaneGraphs}
+            trials={recorder.recordedRows}
+            realtimePoints={history.map(h => ({ t: h.t, x: h.pos, y: h.vel, position: h.pos, velocity: h.vel, acceleration: h.acc }))}
+            simulationParams={params}
+            onRecordTrial={recorder.recordTrial}
+            onClearTrials={recorder.clearTrials}
+            columns={recorder.columns}
+            height={260}
+          />
         </div>
 
       </div>
@@ -929,59 +857,6 @@ Hence, the critical angle is 30°.`,
           </button>
         )}
       </div>
-
-      {/* Expanded Graph Overlay Modal */}
-      {expandedGraph && (
-        <div 
-          onClick={() => setExpandedGraph(null)}
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white border border-slate-200 rounded-xl shadow-xl max-w-4xl w-full p-6 relative flex flex-col h-[75vh]"
-          >
-            <button 
-              onClick={() => setExpandedGraph(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-semibold font-mono text-lg cursor-pointer bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
-              title="Close expanded graph"
-            >
-              ✕
-            </button>
-            <div className="flex-1 min-h-0">
-              {expandedGraph === 'pvt' && (
-                <PlotlyGraph
-                  data={distPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Distance along Slope vs Time [EXPANDED]', 'Time t (s)', 'Distance s (m)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-              {expandedGraph === 'vvt' && (
-                <PlotlyGraph
-                  data={velocityPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Velocity vs Time [EXPANDED]', 'Time t (s)', 'Velocity (m/s)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-              {expandedGraph === 'avt' && (
-                <PlotlyGraph
-                  data={accelPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Acceleration vs Time [EXPANDED]', 'Time t (s)', 'Acceleration (m/s²)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

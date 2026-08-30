@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath } from '../../Math';
 import { Sparkles, Info, Plus } from 'lucide-react';
 import { calculateRayState, traceFibreRay, OpticsParameters } from '../../../physics/opticsPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { geometricalOpticsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -500,27 +501,7 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
     );
   };
 
-  // Plotly chart series generator for Snell's Law Curve (grazing angles relative to horizontal)
-  const generateChartData = () => {
-    const theta1Vals: number[] = [];
-    const theta2Vals: number[] = [];
 
-    for (let theta1Horiz = 0; theta1Horiz <= 90; theta1Horiz += 2) {
-      const theta1Normal = 90 - theta1Horiz;
-      const theta1Rad = (theta1Normal * Math.PI) / 180;
-      const sinTheta2Normal = (n1 * Math.sin(theta1Rad)) / n2;
-      if (sinTheta2Normal <= 1) {
-        const theta2Normal = Math.asin(sinTheta2Normal) * (180 / Math.PI);
-        const theta2Horiz = 90 - theta2Normal;
-        theta1Vals.push(theta1Horiz);
-        theta2Vals.push(theta2Horiz);
-      }
-    }
-
-    return { theta1Vals, theta2Vals };
-  };
-
-  const chartData = generateChartData();
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -849,45 +830,16 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
       {/* Numerical Data Graph & Lab Book Section */}
       <div className={`grid grid-cols-1 gap-6 ${mode !== 'fibre' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
         
-        {/* Plotly Graph Card */}
-        {mode !== 'fibre' && (
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Snell's Law Angle Curve</h3>
-            <div className="flex-1 min-h-[300px] flex items-center justify-center">
-              <PlotlyGraph
-                data={[
-                  {
-                    x: chartData.theta1Vals,
-                    y: chartData.theta2Vals,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Refracted Angle',
-                    line: { color: '#3b82f6', width: 3 }
-                  },
-                  // Current point indicator
-                  {
-                    x: [90 - incidentAngle],
-                    y: [rayState.isTIR ? null : 90 - (rayState.refractedAngleRad || 0) * (180 / Math.PI)],
-                    type: 'scatter',
-                    mode: 'markers',
-                    name: 'Current State',
-                    marker: { color: '#ef4444', size: 10 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Incident Angle i (°)' }, range: [0, 90] },
-                  yaxis: { title: { text: 'Refracted Angle r (°)' }, range: [0, 90] },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            </div>
-          </div>
-        )}
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={geometricalOpticsGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ n1, n2, incidentAngle }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={260}
+        />
 
         {/* Lab Notes Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">

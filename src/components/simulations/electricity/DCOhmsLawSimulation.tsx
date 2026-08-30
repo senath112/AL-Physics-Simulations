@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { dcOhmsLawGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -493,45 +494,16 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
           </div>
         </div>
 
-        {/* Real-time V vs I graph plot */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-            {t.vGraph}
-          </h3>
-          <div className="h-56">
-            <PlotlyGraph
-              data={[
-                {
-                  x: recorder.recordedRows.map((d) => Number(d.current_mA || 0)),
-                  y: recorder.recordedRows.map((d) => Number(d.voltage_V || 0)),
-                  type: 'scatter',
-                  mode: 'lines+markers',
-                  name: 'Logged Trials',
-                  marker: { color: '#ef4444', size: 8 },
-                  line: { color: '#f87171', width: 2 }
-                },
-                {
-                  x: [0, I_mA],
-                  y: [0, V],
-                  type: 'scatter',
-                  mode: 'lines',
-                  name: 'Live Sweep',
-                  line: { color: '#3b82f6', dash: 'dash', width: 1.5 }
-                }
-              ]}
-              layout={{
-                autosize: true,
-                margin: { l: 45, r: 15, t: 10, b: 35 },
-                xaxis: { title: { text: 'Current (mA)' }, gridcolor: '#f1f5f9' },
-                yaxis: { title: { text: 'Voltage (V)' }, gridcolor: '#f1f5f9' },
-                plot_bgcolor: '#ffffff',
-                paper_bgcolor: '#ffffff',
-                legend: { orientation: 'h', y: -0.2 }
-              }}
-              config={{ displayModeBar: false, responsive: true }}
-            />
-          </div>
-        </div>
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={dcOhmsLawGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ voltage: V, resistance: R }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

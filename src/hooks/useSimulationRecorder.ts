@@ -433,6 +433,7 @@ export function useSimulationRecorder({
     cancelAutoRun,
     clearTrials,
     sendToLaboratory,
+    columns,
     isSaving,
     statusMessage,
     quota,

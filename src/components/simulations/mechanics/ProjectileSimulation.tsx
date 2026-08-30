@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSimulation } from '../../../hooks/useSimulation';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { EducationalPanel } from '../../EducationalPanel';
 import {
   calculateFlightTime,
@@ -10,9 +9,11 @@ import {
   runValidationTests,
   ProjectileParameters,
 } from '../../../physics/projectilePhysics';
-import { Play, Pause, RotateCcw, SkipForward, Info, Maximize2, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, Info, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { projectileGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -94,7 +95,6 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
   const [showVectors, setShowVectors] = useState(true);
   const [validationMsg, setValidationMsg] = useState('');
-  const [expandedGraph, setExpandedGraph] = useState<'trajectory' | 'displacement' | 'velocity' | null>(null);
   const [isLearnExpanded, setIsLearnExpanded] = useState(true);
   const [labNotes, setLabNotes] = useState('');
 
@@ -437,110 +437,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
     vVals.push(st.speed);
   }
 
-  // Find index corresponding to current time to draw live cursor
-  const currentIndex = Math.min(
-    Math.floor((time / tFlight) * steps),
-    steps
-  );
 
-  const currentX = currentState.x;
-  const currentY = currentState.y;
-  const currentT = time;
-  const currentSpeed = currentState.speed;
-
-  // Trajectory graph (y vs x)
-  const trajectoryPlotData = [
-    {
-      x: xVals,
-      y: yVals,
-      mode: 'lines' as const,
-      name: 'Full Trajectory',
-      line: { color: '#94a3b8', width: 2 },
-    },
-    {
-      x: xVals.slice(0, currentIndex + 1),
-      y: yVals.slice(0, currentIndex + 1),
-      mode: 'lines' as const,
-      name: 'Elapsed Path',
-      line: { color: '#2563eb', width: 3.5 },
-    },
-    {
-      x: [currentX],
-      y: [currentY],
-      mode: 'markers' as const,
-      name: 'Current Position',
-      marker: { color: '#1d4ed8', size: 10, symbol: 'circle' },
-    },
-  ];
-
-  // displacement vs time (x-t and y-t)
-  const displacementPlotData = [
-    {
-      x: tVals,
-      y: xVals,
-      mode: 'lines' as const,
-      name: 'Horizontal (x)',
-      line: { color: '#ef4444', width: 2 },
-    },
-    {
-      x: tVals,
-      y: yVals,
-      mode: 'lines' as const,
-      name: 'Vertical (y)',
-      line: { color: '#3b82f6', width: 2 },
-    },
-    {
-      x: [currentT, currentT],
-      y: [currentX, currentY],
-      mode: 'markers' as const,
-      name: 'Now',
-      marker: { color: '#0f172a', size: 8 },
-    },
-  ];
-
-  // velocity vs time
-  const velocityPlotData = [
-    {
-      x: tVals,
-      y: vxVals,
-      mode: 'lines' as const,
-      name: 'v_x',
-      line: { color: '#ef4444', width: 2 },
-    },
-    {
-      x: tVals,
-      y: vyVals,
-      mode: 'lines' as const,
-      name: 'v_y',
-      line: { color: '#f59e0b', width: 2 },
-    },
-    {
-      x: tVals,
-      y: vVals,
-      mode: 'lines' as const,
-      name: 'Net Speed',
-      line: { color: '#10b981', width: 2 },
-    },
-    {
-      x: [currentT, currentT, currentT],
-      y: [currentState.vx, currentState.vy, currentSpeed],
-      mode: 'markers' as const,
-      name: 'Now',
-      marker: { color: '#0f172a', size: 8 },
-    },
-  ];
-
-  const graphLayoutTemplate = (title: string, xaxis: string, yaxis: string): Partial<Plotly.Layout> => ({
-    title: { text: title, font: { size: 12, family: 'Outfit, sans-serif' } },
-    margin: { l: 45, r: 15, t: 35, b: 35 },
-    xaxis: { title: { text: xaxis }, gridcolor: '#f1f5f9', zerolinecolor: '#cbd5e1' },
-    yaxis: { title: { text: yaxis }, gridcolor: '#f1f5f9', zerolinecolor: '#cbd5e1' },
-    plot_bgcolor: '#ffffff',
-    paper_bgcolor: '#ffffff',
-    showlegend: true,
-    legend: { orientation: 'h', y: -0.2, font: { size: 10 } },
-    hovermode: 'closest',
-  });
 
   // 5. Educational Data
   const conceptText = (
@@ -779,7 +676,7 @@ Hence, the maximum height reached is 5.0 m.`,
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">SPEED (v)</span>
-              <span className="font-bold text-emerald-400">{currentSpeed.toFixed(2)} m/s</span>
+              <span className="font-bold text-emerald-400">{currentState.speed.toFixed(2)} m/s</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">DISPLACEMENT (x)</span>
@@ -948,58 +845,18 @@ Hence, the maximum height reached is 5.0 m.`,
           </div>
         </div>
 
-        {/* Scientific Graphs Row */}
-        <div className="h-[210px] shrink-0 grid grid-cols-1 md:grid-cols-3 gap-3 min-h-0">
-          {/* Trajectory Plot */}
-          <div 
-            onClick={() => setExpandedGraph('trajectory')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Trajectory graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={trajectoryPlotData}
-                layout={graphLayoutTemplate('Trajectory (y vs x)', 'Distance x (m)', 'Height y (m)')}
-              />
-            </div>
-          </div>
-
-          {/* Displacement-Time Plot */}
-          <div 
-            onClick={() => setExpandedGraph('displacement')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Displacement-Time graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={displacementPlotData}
-                layout={graphLayoutTemplate('Displacement vs Time', 'Time t (s)', 'Displacement (m)')}
-              />
-            </div>
-          </div>
-
-          {/* Velocity-Time Plot */}
-          <div 
-            onClick={() => setExpandedGraph('velocity')}
-            className="bg-white border border-slate-200 rounded-lg p-2 shadow-sm h-full min-h-0 hover:border-blue-400 hover:shadow transition-all cursor-pointer relative group"
-            title="Click to expand Velocity-Time graph"
-          >
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-slate-50 border border-slate-200 rounded p-1">
-              <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
-            </div>
-            <div className="w-full h-full pointer-events-none">
-              <PlotlyGraph
-                data={velocityPlotData}
-                layout={graphLayoutTemplate('Velocity vs Time', 'Time t (s)', 'Velocity (m/s)')}
-              />
-            </div>
-          </div>
+        {/* Scientific Graph Laboratory */}
+        <div className="shrink-0 min-h-[300px]">
+          <ScientificGraphLab
+            graphs={projectileGraphs}
+            trials={recorder.recordedRows}
+            realtimePoints={tVals.map((tVal, i) => ({ t: tVal, x: xVals[i], y: yVals[i], xPos: xVals[i], yPos: yVals[i] }))}
+            simulationParams={{ velocity: params.v0, angle: params.angle, gravity: params.g, initialHeight: params.h0 }}
+            onRecordTrial={recorder.recordTrial}
+            onClearTrials={recorder.clearTrials}
+            columns={recorder.columns}
+            height={260}
+          />
         </div>
 
       </div>
@@ -1049,59 +906,6 @@ Hence, the maximum height reached is 5.0 m.`,
           </button>
         )}
       </div>
-
-      {/* Expanded Graph Overlay Modal */}
-      {expandedGraph && (
-        <div 
-          onClick={() => setExpandedGraph(null)}
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white border border-slate-200 rounded-xl shadow-xl max-w-4xl w-full p-6 relative flex flex-col h-[75vh]"
-          >
-            <button 
-              onClick={() => setExpandedGraph(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-semibold font-mono text-lg cursor-pointer bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
-              title="Close expanded graph"
-            >
-              ✕
-            </button>
-            <div className="flex-1 min-h-0">
-              {expandedGraph === 'trajectory' && (
-                <PlotlyGraph
-                  data={trajectoryPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Trajectory (y vs x) [EXPANDED]', 'Distance x (m)', 'Height y (m)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-              {expandedGraph === 'displacement' && (
-                <PlotlyGraph
-                  data={displacementPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Displacement vs Time [EXPANDED]', 'Time t (s)', 'Displacement (m)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-              {expandedGraph === 'velocity' && (
-                <PlotlyGraph
-                  data={velocityPlotData}
-                  layout={{
-                    ...graphLayoutTemplate('Velocity vs Time [EXPANDED]', 'Time t (s)', 'Velocity (m/s)'),
-                    margin: { l: 60, r: 20, t: 50, b: 50 },
-                  }}
-                  style={{ height: '100%' }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

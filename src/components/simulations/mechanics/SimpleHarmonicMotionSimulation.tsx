@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { PlotlyGraph } from '../../PlotlyGraph';
+import { useState, useRef, useEffect } from 'react';
 import { BlockMath } from '../../Math';
 import { 
   Play, 
@@ -12,6 +11,8 @@ import {
 import { calculateSHMState, SHMParameters } from '../../../physics/shmPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { shmGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -88,10 +89,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
-  // Parameters
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
   const [explainMode, setExplainMode] = useState<boolean>(true);
-  const [activeGraphTab, setActiveGraphTab] = useState<'displacement' | 'velocity' | 'acceleration' | 'phase' | 'energy'>('displacement');
   const [showRefCircle, setShowRefCircle] = useState<boolean>(true);
   
   // Controls
@@ -176,39 +175,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   };
   const shmState = calculateSHMState(timeRef.current, currentParams);
 
-  // Memoize static theoretical phase space orbit curves
-  const staticPhaseOrbit = useMemo(() => {
-    const w0 = mode === 'spring' ? Math.sqrt(springK / mass) : Math.sqrt(10 / length);
-    const T = 2 * Math.PI / (w0 || 1);
-    
-    const xVals: (number | null)[] = [];
-    const vVals: (number | null)[] = [];
-    
-    // Damped vs undamped orbit duration
-    const duration = damping === 0 ? T : Math.min(5 * T, 20);
-    const steps = damping === 0 ? 150 : 500;
-    
-    const ampLimit = mode === 'pendulum' ? (amplitude * Math.PI) / 180 : amplitude;
-    
-    const params: SHMParameters = {
-      mode,
-      mass,
-      springK,
-      length,
-      gravity: 10,
-      damping,
-      amplitude: ampLimit
-    };
 
-    for (let i = 0; i <= steps; i++) {
-      const t = (i / steps) * duration;
-      const state = calculateSHMState(t, params);
-      xVals.push(state.displacement);
-      vVals.push(state.velocity);
-    }
-    
-    return { x: xVals, y: vVals };
-  }, [mode, mass, springK, length, damping, amplitude]);
 
   // Handle Damping presets
   const applyPreset = (preset: 'none' | 'under' | 'critical' | 'over') => {
@@ -1217,170 +1184,17 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       {/* Numerical Data Graph & Lab Book Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Plotly Graph Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Oscillation Curves</h3>
-            <div className="flex flex-wrap gap-1">
-              {(['displacement', 'velocity', 'acceleration', 'phase', 'energy'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveGraphTab(tab)}
-                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                    activeGraphTab === tab 
-                      ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border border-transparent'
-                  }`}
-                >
-                  {tab === 'displacement' ? 'x-t' : tab === 'velocity' ? 'v-t' : tab === 'acceleration' ? 'a-t' : tab === 'phase' ? 'v-x Phase' : 'Energy'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-[300px] flex items-center justify-center">
-            {activeGraphTab === 'displacement' && (
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.x,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Displacement (x)',
-                    line: { color: '#3b82f6', width: 2.5 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Time t (s)' } },
-                  yaxis: { title: { text: 'Displacement x (m)' } },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            )}
-
-            {activeGraphTab === 'velocity' && (
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.v,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Velocity (v)',
-                    line: { color: '#10b981', width: 2.5 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Time t (s)' } },
-                  yaxis: { title: { text: 'Velocity v (m/s)' } },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            )}
-
-            {activeGraphTab === 'acceleration' && (
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.a,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Acceleration (a)',
-                    line: { color: '#ef4444', width: 2.5 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Time t (s)' } },
-                  yaxis: { title: { text: 'Acceleration a (m/s²)' } },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            )}
-
-            {activeGraphTab === 'phase' && (
-              <PlotlyGraph
-                data={[
-                  {
-                    x: staticPhaseOrbit.x,
-                    y: staticPhaseOrbit.y,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Theoretical Phase space orbit',
-                    line: { color: '#8b5cf6', width: 2.5 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Displacement x (m)' } },
-                  yaxis: { title: { text: 'Velocity v (m/s)' } },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            )}
-
-            {activeGraphTab === 'energy' && (
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.ek,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Kinetic (Ek)',
-                    line: { color: '#10b981', width: 2 }
-                  },
-                  {
-                    x: history.t,
-                    y: history.ep,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Potential (Ep)',
-                    line: { color: '#6366f1', width: 2 }
-                  },
-                  {
-                    x: history.t,
-                    y: history.et,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Total Energy (E)',
-                    line: { color: '#8b5cf6', width: 2.5, dash: 'dash' }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 45, r: 15, t: 15, b: 40 },
-                  xaxis: { title: { text: 'Time t (s)' } },
-                  yaxis: { title: { text: 'Energy (J)' } },
-                  legend: { orientation: 'h', y: -0.2 },
-                  paper_bgcolor: 'rgba(0,0,0,0)',
-                  plot_bgcolor: 'rgba(0,0,0,0)'
-                }}
-                className="w-full h-full"
-              />
-            )}
-          </div>
-        </div>
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={shmGraphs}
+          trials={recorder.recordedRows}
+          realtimePoints={history.t.map((tVal, i) => ({ t: tVal, x: history.x[i] ?? 0, y: history.v[i] ?? 0, displacement: history.x[i] ?? 0, velocity: history.v[i] ?? 0, acceleration: history.a[i] ?? 0 }))}
+          simulationParams={{ mass, springK, length, amplitude, mode }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={280}
+        />
 
         {/* Lab Notes & Laboratory Workspace */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">

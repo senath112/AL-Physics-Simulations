@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { momentumCollisionsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -528,6 +530,17 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
             </div>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={momentumCollisionsGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ mass1: m1, vel1: u1, mass2: m2, vel2: u2, restitution: e }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

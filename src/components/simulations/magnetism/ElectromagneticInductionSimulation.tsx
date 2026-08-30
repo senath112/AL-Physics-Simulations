@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { inductionGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -538,50 +539,17 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
           </div>
         </div>
 
-        {/* Real-time Flux and EMF vs Time Graph */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
-          <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-            {lang === 'en' ? 'Magnetic Flux & Induced EMF vs. Time' : lang === 'si' ? 'චුම්බක ස්‍රාවය සහ ප්‍රේරිත වි.ගා.බ. කාලය ප්‍රස්ථාරය' : 'காந்தப் பாயம் & தூண்டப்பட்ட மின்னியக்க விசை vs நேரம்'}
-          </h4>
-          <div className="h-60">
-            <PlotlyGraph
-              data={[
-                {
-                  x: history.t,
-                  y: history.flux,
-                  type: 'scatter',
-                  mode: 'lines',
-                  name: lang === 'en' ? 'Flux (Φ)' : lang === 'si' ? 'චුම්බක ස්‍රාවය (Φ)' : 'காந்தப் பாயம் (Φ)',
-                  line: { color: '#3b82f6', width: 2 }
-                },
-                {
-                  x: history.t,
-                  y: history.emf,
-                  type: 'scatter',
-                  mode: 'lines',
-                  name: lang === 'en' ? 'Induced EMF (V)' : lang === 'si' ? 'ප්‍රේරිත වි.ගා.බ. (V)' : 'தூண்டப்பட்ட விசை (V)',
-                  yaxis: 'y2',
-                  line: { color: '#ef4444', width: 2 }
-                }
-              ]}
-              layout={{
-                autosize: true,
-                margin: { l: 40, r: 40, t: 10, b: 35 },
-                xaxis: { title: { text: lang === 'en' ? 'Time (s)' : lang === 'si' ? 'කාලය (s)' : 'நேரம் (s)' }, gridcolor: '#f1f5f9' },
-                yaxis: { title: { text: lang === 'en' ? 'Flux (Wb)' : lang === 'si' ? 'චුම්බක ස්‍රාවය (Wb)' : 'பாயம் (Wb)' }, gridcolor: '#f1f5f9' },
-                yaxis2: {
-                  title: { text: lang === 'en' ? 'Induced EMF (V)' : lang === 'si' ? 'ප්‍රේරිත වි.ගා.බ. (V)' : 'மின்னியக்க விசை (V)' },
-                  overlaying: 'y',
-                  side: 'right'
-                },
-                plot_bgcolor: '#ffffff',
-                paper_bgcolor: '#ffffff',
-                legend: { orientation: 'h', y: -0.2 }
-              }}
-              config={{ displayModeBar: false, responsive: true }}
-            />
-          </div>
-        </div>
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={inductionGraphs}
+          trials={recorder.recordedRows}
+          realtimePoints={history.t.map((tVal, i) => ({ t: tVal, x: tVal, y: history.emf[i], flux: history.flux[i], emf: history.emf[i] }))}
+          simulationParams={{ magnetStrength: B0, coilTurns: N, coilArea: area }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={260}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
@@ -13,6 +12,8 @@ import {
 import { calculateGasState } from '../../../physics/thermalPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { gasLawsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Molecule {
@@ -109,35 +110,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     }
   }, [gasMode, temperature]);
 
-  // Generate curves for Plotly visualization
-  const plotData = useMemo(() => {
-    const xData: number[] = [];
-    const yData: number[] = [];
 
-    if (gasMode === 'boyle') {
-      // P vs V curve (hyperbola: P = constant / V)
-      const k = moleculesCount * temperature * 0.05; // Matching calculateGasState scaling
-      for (let vVal = 1.0; vVal <= 7.0; vVal += 0.25) {
-        xData.push(vVal);
-        yData.push(k / vVal);
-      }
-    } else if (gasMode === 'charles') {
-      // V vs T straight line
-      for (let tVal = 100; tVal <= 500; tVal += 20) {
-        xData.push(tVal);
-        yData.push((tVal / 300) * 4.0);
-      }
-    } else if (gasMode === 'pressure') {
-      // P vs T straight line (Gay-Lussac)
-      const vConst = 4.0;
-      const slope = (moleculesCount * 0.05) / vConst;
-      for (let tVal = 100; tVal <= 500; tVal += 20) {
-        xData.push(tVal);
-        yData.push(slope * tVal);
-      }
-    }
-    return { x: xData, y: yData };
-  }, [gasMode, moleculesCount, temperature]);
 
   // Reset simulation variables
   const handleReset = () => {
@@ -567,44 +540,17 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
               </div>
             </div>
 
-            {/* Plotly Chart (8 Cols) */}
-            <div className="md:col-span-8 bg-white border border-slate-200 rounded-xl p-5 shadow-sm h-72">
-              {gasMode === 'ideal' ? (
-                <div className="h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  Select a specific Gas Law to view curves
-                </div>
-              ) : (
-                <PlotlyGraph
-                  data={[
-                    {
-                      x: plotData.x,
-                      y: plotData.y,
-                      type: 'scatter',
-                      mode: 'lines',
-                      name: gasMode === 'boyle' ? "Boyle's Curve" : gasMode === 'charles' ? "Charles' Line" : "Gay-Lussac Line",
-                      line: { color: '#3b82f6', width: 2.5 }
-                    },
-                    {
-                      x: [gasMode === 'boyle' ? volume : temperature],
-                      y: [gasMode === 'charles' ? volume : gasState.pressure],
-                      type: 'scatter',
-                      mode: 'markers',
-                      name: 'Current State',
-                      marker: { color: '#ef4444', size: 10 }
-                    }
-                  ]}
-                  layout={{
-                    autosize: true,
-                    margin: { l: 45, r: 15, t: 15, b: 40 },
-                    xaxis: { title: { text: gasMode === 'boyle' ? 'Volume V (L)' : 'Temperature T (K)' } },
-                    yaxis: { title: { text: gasMode === 'charles' ? 'Volume V (L)' : 'Pressure P (atm)' } },
-                    legend: { orientation: 'h', y: -0.25 },
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)'
-                  }}
-                  className="w-full h-full"
-                />
-              )}
+            {/* Scientific Graph Laboratory (8 Cols) */}
+            <div className="md:col-span-8">
+              <ScientificGraphLab
+                graphs={gasLawsGraphs}
+                trials={recorder.recordedRows}
+                simulationParams={{ pressure: gasState.pressure, volume, temperature, moles: moleculesCount }}
+                onRecordTrial={recorder.recordTrial}
+                onClearTrials={recorder.clearTrials}
+                columns={recorder.columns}
+                height={260}
+              />
             </div>
 
           </div>

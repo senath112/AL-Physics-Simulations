@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList, Layers, Gauge, Pipette } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { hydrostaticsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -1074,6 +1076,17 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             </button>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={hydrostaticsGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ liquidDensity, gravity: g, objectMass: objMass, objectVolume: objVolume, probeDepth }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation notebook and data logger */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

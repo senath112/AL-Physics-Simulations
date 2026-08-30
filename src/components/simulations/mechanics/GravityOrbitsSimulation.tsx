@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { RotateCcw, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { gravityOrbitsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -414,6 +416,17 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             </div>
           </div>
         </div>
+
+        {/* Scientific Graph Laboratory */}
+        <ScientificGraphLab
+          graphs={gravityOrbitsGraphs}
+          trials={recorder.recordedRows}
+          simulationParams={{ starMass: M, distance: r0, launchVel: vLaunch }}
+          onRecordTrial={recorder.recordTrial}
+          onClearTrials={recorder.clearTrials}
+          columns={recorder.columns}
+          height={250}
+        />
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">

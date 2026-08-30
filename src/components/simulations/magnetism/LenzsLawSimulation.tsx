@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { BlockMath, InlineMath } from '../../Math';
 import { 
   Sparkles, 
@@ -12,6 +11,8 @@ import {
 import { calculateLenzStep, LenzParameters } from '../../../physics/magnetismPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { lenzsLawGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
@@ -119,8 +120,8 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
 
 
   // Separate comes and goes histories
-  const [comesHistory, setComesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
-  const [goesHistory, setGoesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
+  const [, setComesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
+  const [, setGoesHistory] = useState<{ t: number[]; current: number[] }>({ t: [], current: [] });
   const [isManualMode, setIsManualMode] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -927,69 +928,17 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               </div>
             </div>
 
-            {/* Plotly line charts (8 Cols) */}
-            <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Approaching (Comes) Chart */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm h-72 flex flex-col">
-                <h5 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 text-center">
-                  {t.comesChart}
-                </h5>
-                <div className="flex-1 min-h-0">
-                  <PlotlyGraph
-                    data={[
-                      {
-                        x: comesHistory.t,
-                        y: comesHistory.current,
-                        type: 'scatter',
-                        mode: 'lines',
-                        name: 'I_res (A)',
-                        line: { color: '#3b82f6', width: 2.5 }
-                      }
-                    ]}
-                    layout={{
-                      autosize: true,
-                      margin: { l: 40, r: 10, t: 10, b: 30 },
-                      xaxis: { title: { text: 'Time (s)', font: { size: 9 } } },
-                      yaxis: { title: { text: 'Current (A)', font: { size: 9 } } },
-                      paper_bgcolor: 'rgba(0,0,0,0)',
-                      plot_bgcolor: 'rgba(0,0,0,0)'
-                    }}
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-
-              {/* Receding (Goes) Chart */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm h-72 flex flex-col">
-                <h5 className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 text-center">
-                  {t.goesChart}
-                </h5>
-                <div className="flex-1 min-h-0">
-                  <PlotlyGraph
-                    data={[
-                      {
-                        x: goesHistory.t,
-                        y: goesHistory.current,
-                        type: 'scatter',
-                        mode: 'lines',
-                        name: 'I_res (A)',
-                        line: { color: '#ef4444', width: 2.5 }
-                      }
-                    ]}
-                    layout={{
-                      autosize: true,
-                      margin: { l: 40, r: 10, t: 10, b: 30 },
-                      xaxis: { title: { text: 'Time (s)', font: { size: 9 } } },
-                      yaxis: { title: { text: 'Current (A)', font: { size: 9 } } },
-                      paper_bgcolor: 'rgba(0,0,0,0)',
-                      plot_bgcolor: 'rgba(0,0,0,0)'
-                    }}
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-
+            {/* Scientific Graph Laboratory (8 Cols) */}
+            <div className="md:col-span-8">
+              <ScientificGraphLab
+                graphs={lenzsLawGraphs}
+                trials={recorder.recordedRows}
+                simulationParams={{ magnetStrength, mass: magnetMass, turns: coilTurns, resistance: coilResistance, isClosed: isClosedCircuit }}
+                onRecordTrial={recorder.recordTrial}
+                onClearTrials={recorder.clearTrials}
+                columns={recorder.columns}
+                height={260}
+              />
             </div>
 
           </div>

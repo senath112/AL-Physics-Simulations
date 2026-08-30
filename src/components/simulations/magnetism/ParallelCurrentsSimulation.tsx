@@ -3,6 +3,8 @@ import { RotateCcw, Sparkles, Rotate3d, Plus } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { BlockMath, InlineMath } from '../../Math';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { parallelCurrentsGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Point3D {
@@ -682,6 +684,17 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
               </p>
             </div>
           </div>
+
+          {/* Scientific Graph Laboratory */}
+          <ScientificGraphLab
+            graphs={parallelCurrentsGraphs}
+            trials={recorder.recordedRows}
+            simulationParams={{ current1: i1, current2: i2, distance: distance / 1000 }}
+            onRecordTrial={recorder.recordTrial}
+            onClearTrials={recorder.clearTrials}
+            columns={recorder.columns}
+            height={260}
+          />
         </div>
 
       </div>

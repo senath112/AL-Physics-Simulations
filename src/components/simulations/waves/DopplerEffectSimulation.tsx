@@ -2,8 +2,9 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Sparkles, Volume2, VolumeX, Plus } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { BlockMath, InlineMath } from '../../Math';
-import { PlotlyGraph } from '../../PlotlyGraph';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
+import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
+import { dopplerEffectGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
 interface Wavefront {
@@ -742,44 +743,17 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
             </div>
           </div>
 
-          {/* Observed Frequencies vs Time Real-Time Graph */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 mt-6">
-            <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
-              {lang === 'en' ? 'Observed Frequencies vs. Time' : lang === 'si' ? 'නිරීක්ෂිත සංඛ්‍යාතය සහ කාලය ප්‍රස්ථාරය' : 'அவதானிக்கப்பட்ட அதிர்வெண் vs நேரம்'}
-            </h4>
-            <div className="h-60">
-              <PlotlyGraph
-                data={[
-                  {
-                    x: history.t,
-                    y: history.freqA,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: lang === 'en' ? 'Observer A (Left)' : lang === 'si' ? 'නිරීක්ෂක A (වම)' : 'அவதானிப்பாளர் A (இடது)',
-                    line: { color: '#10b981', width: 2.5 }
-                  },
-                  {
-                    x: history.t,
-                    y: history.freqB,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: lang === 'en' ? 'Observer B (Right)' : lang === 'si' ? 'නිරීක්ෂක B (දකුණ)' : 'அவதானிப்பாளர் B (வலது)',
-                    line: { color: '#3b82f6', width: 2.5 }
-                  }
-                ]}
-                layout={{
-                  autosize: true,
-                  margin: { l: 40, r: 15, t: 10, b: 35 },
-                  xaxis: { title: { text: lang === 'en' ? 'Time (s)' : lang === 'si' ? 'කාලය (s)' : 'நேரம் (s)' }, gridcolor: '#f1f5f9' },
-                  yaxis: { title: { text: lang === 'en' ? 'Frequency (Hz)' : lang === 'si' ? 'සංඛ්‍යාතය (Hz)' : 'அதிர்வெண் (Hz)' }, gridcolor: '#f1f5f9' },
-                  plot_bgcolor: '#ffffff',
-                  paper_bgcolor: '#ffffff',
-                  legend: { orientation: 'h', y: -0.2 }
-                }}
-                config={{ displayModeBar: false, responsive: true }}
-              />
-            </div>
-          </div>
+          {/* Scientific Graph Laboratory */}
+          <ScientificGraphLab
+            graphs={dopplerEffectGraphs}
+            trials={recorder.recordedRows}
+            realtimePoints={history.t.map((tVal, i) => ({ t: tVal, x: tVal, y: history.freqB[i], observedFreqA: history.freqA[i], observedFreqB: history.freqB[i] }))}
+            simulationParams={{ sourceSpeed, observerSpeed: observerSpeedB, sourceFreq, speedOfSound: 340 }}
+            onRecordTrial={recorder.recordTrial}
+            onClearTrials={recorder.clearTrials}
+            columns={recorder.columns}
+            height={260}
+          />
         </div>
 
       </div>
