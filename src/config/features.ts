@@ -1,10 +1,8 @@
 /**
  * Feature Flags Configuration
  * 
- * Set ENABLE_LABORATORY_UI to true to reveal the Laboratory Workspace navigation,
- * user menu options, and simulation sync buttons across the UI.
- * 
- * All Laboratory components, routes, database access, MySQL logic, and R2 logic
- * remain 100% intact and preserved in the codebase.
+ * Preserved for future development.
  */
 export const ENABLE_LABORATORY_UI = false;
+export const ENABLE_AUTH_UI = false; // Disables Google Sign-In & Auth triggers in header/menu
+export const ENABLE_OBSERVATION_NOTEBOOKS = false; // Disables Observation Notebook textareas across simulations

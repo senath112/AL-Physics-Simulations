@@ -90,7 +90,7 @@ import { LaboratoryProvider } from './context/LaboratoryContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
-import { ENABLE_LABORATORY_UI } from './config/features';
+import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI } from './config/features';
 
 type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'laboratory' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
@@ -566,8 +566,8 @@ function AppContent() {
               </button>
             </div>
 
-            {/* User Profile / Google Sign-In Menu */}
-            <UserMenu onNavigateToLaboratory={() => setCurrentPage('laboratory')} />
+            {/* User Profile / Google Sign-In Menu (Preserved for feature flag) */}
+            {ENABLE_AUTH_UI && <UserMenu onNavigateToLaboratory={() => setCurrentPage('laboratory')} />}
           </div>
 
         </div>

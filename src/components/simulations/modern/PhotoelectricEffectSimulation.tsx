@@ -15,6 +15,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { photoelectricGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
+import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
 
 interface Particle {
   x: number;
@@ -765,22 +766,24 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 shrink-0">
         
         {/* Lab Notes notepad (5 Cols) */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-            <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              {t.labNotes}
-            </h3>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Observational entries</span>
-          </div>
+        {ENABLE_OBSERVATION_NOTEBOOKS && (
+          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                {t.labNotes}
+              </h3>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Observational entries</span>
+            </div>
 
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Write down your virtual experimental observations, measurements, work function computations, and stopping potential checks..."
-            className="w-full h-36 p-3 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar font-medium placeholder-slate-400 bg-slate-50/20"
-          />
-        </div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Write down your virtual experimental observations, measurements, work function computations, and stopping potential checks..."
+              className="w-full h-36 p-3 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar font-medium placeholder-slate-400 bg-slate-50/20"
+            />
+          </div>
+        )}
 
         {/* Trial logs history & Laboratory Transfer (7 Cols) */}
         <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">

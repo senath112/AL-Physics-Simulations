@@ -5,6 +5,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { dcOhmsLawGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
+import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
 
 export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -507,17 +508,21 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
 
         {/* Observation log */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
-            <ClipboardList className="w-4 h-4 text-blue-600" />
-            {t.labNotes}
-          </h3>
+          {ENABLE_OBSERVATION_NOTEBOOKS && (
+            <>
+              <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                <ClipboardList className="w-4 h-4 text-blue-600" />
+                {t.labNotes}
+              </h3>
 
-          <textarea
-            value={labNotes}
-            onChange={(e) => setLabNotes(e.target.value)}
-            placeholder="Type your laboratory observations, findings, and notes here..."
-            className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
-          />
+              <textarea
+                value={labNotes}
+                onChange={(e) => setLabNotes(e.target.value)}
+                placeholder="Type your laboratory observations, findings, and notes here..."
+                className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans min-h-[80px]"
+              />
+            </>
+          )}
 
           <SimulationLabBar
             trialCount={recorder.trialCount}

@@ -15,6 +15,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { projectileGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
+import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
 
 export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -698,18 +699,22 @@ Hence, the maximum height reached is 5.0 m.`,
         </div>
 
         {/* Lab Notebook Container */}
-        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 min-h-[220px] flex flex-col">
-          <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
-            <ClipboardList className="w-4 h-4 text-blue-600" />
-            {t.labNotes}
-          </h3>
+        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 flex flex-col">
+          {ENABLE_OBSERVATION_NOTEBOOKS && (
+            <>
+              <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                <ClipboardList className="w-4 h-4 text-blue-600" />
+                {t.labNotes}
+              </h3>
 
-          <textarea
-            value={labNotes}
-            onChange={(e) => setLabNotes(e.target.value)}
-            placeholder="Type your laboratory observations, findings, and notes here..."
-            className="w-full flex-1 border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans"
-          />
+              <textarea
+                value={labNotes}
+                onChange={(e) => setLabNotes(e.target.value)}
+                placeholder="Type your laboratory observations, findings, and notes here..."
+                className="w-full flex-1 min-h-[120px] border border-slate-200 rounded p-2 text-xs outline-none focus:border-blue-500 resize-none font-sans"
+              />
+            </>
+          )}
 
           <SimulationLabBar
             trialCount={recorder.trialCount}

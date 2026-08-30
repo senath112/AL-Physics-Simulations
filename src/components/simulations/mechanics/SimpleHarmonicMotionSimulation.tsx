@@ -14,6 +14,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { shmGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
+import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
 
 export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -1198,19 +1199,23 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
 
         {/* Lab Notes & Laboratory Workspace */}
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.labNotes}</h3>
-            <span className="text-xs font-mono text-slate-400 font-bold">
-              {recorder.trialCount} Data Points Logged
-            </span>
-          </div>
+          {ENABLE_OBSERVATION_NOTEBOOKS && (
+            <>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.labNotes}</h3>
+                <span className="text-xs font-mono text-slate-400 font-bold">
+                  {recorder.trialCount} Data Points Logged
+                </span>
+              </div>
 
-          <textarea
-            placeholder="Log experimental observations, write deductions here. (e.g. Damping factor reduces total mechanical energy exponentially...)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-indigo-500 transition-colors custom-scrollbar"
-          />
+              <textarea
+                placeholder="Log experimental observations, write deductions here. (e.g. Damping factor reduces total mechanical energy exponentially...)"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-indigo-500 transition-colors custom-scrollbar"
+              />
+            </>
+          )}
 
           <SimulationLabBar
             trialCount={recorder.trialCount}
