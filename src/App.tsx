@@ -162,6 +162,7 @@ function AppContent() {
     return getPageFromPath(window.location.pathname || window.location.hash || '/');
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState<SyllabusUnit | 'all'>('all');
   const [isSearchMinimized, setIsSearchMinimized] = useState<boolean>(false);
   const [lang, setLang] = useState<'en' | 'si' | 'ta'>('en');
 
@@ -457,11 +458,13 @@ function AppContent() {
     { id: 'modern', name: 'Modern Physics', icon: Atom, color: 'text-purple-600 bg-purple-50' },
   ];
 
-  // Filtering simulations based on search
-  const filteredSims = simulations.filter(sim =>
-    sim.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sim.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtering simulations based on search and selected syllabus unit
+  const filteredSims = simulations.filter(sim => {
+    const matchesSearch = sim.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      sim.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesUnit = selectedUnit === 'all' || sim.unit === selectedUnit;
+    return matchesSearch && matchesUnit;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 antialiased">
@@ -604,15 +607,49 @@ function AppContent() {
                     </button>
                   </div>
 
-                  {/* Stats Counter Row */}
-                  <div className="pt-8 border-t border-slate-200/60 flex gap-8 select-none">
-                    <div>
-                      <div className="text-2xl font-black text-slate-900">4</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Active Labs</div>
+                  {/* Stats Counter & Syllabus Units Row */}
+                  <div className="pt-8 border-t border-slate-200/60 space-y-5">
+                    <div className="flex gap-8 select-none">
+                      <div>
+                        <div className="text-3xl font-black text-slate-900 font-mono">{simulations.filter(s => s.status === 'active').length}</div>
+                        <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Active Labs</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-black text-slate-900 font-mono">{unitsList.length}</div>
+                        <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Syllabus Units</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-black text-blue-600 font-mono">100%</div>
+                        <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Visualized</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-black text-slate-900">100%</div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Visualized</div>
+
+                    {/* Interactive Syllabus Units Explorer Pills */}
+                    <div className="space-y-2 pt-1">
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Syllabus Units Explorer:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {unitsList.map((unit) => {
+                          const count = simulations.filter(s => s.unit === unit.id).length;
+                          return (
+                            <button
+                              key={unit.id}
+                              onClick={() => {
+                                setSelectedUnit(unit.id);
+                                setCurrentPage('sims');
+                              }}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer group"
+                            >
+                              <div className={`p-1 rounded-md ${unit.color} group-hover:scale-110 transition-transform`}>
+                                <unit.icon className="w-3.5 h-3.5" />
+                              </div>
+                              <span>{unit.name}</span>
+                              <span className="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full font-mono text-[10px] font-extrabold">
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -834,23 +871,64 @@ function AppContent() {
               
               {/* Category sidebar list */}
               <div className="space-y-2 lg:col-span-1">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 mb-3">Syllabus Units</h3>
+                <div className="flex items-center justify-between px-2 mb-3">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Syllabus Units</h3>
+                  {selectedUnit !== 'all' && (
+                    <button
+                      onClick={() => setSelectedUnit('all')}
+                      className="text-[10px] font-extrabold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                    >
+                      Reset Filter
+                    </button>
+                  )}
+                </div>
                 <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 pb-2 lg:pb-0">
+                  <button
+                    onClick={() => setSelectedUnit('all')}
+                    className={`flex items-center justify-between px-3 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer min-w-[140px] lg:min-w-0 ${
+                      selectedUnit === 'all'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-md ${selectedUnit === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        <Compass className="w-3.5 h-3.5" />
+                      </div>
+                      <span>All Units</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full font-bold font-mono text-[10px] ${
+                      selectedUnit === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {simulations.length}
+                    </span>
+                  </button>
+
                   {unitsList.map((unit) => {
                     const count = simulations.filter(s => s.unit === unit.id).length;
+                    const isSelected = selectedUnit === unit.id;
                     return (
-                      <div 
+                      <button
                         key={unit.id}
-                        className="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 min-w-[160px] lg:min-w-0"
+                        onClick={() => setSelectedUnit(unit.id)}
+                        className={`flex items-center justify-between px-3 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer min-w-[160px] lg:min-w-0 ${
+                          isSelected
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
                       >
                         <div className="flex items-center gap-2">
-                          <div className={`p-1.5 rounded-md ${unit.color}`}>
+                          <div className={`p-1.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : unit.color}`}>
                             <unit.icon className="w-3.5 h-3.5" />
                           </div>
                           <span>{unit.name}</span>
                         </div>
-                        <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold font-mono text-[10px]">{count}</span>
-                      </div>
+                        <span className={`px-2 py-0.5 rounded-full font-bold font-mono text-[10px] ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
                     );
                   })}
                 </div>
