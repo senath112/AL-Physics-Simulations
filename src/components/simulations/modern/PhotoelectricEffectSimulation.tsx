@@ -1,21 +1,119 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { BlockMath, InlineMath } from '../../Math';
+import { BlockMath } from '../../Math';
 import { 
   Sparkles, 
-  Info, 
   Play, 
   Pause, 
   RotateCcw, 
   Zap,
+  BookOpen,
+  Maximize2,
+  FileText,
+  Lightbulb,
+  CheckCircle2,
+  Activity,
   Plus 
 } from 'lucide-react';
 import { calculatePhotoelectricState, PhotoelectricParameters } from '../../../physics/photoelectricPhysics';
-import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { photoelectricGraphs } from '../../graphing/presets';
-import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
+
+const PHOTOELECTRIC_THEORY_NOTES = {
+  en: {
+    badge: 'Modern Physics • Interactive Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Physical Laws',
+    tabFormulas: 'Equations & SI Units',
+    tabTips: 'A/L Exam Insights',
+
+    photoDefTitle: "1. Einstein's Photoelectric Theory & Quantum Postulate",
+    photoDefBody: "Light energy travels in discrete, localized energy packets called photons. When a photon with frequency f and energy E = h f hits a cathode metal, its entire energy is transferred instantaneously to a single bound electron.",
+
+    workFuncTitle: '2. Work Function (Φ) & Threshold Frequency (f₀)',
+    workFuncBody: 'The Work Function (Φ) is the minimum energy required to liberate an electron from the metal surface. Photoelectric emission occurs ONLY if incident photon energy exceeds the work function (E > Φ), corresponding to a minimum Threshold Frequency (f₀):',
+
+    stoppingTitle: '3. Stopping Potential (V_s) & Photocurrent (I)',
+    stoppingBody: 'The Stopping Potential (V_s) is the retarding reverse voltage required to halt even the fastest photoelectrons (K_max):',
+    stoppingList: [
+      'Kinetic Energy: K_max = e V_s = ½ m v_max².',
+      'Intensity Effect: Increasing light intensity increases photon flux and photocurrent (I), but does NOT alter Stopping Potential (V_s).',
+      'Frequency Effect: Increasing light frequency (f) increases photon energy and Stopping Potential (V_s).'
+    ],
+
+    eqTitle: 'Essential Photoelectric Equations',
+
+    tipsTitle: 'G.C.E. A/L Exam Key Insights',
+    tips: [
+      'Universal Slope in V_s vs f Graph: The slope of the Stopping Voltage vs Frequency line is always h/e (a universal constant for ALL metals!).',
+      'Instantaneous Emission: Emission occurs without measurable time delay (~10⁻⁹ s) once f ≥ f₀, contradicting wave theory.',
+      'Intensity vs Frequency Separation: Intensity controls QUANTITY of electrons (current I); Frequency controls QUALITY of electrons (energy K_max).'
+    ]
+  },
+  si: {
+    badge: 'නූතන භෞතික විද්‍යාව • අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ නියම',
+    tabFormulas: 'සමීකරණ සහ ඒකක',
+    tabTips: 'උසස් පෙළ විභාග සටහන්',
+
+    photoDefTitle: '1. අයින්ස්ටයින්ගේ ප්‍රකාශ විද්‍යුත් සිද්ධාන්තය',
+    photoDefBody: 'ආලෝක ශක්තිය ෆෝටෝන ලෙස හඳුන්වන ශක්ති ක්වොන්ටම් ආකාරයෙන් ගමන් කරයි (E = h f). ෆෝටෝනයක් ලෝහ පෘෂ්ඨයක ගැටෙන විට එහි මුළු ශක්තියම එකම ඉලෙක්ට්‍රෝනයකට ක්ෂණිකව ලබා දේ.',
+
+    workFuncTitle: '2. කාර්ය ශ්‍රිතය (Φ) සහ සීමාකාරී සංඛ්‍යාතය (f₀)',
+    workFuncBody: 'ලෝහ පෘෂ්ඨයකින් ඉලෙක්ට්‍රෝනයක් නිදහස් කර ගැනීමට අවශ්‍ය අවම ශක්තිය කාර්ය ශ්‍රිතය (Φ) ලෙස හැඳින්වේ. ප්‍රකාශ විද්‍යුත් විමෝචනය සිදුවීමට පතන සංඛ්‍යාතය සීමාකාරී සංඛ්‍යාතයට (f₀) වඩා වැඩි විය යුතුය:',
+
+    stoppingTitle: '3. නැවැත්වීමේ විභවය (V_s) සහ ප්‍රකාශ විද්‍යුත් ධාරාව (I)',
+    stoppingBody: 'උපරිම ගති ශක්තියක් සහිත ඉලෙක්ට්‍රෝන පවා නැවැත්වීමට යොදන ඍණ විභවය නැවැත්වීමේ විභවය (V_s) ලෙස හැඳින්වේ:',
+    stoppingList: [
+      'ගති ශක්තිය: K_max = e V_s = ½ m v_max².',
+      'තීව්‍රතාවයේ බලපෑම: ආලෝක තීව්‍රතාව වැඩි කරන විට ධාරාව (I) වැඩි වන නමුත් නැවැත්වීමේ විභවය (V_s) වෙනස් නොවේ.',
+      'සංඛ්‍යාතයේ බලපෑම: ආලෝකයේ සංඛ්‍යාතය (f) වැඩි කරන විට නැවැත්වීමේ විභවය (V_s) වැඩි වේ.'
+    ],
+
+    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+
+    tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
+    tips: [
+      'V_s එදිරිව f ප්‍රස්ථාරයේ අනුක්‍රමණය: නැවැත්වීමේ විභවය එදිරිව සංඛ්‍යාත ප්‍රස්ථාරයේ අනුක්‍රමණය සැමවිටම h/e වේ (සියලුම ලෝහ සඳහා නියතයකි).',
+      'ක්ෂණික විමෝචනය: f ≥ f₀ වන විට කාල පමා වී යාමකින් තොරව ඉලෙක්ට්‍රෝන විමෝචනය වේ.',
+      'තීව්‍රතාව සහ සංඛ්‍යාතය: තීව්‍රතාවයෙන් පිටවන ඉලෙක්ට්‍රෝන ගණන (ධාරාව) පාලනය වේ; සංඛ්‍යාතයෙන් ඉලෙක්ට්‍රෝනවල ශක්තිය (K_max) පාලනය වේ.'
+    ]
+  },
+  ta: {
+    badge: 'நவீன இயற்பியல் • குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
+    tabTips: 'தேர்வுக்கான முக்கிய குறிப்புகள்',
+
+    photoDefTitle: "1. ஐன்ஸ்டீனின் ஒளிமின் கோட்பாடு",
+    photoDefBody: "ஒளி ஆற்றல் போட்டான்கள் எனப்படும் ஆற்றல் பாக்கெட்டுகளாக பயணிக்கிறது (E = h f). ஒரு போட்டான் உலோகத்தின் மீது மோதும்போது அதன் முழு ஆற்றலும் ஒரு எலக்ட்ரானுக்கு மாற்றப்படுகிறது.",
+
+    workFuncTitle: '2. வேலைச் சார்பு (Φ) மற்றும் தொடக்க அதிர்வெண் (f₀)',
+    workFuncBody: 'உலோகப் பரப்பிலிருந்து ஒரு எலக்ட்ரானை விடுவிக்கத் தேவையான குறைந்தபட்ச ஆற்றல் வேலைச் சார்பு (Φ) எனப்படும். படு அதிர்வெண் தொடக்க அதிர்வெண்ணை விட (f₀) அதிகமாக இருக்கும்போது மட்டுமே ஒளிமின் உமிழ்வு நிகழும்:',
+
+    stoppingTitle: '3. நிறுத்த மின்னழுத்தம் (V_s) மற்றும் ஒளிமின் மின்னோட்டம் (I)',
+    stoppingBody: 'மிக வேகமான எலக்ட்ரான்களையும் நிறுத்துவதற்குத் தேவையான எதிர் மின்னழுத்தம் நிறுத்த மின்னழுத்தம் (V_s) எனப்படும்:',
+    stoppingList: [
+      'இயக்க ஆற்றல்: K_max = e V_s = ½ m v_max².',
+      'செறிவின் விளைவு: ஒளிச் செறிவை அதிகரிக்கும் போது மின்னோட்டம் (I) அதிகரிக்கும், ஆனால் நிறுத்த மின்னழுத்தம் (V_s) மாறாது.',
+      'அதிர்வெண்ணின் விளைவு: அதிர்வெண்ணை (f) அதிகரிக்கும் போது நிறுத்த மின்னழுத்தம் (V_s) அதிகரிக்கும்.'
+    ],
+
+    eqTitle: 'முக்கிய ஒளிமின் சமன்பாடுகள்',
+
+    tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
+    tips: [
+      'V_s மற்றும் f வரைபடத்தின் சாய்வு: நிறுத்த மின்னழுத்தம் மற்றும் அதிர்வெண் வரைபடத்தின் சாய்வு எப்போதும் h/e ஆகும் (அனைத்து உலோகங்களுக்கும் மாறிலி).',
+      'உடனடி உமிழ்வு: f ≥ f₀ இருக்கும் போது எவ்வித கால தாமதமும் இன்றி எலக்ட்ரான்கள் உமிழப்படும்.',
+      'செறிவு மற்றும் அதிர்வெண்: செறிவு எலக்ட்ரான்களின் எண்ணிக்கையைக் (மின்னோட்டம்) கட்டுப்படுத்துகிறது; அதிர்வெண் ஆற்றலைக் (K_max) கட்டுப்படுத்துகிறது.'
+    ]
+  }
+};
 
 interface Particle {
   x: number;
@@ -128,6 +226,9 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const tn = PHOTOELECTRIC_THEORY_NOTES[lang] || PHOTOELECTRIC_THEORY_NOTES.en;
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
 
   // Parameters
   const [metalId, setMetalId] = useState<string>('sodium');
@@ -136,9 +237,6 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   const [voltage, setVoltage] = useState<number>(1.5); // V
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [explainMode, setExplainMode] = useState<boolean>(true);
-
-  // Lab Notes
-  const [notes, setNotes] = useState<string>('');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -476,31 +574,161 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
       title: "Einstein's Photoelectric Equation: Vs vs f (Slope = h/e, y-int = -Φ/e)",
       showRegression: true,
     },
-    notes,
   });
 
-  // Export logs to PDF
-  const handleExportPDF = () => {
-    const paramsMap = {
-      'Target Cathode Metal': activeMetal.name,
-      'Work Function (Φ)': `${activeMetal.workFunction.toFixed(2)} eV`,
-      'Light Wavelength (λ)': `${wavelength} nm`,
-      'Light Intensity': `${intensity}%`,
-      'Applied Potential (V)': `${voltage.toFixed(2)} V`
-    };
-
-    downloadReportAsPDF(
-      'Photoelectric Effect Laboratory Report',
-      paramsMap,
-      recorder.recordedRows,
-      notes
-    );
-  };
-
-
-
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 flex-1 min-h-0 bg-slate-50">
+    <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      
+      {/* Header & View Mode Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-wider text-blue-700 mb-1">
+            <Sparkles className="w-3 h-3 text-blue-600" />
+            {tn.badge}
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            Photoelectric Effect & Quantum Physics
+          </h2>
+        </div>
+
+        {/* View Mode Toggle Pill Buttons */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-indigo-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Physical Laws */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-slate-50 border-l-4 border-blue-600 p-4 rounded-r-xl space-y-1.5">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.photoDefTitle}</h3>
+                <p>{tn.photoDefBody}</p>
+                <div className="pt-1 text-center font-bold text-blue-700">
+                  <BlockMath math="E = h f = \frac{h c}{\lambda}" />
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                  {tn.workFuncTitle}
+                </h4>
+                <p>{tn.workFuncBody}</p>
+                <BlockMath math="\Phi = h f_0 = \frac{h c}{\lambda_0}" />
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-slate-900 text-xs">{tn.stoppingTitle}</h4>
+                <p>{tn.stoppingBody}</p>
+                <ul className="list-disc list-inside space-y-1 pl-1 text-slate-600">
+                  {tn.stoppingList.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & SI Units */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-blue-700 text-xs">Einstein Photoelectric Equations</h4>
+                  <BlockMath math="h f = \Phi + K_{max} = h f_0 + \frac{1}{2} m v_{max}^2" />
+                  <BlockMath math="e V_s = K_{max} = h f - \Phi" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-indigo-700 text-xs">Stopping Voltage vs Frequency Line</h4>
+                  <BlockMath math="V_s = \left(\frac{h}{e}\right) f - \frac{\Phi}{e}" />
+                  <p className="text-[11px] text-slate-500">Slope = h/e, X-intercept = f₀, Y-intercept = -Φ/e.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Exam Insights */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+                {tn.tipsTitle}
+              </h3>
+              <div className="space-y-2.5">
+                {tn.tips.map((tip, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl text-xs text-amber-900 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Simulation Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0">
@@ -715,7 +943,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
             </div>
 
             {/* Scientific Graph Laboratory */}
-            <div className="md:col-span-7">
+            <div className="w-full">
               <ScientificGraphLab
                 graphs={photoelectricGraphs}
                 trials={recorder.recordedRows}
@@ -723,97 +951,13 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                 onRecordTrial={recorder.recordTrial}
                 onClearTrials={recorder.clearTrials}
                 columns={recorder.columns}
-                height={260}
+                height={300}
               />
             </div>
           </div>
 
         </div>
 
-      </div>
-
-      {/* Experimental explanations / formulas */}
-      {explainMode && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-sm space-y-3 shrink-0">
-          <div className="flex items-center gap-1.5 text-blue-800 font-extrabold text-sm border-b border-blue-150 pb-2">
-            <Info className="w-4.5 h-4.5" />
-            PHOTOELECTRIC EFFECT MATHEMATICAL FOUNDATION
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-blue-900 leading-relaxed font-medium">
-            <div className="space-y-2">
-              <p>
-                <strong>Einstein's Photoelectric Equation:</strong> When a photon strikes the emitter plate, its energy is fully absorbed by an electron. This energy is split into escaping the metal and kinetic energy:
-              </p>
-              <BlockMath math="E = \Phi + K_{\max}" />
-              <p>
-                Where <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="E = hf = \frac{hc}{\lambda}" /></span> is the incoming photon energy, <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="\Phi" /></span> is the work function of the metal target, and <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="K_{\max}" /></span> is the maximum kinetic energy of the ejected photoelectrons.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p>
-                <strong>Stopping Potential (නැවැතුම් විභවය):</strong> The stopping potential <span className="font-mono bg-blue-105/60 px-1 py-0.5 rounded"><InlineMath math="V_s" /></span> is the negative voltage applied to the collector plate that retards the fastest ejected electrons, dropping the photocurrent to zero:
-              </p>
-              <BlockMath math="e V_s = K_{\max} = hf - \Phi" />
-              <p>
-                Increasing light intensity increases the <strong>saturation current</strong> (as more photons eject more electrons per second) but does not alter the stopping potential. Only shifting to shorter wavelengths (higher frequency) raises the stopping potential.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Lab Notes & Trial Logger Records */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 shrink-0">
-        
-        {/* Lab Notes notepad (5 Cols) */}
-        {ENABLE_OBSERVATION_NOTEBOOKS && (
-          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                {t.labNotes}
-              </h3>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Observational entries</span>
-            </div>
-
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Write down your virtual experimental observations, measurements, work function computations, and stopping potential checks..."
-              className="w-full h-36 p-3 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar font-medium placeholder-slate-400 bg-slate-50/20"
-            />
-          </div>
-        )}
-
-        {/* Trial logs history & Laboratory Transfer (7 Cols) */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-            <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
-              {t.trialHistory}
-            </h3>
-            <span className="text-xs font-mono text-slate-400 font-bold">
-              {recorder.trialCount} Trials Recorded
-            </span>
-          </div>
-
-          <SimulationLabBar
-            trialCount={recorder.trialCount}
-            onRecordTrial={recorder.recordTrial}
-            onRecordFullRun={recorder.recordFullRun}
-            isAutoRecording={recorder.isAutoRecording}
-            onToggleAutoRecord={recorder.toggleAutoRecord}
-            isAutoRunning={recorder.isAutoRunning}
-            autoRunProgress={recorder.autoRunProgress}
-            onStartAutoRun={recorder.startAutoRun}
-            onCancelAutoRun={recorder.cancelAutoRun}
-            onSendToLaboratory={recorder.sendToLaboratory}
-            onDownloadPDF={handleExportPDF}
-            onClearTrials={recorder.clearTrials}
-            isSaving={recorder.isSaving}
-            statusMessage={recorder.statusMessage}
-            quota={recorder.quota}
-          />
-        </div>
       </div>
 
     </div>

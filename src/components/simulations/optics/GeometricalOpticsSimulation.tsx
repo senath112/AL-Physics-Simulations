@@ -1,18 +1,115 @@
 import { useState, useRef, useEffect } from 'react';
 import { BlockMath } from '../../Math';
-import { Sparkles, Info, Plus } from 'lucide-react';
+import { Sparkles, Info, BookOpen, Maximize2, FileText, Lightbulb, CheckCircle2, Activity, Plus } from 'lucide-react';
 import { calculateRayState, traceFibreRay, OpticsParameters } from '../../../physics/opticsPhysics';
-import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { geometricalOpticsGraphs } from '../../graphing/presets';
-import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 
-export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+const OPTICS_THEORY_NOTES = {
+  en: {
+    badge: 'Geometrical Optics • Interactive Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Physical Laws',
+    tabFormulas: 'Equations & SI Units',
+    tabTips: 'A/L Exam Insights',
+
+    snellDefTitle: "1. Reflection & Snell's Law of Refraction",
+    snellDefBody: "When light encounters a boundary between two transparent media with refractive indices n₁ and n₂, a portion reflects while the remainder refracts. The angle of refraction θ₂ follows Snell's Law:",
+
+    tirTitle: '2. Total Internal Reflection (TIR) & Critical Angle',
+    tirBody: 'When light travels from an optically denser medium (n₁) to a rarer medium (n₂ < n₁), the refracted ray bends away from the normal. At the Critical Angle (θ_c), the refracted angle reaches 90°:',
+    tirCondTitle: 'Two Necessary Conditions for TIR:',
+    tirConds: [
+      'Light must travel from an optically denser medium to a rarer medium (n₁ > n₂).',
+      'The angle of incidence must exceed the critical angle (θ₁ > θ_c).'
+    ],
+
+    fibreTitle: '3. Optical Fibre Guidance',
+    fibreBody: 'Optical fibres transmit light signals over long distances via repeated total internal reflections inside a high-index core (n_core) surrounded by lower-index cladding (n_cladding < n_core). The maximum entry angle into the fibre core is the Acceptance Angle (θ_a):',
+
+    eqTitle: 'Essential Optics Equations',
+
+    tipsTitle: 'G.C.E. A/L Exam Key Insights',
+    tips: [
+      'Frequency Invariance: Light frequency f remains unchanged across refraction interfaces; only speed v and wavelength λ change (v = f λ).',
+      'Dense vs Rarer Medium: Optically denser media have higher refractive index n, lower speed of light v = c/n, and smaller critical angles.',
+      'Real vs Apparent Depth: Apparent depth shift Δx = t(1 - 1/n) where t is glass slab thickness.'
+    ]
+  },
+  si: {
+    badge: 'ජ්‍යාමිතික ආලෝකය • අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ නියම',
+    tabFormulas: 'සමීකරණ සහ ඒකක',
+    tabTips: 'උසස් පෙළ විභාග සටහන්',
+
+    snellDefTitle: '1. පරාවර්තනය සහ ස්නෙල්ගේ වර්තන නියමය',
+    snellDefBody: 'වර්තනාංක n₁ සහ n₂ වන විනිවිද පෙනෙන මාධ්‍ය දෙකක මායිමකට ආලෝකය පතනය වන විට, ස්නෙල්ගේ නියමයට අනුව වර්තන කෝණය θ₂ ගණනය කෙරේ:',
+
+    tirTitle: '2. පූර්ණ අභ්‍යන්තර පරාවර්තනය (TIR) සහ ඡේදක කෝණය',
+    tirBody: 'වර්තනාංකය වැඩි ප්‍රකාශ ඝන මාධ්‍යයක සිට (n₁) වර්තනාංකය අඩු මාධ්‍යයකට (n₂ < n₁) ආලෝකය ගමන් කරන විට, වර්තිත කිරණය අභිලම්බයෙන් ඈතට නැමේ. වර්තන කෝණය 90° වන පතන කෝණය ඡේදක කෝණය (θ_c) ලෙස හැඳින්වේ:',
+    tirCondTitle: 'පූර්ණ අභ්‍යන්තර පරාවර්තනයට අත්‍යවශ්‍ය කොන්දේසි 2:',
+    tirConds: [
+      'ආලෝකය ප්‍රකාශ ඝන මාධ්‍යයක සිට විරල මාධ්‍යයකට ගමන් කළ යුතුය (n₁ > n₂).',
+      'පතන කෝණය ඡේදක කෝණයට වඩා වැඩි විය යුතුය (θ₁ > θ_c).'
+    ],
+
+    fibreTitle: '3. ප්‍රකාශ තන්තු (Optical Fibre) තාක්ෂණය',
+    fibreBody: 'ප්‍රකාශ තන්තු මගින් ආලෝක සංඥා පූර්ණ අභ්‍යන්තර පරාවර්තනය මගින් ගමන් කරවයි. මෙහිදී අභ්‍යන්තර මාධ්‍යයේ වර්තනාංකය (n_core) පිටත මාධ්‍යයේ වර්තනාංකයට (n_cladding) වඩා වැඩිවේ:',
+
+    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+
+    tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
+    tips: [
+      'සංඛ්‍යාතයේ නියතතාව: වර්තනයේදී ආලෝකයේ සංඛ්‍යාතය f වෙනස් නොවේ. වෙනස් වන්නේ ප්‍රවේගය v සහ තරංග ආයාමය λ පමණි (v = f λ).',
+      'ප්‍රකාශ ඝන මාධ්‍ය: ප්‍රකාශ ඝන මාධ්‍යයන්හි වර්තනාංකය n වැඩි වන අතර ආලෝකයේ ප්‍රවේගය v = c/n අඩුවේ.',
+      'සත්‍ය සහ අතථ්‍ය ගැඹුර: අතථ්‍ය විස්ථාපනය Δx = t(1 - 1/n) (මෙහි t යනු වීදුරු පුවරුවේ ඝනකමයි).'
+    ]
+  },
+  ta: {
+    badge: 'வடிவவியல் ஒளியியல் • குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
+    tabTips: 'தேர்வுக்கான முக்கிய குறிப்புகள்',
+
+    snellDefTitle: '1. எதிரொளிப்பு மற்றும் ஸ்நெல்லின் முறிவு விதி',
+    snellDefBody: 'ஒளி முறிவு எண்கள் n₁ மற்றும் n₂ கொண்ட இரு ஊடகங்களின் எல்லையை அடையும் போது, ஸ்நெல்லின் விதிப்படி முறிவுக் கோணம் θ₂ அமையும்:',
+
+    tirTitle: '2. முழு அக எதிரொளிப்பு (TIR) மற்றும் மாறுநிலைக் கோணம்',
+    tirBody: 'ஒளி அடர்வு கூடிய ஊடகத்திலிருந்து (n₁) அடர்வு குறைந்த ஊடகத்திற்கு (n₂ < n₁) செல்லும்போது, முறிவுக் கோணம் 90° ஆகும் படுகோணம் மாறுநிலைக் கோணம் (θ_c) எனப்படும்:',
+    tirCondTitle: 'முழு அக எதிரொளிப்பிற்குத் தேவையான 2 நிபந்தனைகள்:',
+    tirConds: [
+      'ஒளி அடர்வு கூடிய ஊடகத்திலிருந்து அடர்வு குறைந்த ஊடகத்திற்குச் செல்ல வேண்டும் (n₁ > n₂).',
+      'படுகோணம் மாறுநிலைக் கோணத்தை விட அதிகமாக இருக்க வேண்டும் (θ₁ > θ_c).'
+    ],
+
+    fibreTitle: '3. ஒளி இழையியல் (Optical Fibre)',
+    fibreBody: 'ஒளி இழைகள் முழு அக எதிரொளிப்பு மூலம் ஒளி சிக்னல்களை கடத்துகின்றன. இதில் உள்ளக முறிவு எண் (n_core) வெளிப்பூச்சின் முறிவு எண்ணை (n_cladding) விட அதிகமாகும்:',
+
+    eqTitle: 'முக்கிய ஒளியியல் சமன்பாடுகள்',
+
+    tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
+    tips: [
+      'அதிர்வெண்ணின் மாறாத்தன்மை: ஒளியின் அதிர்வெண் f மாறாது; வேகம் v மற்றும் அலைநீளம் λ மட்டுமே மாறுகின்றன.',
+      'அடர்வு கூடிய ஊடகம்: உயர் முறிவு எண் n கொண்ட ஊடகத்தில் ஒளியின் வேகம் v = c/n குறைவாகும்.',
+      'உண்மை மற்றும் தோற்ற ஆழம்: தோற்ற இடப்பெயர்ச்சி Δx = t(1 - 1/n).'
+    ]
+  }
+};
+
+export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
+  const tn = OPTICS_THEORY_NOTES[lang] || OPTICS_THEORY_NOTES.en;
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
+
   // Parameters
-  // parameters
   const [mode, setMode] = useState<'reflection' | 'refraction' | 'tir' | 'fibre'>('refraction');
-  const [explainMode, setExplainMode] = useState<boolean>(true);
+  const [explainMode] = useState<boolean>(true);
   const [removeReflection, setRemoveReflection] = useState<boolean>(true);
   const [n1, setN1] = useState<number>(1.00); // Rare or Dense depending on state
   const [n2, setN2] = useState<number>(1.50); // Rare or Dense
@@ -22,9 +119,6 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
   const [nCore, setNCore] = useState<number>(1.50);
   const [nCladding, setNCladding] = useState<number>(1.35);
   const [entryAngle, setEntryAngle] = useState<number>(20);
-
-  // Lab Notes
-  const [notes, setNotes] = useState<string>('');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDraggingRay = useRef(false);
@@ -481,58 +575,168 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
       title: "Snell's Law: sin(r) vs sin(i) (Slope = n₁/n₂)",
       showRegression: true,
     },
-    notes,
   });
-
-  // Download Lab Notes PDF
-  const downloadPDFReport = () => {
-    const parameterMap = {
-      'Mode': mode.toUpperCase(),
-      'n1': mode === 'fibre' ? '1.00' : n1.toFixed(2),
-      'n2': mode === 'fibre' ? nCore.toFixed(2) : n2.toFixed(2),
-      'Incident Angle': mode === 'fibre' ? `${entryAngle.toFixed(1)}°` : `${incidentAngle.toFixed(1)}°`
-    };
-
-    downloadReportAsPDF(
-      'Geometrical Optics Lab Report',
-      parameterMap,
-      recorder.recordedRows,
-      notes
-    );
-  };
-
-
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Simulation Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      {/* Header & View Mode Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            Geometrical Optics Explainer
-            <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Syllabus Core</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-wider text-blue-700 mb-1">
+            <Sparkles className="w-3 h-3 text-blue-600" />
+            {tn.badge}
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            Geometrical Optics & Refraction
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Study Reflection, Refraction, Snell's Law, Critical Angle transitions, and waveguidance core dynamics.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Explain Mode Toggle */}
+        {/* View Mode Toggle Pill Buttons */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
           <button
-            onClick={() => setExplainMode(!explainMode)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              explainMode 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm' 
-                : 'bg-white border border-slate-200 text-slate-600 hover:text-slate-800'
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            {explainMode ? 'Explain Mode ON' : 'Explain Mode OFF'}
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-indigo-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
           </button>
         </div>
       </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Physical Laws */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-slate-50 border-l-4 border-blue-600 p-4 rounded-r-xl space-y-1.5">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.snellDefTitle}</h3>
+                <p>{tn.snellDefBody}</p>
+                <div className="pt-1 text-center font-bold text-blue-700">
+                  <BlockMath math="n_1 \sin\theta_1 = n_2 \sin\theta_2" />
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                  {tn.tirTitle}
+                </h4>
+                <p>{tn.tirBody}</p>
+                <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} \quad (n_1 > n_2)" />
+                
+                <div className="bg-amber-50/70 border border-amber-200/70 p-3 rounded-lg text-amber-900 font-medium space-y-1">
+                  <span className="font-bold">{tn.tirCondTitle}</span>
+                  <ul className="list-disc list-inside space-y-0.5 pl-1">
+                    {tn.tirConds.map((cond, idx) => (
+                      <li key={idx}>{cond}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-slate-900 text-xs">{tn.fibreTitle}</h4>
+                <p>{tn.fibreBody}</p>
+                <BlockMath math="\sin\theta_a = \sqrt{n_{core}^2 - n_{cladding}^2}" />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & SI Units */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-blue-700 text-xs">Refraction & Critical Angle</h4>
+                  <BlockMath math="n_1 \sin\theta_1 = n_2 \sin\theta_2" />
+                  <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} = \frac{1}{n}" />
+                  <BlockMath math="{}_1 n_2 = \frac{n_2}{n_1} = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-indigo-700 text-xs">Depth & Fibre Equations</h4>
+                  <BlockMath math="n = \frac{\text{Real Depth}}{\text{Apparent Depth}}" />
+                  <BlockMath math="\Delta x = t \left(1 - \frac{1}{n}\right)" />
+                  <BlockMath math="\sin\theta_{acceptance} = \sqrt{n_1^2 - n_2^2}" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Exam Insights */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+                {tn.tipsTitle}
+              </h3>
+              <div className="space-y-2.5">
+                {tn.tips.map((tip, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl text-xs text-amber-900 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Grid: Control Panel + Viewport */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -827,10 +1031,8 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
         </div>
       </div>
 
-      {/* Numerical Data Graph & Lab Book Section */}
-      <div className={`grid grid-cols-1 gap-6 ${mode !== 'fibre' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
-        
-        {/* Scientific Graph Laboratory */}
+      {/* Automatic Real-time Graph Section */}
+      <div className="w-full">
         <ScientificGraphLab
           graphs={geometricalOpticsGraphs}
           trials={recorder.recordedRows}
@@ -838,46 +1040,8 @@ export function GeometricalOpticsSimulation({ lang: _lang = 'en' }: { lang?: 'en
           onRecordTrial={recorder.recordTrial}
           onClearTrials={recorder.clearTrials}
           columns={recorder.columns}
-          height={260}
+          height={300}
         />
-
-        {/* Lab Notes Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Lab Notebook & Universal Recorder
-            </h3>
-            <span className="text-xs font-mono text-slate-400 font-bold">
-              {recorder.trialCount} Trials Recorded
-            </span>
-          </div>
-
-          <textarea
-            placeholder="Log experimental observations, write deductions here. (e.g. As n2 increases, the refracted angle r decreases for the same angle of incidence...)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-blue-500 transition-colors custom-scrollbar"
-          />
-
-          <SimulationLabBar
-            trialCount={recorder.trialCount}
-            onRecordTrial={recorder.recordTrial}
-            onRecordFullRun={recorder.recordFullRun}
-            isAutoRecording={recorder.isAutoRecording}
-            onToggleAutoRecord={recorder.toggleAutoRecord}
-            isAutoRunning={recorder.isAutoRunning}
-            autoRunProgress={recorder.autoRunProgress}
-            onStartAutoRun={recorder.startAutoRun}
-            onCancelAutoRun={recorder.cancelAutoRun}
-            onSendToLaboratory={recorder.sendToLaboratory}
-            onDownloadPDF={downloadPDFReport}
-            onClearTrials={recorder.clearTrials}
-            isSaving={recorder.isSaving}
-            statusMessage={recorder.statusMessage}
-            quota={recorder.quota}
-          />
-        </div>
-
       </div>
 
     </div>
