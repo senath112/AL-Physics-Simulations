@@ -15,8 +15,8 @@ const OPTICS_THEORY_NOTES = {
     tabFormulas: 'Equations & SI Units',
     tabTips: 'A/L Exam Insights',
 
-    snellDefTitle: "1. Reflection & Snell's Law of Refraction",
-    snellDefBody: "When light encounters a boundary between two transparent media with refractive indices n₁ and n₂, a portion reflects while the remainder refracts. The angle of refraction θ₂ follows Snell's Law:",
+    snellDefTitle: "1. Laws of Reflection & Snell's Law of Refraction",
+    snellDefBody: "When light encounters a boundary between two transparent media with refractive indices n₁ and n₂, light speed changes. According to Snell's Law, n₁ sin(θ₁) = n₂ sin(θ₂). When light enters a denser medium (n₂ > n₁), it bends towards the normal.",
 
     tirTitle: '2. Total Internal Reflection (TIR) & Critical Angle',
     tirBody: 'When light travels from an optically denser medium (n₁) to a rarer medium (n₂ < n₁), the refracted ray bends away from the normal. At the Critical Angle (θ_c), the refracted angle reaches 90°:',
@@ -27,17 +27,26 @@ const OPTICS_THEORY_NOTES = {
     ],
 
     fibreTitle: '3. Optical Fibre Guidance',
-    fibreBody: 'Optical fibres transmit light signals over long distances via repeated total internal reflections inside a high-index core (n_core) surrounded by lower-index cladding (n_cladding < n_core). The maximum entry angle into the fibre core is the Acceptance Angle (θ_a):',
+    fibreBody: 'Optical fibres transmit light signals over long distances via repeated total internal reflections inside a high-index core (n_core) surrounded by lower-index cladding (n_cladding < n_core). The maximum entry angle is the Acceptance Angle (θ_a):',
 
-    eqTitle: 'Essential Optics Equations & Verbal Meaning',
+    lensTitle: '4. Thin Lenses & Image Formation',
+    lensBody: 'Thin convex (converging) and concave (diverging) lenses refract light to form real or virtual images according to the lens formula: 1/f = 1/v - 1/u (using Real-is-Positive sign convention). Magnification m = v/u.',
+
+    prismTitle: '5. Refraction Through Glass Prisms',
+    prismBody: 'Light passing through a triangular glass prism undergoes two refractions. Total deviation angle d = i₁ + i₂ - A, where A = r₁ + r₂ is the refracting angle of the prism. At Minimum Deviation D_m, light passes symmetrically (i₁ = i₂, r₁ = r₂).',
+
+    eqTitle: 'Essential Optics Syllabus Equations & Verbal Meaning',
     varGuideTitle: 'Variables & SI Units Reference Guide',
 
     eqExpl: {
-      snell: 'Verbal Meaning: When light enters a denser medium (n₂ > n₁), it slows down and bends towards the normal line.',
-      tir: 'Verbal Meaning: Critical angle θ_c is the incident angle where refraction reaches 90°. For θ₁ > θ_c, light cannot escape and reflects 100% back inside.',
-      relIndex: 'Verbal Meaning: Relative refractive index ₁n₂ represents speed ratio v₁/v₂ and wavelength ratio λ₁/λ₂ across the boundary.',
+      snell: 'Verbal Meaning: Light bends towards the normal when entering a denser medium (n₂ > n₁).',
+      tir: 'Verbal Meaning: Critical angle θ_c is the incident angle where refraction reaches 90°. For θ₁ > θ_c, light reflects 100% back inside.',
+      relIndex: 'Verbal Meaning: Relative refractive index ₁n₂ represents speed ratio v₁/v₂ and wavelength ratio λ₁/λ₂.',
       depth: 'Verbal Meaning: Apparent shift Δx is the apparent upward displacement of an underwater object of thickness t.',
-      fibre: 'Verbal Meaning: Acceptance angle θ_a is the maximum entry cone angle for light to stay guided inside an optical fibre core.'
+      fibre: 'Verbal Meaning: Acceptance angle θ_a is the maximum entry cone angle for light to stay guided inside an optical fibre core.',
+      lens: 'Verbal Meaning: Lens formula relates focal length f, image distance v, and object distance u.',
+      magnification: 'Verbal Meaning: Magnification m is the ratio of image height to object height (or image distance v to object distance u).',
+      prism: 'Verbal Meaning: At minimum deviation D_m, light rays pass symmetrically through the glass prism.'
     },
 
     vars: [
@@ -48,16 +57,23 @@ const OPTICS_THEORY_NOTES = {
       { sym: 'θ₂, r', name: 'Angle of Refraction', unit: 'degrees' },
       { sym: 'θc', name: 'Critical Angle', unit: 'degrees' },
       { sym: 'θa', name: 'Fibre Acceptance Angle', unit: 'degrees' },
-      { sym: 't', name: 'Thickness of glass/medium', unit: 'm' },
-      { sym: 'Δx', name: 'Apparent Shift in Depth', unit: 'm' },
-      { sym: 'n_core, n_cladding', name: 'Fibre Core & Cladding Indices', unit: 'Dimensionless' },
+      { sym: 'f', name: 'Focal Length of Lens/Mirror', unit: 'm or cm' },
+      { sym: 'u', name: 'Object Distance', unit: 'm or cm' },
+      { sym: 'v_dist', name: 'Image Distance', unit: 'm or cm' },
+      { sym: 'm', name: 'Linear Magnification', unit: 'Dimensionless' },
+      { sym: 'P', name: 'Power of Lens (1/f)', unit: 'Dioptres (D)' },
+      { sym: 'A', name: 'Refracting Angle of Prism', unit: 'degrees' },
+      { sym: 'Dm', name: 'Angle of Minimum Deviation', unit: 'degrees' },
+      { sym: 't', name: 'Thickness of glass slab', unit: 'm' },
+      { sym: 'Δx', name: 'Apparent Shift in Depth', unit: 'm' }
     ],
 
     tipsTitle: 'G.C.E. A/L Exam Key Insights',
     tips: [
       'Frequency Invariance: Light frequency f remains unchanged across refraction interfaces; only speed v and wavelength λ change (v = f λ).',
       'Dense vs Rarer Medium: Optically denser media have higher refractive index n, lower speed of light v = c/n, and smaller critical angles.',
-      'Real vs Apparent Depth: Apparent depth shift Δx = t(1 - 1/n) where t is glass slab thickness.'
+      'Real vs Apparent Depth: Apparent depth shift Δx = t(1 - 1/n) where t is glass slab thickness.',
+      'Lens Combination Power: Equivalent power of two thin lenses in contact is P_total = P₁ + P₂ (or 1/F = 1/f₁ + 1/f₂).'
     ]
   },
   si: {
@@ -69,7 +85,7 @@ const OPTICS_THEORY_NOTES = {
     tabTips: 'උසස් පෙළ විභාග සටහන්',
 
     snellDefTitle: '1. පරාවර්තනය සහ ස්නෙල්ගේ වර්තන නියමය',
-    snellDefBody: 'වර්තනාංක n₁ සහ n₂ වන විනිවිද පෙනෙන මාධ්‍ය දෙකක මායිමකට ආලෝකය පතනය වන විට, ස්නෙල්ගේ නියමයට අනුව වර්තන කෝණය θ₂ ගණනය කෙරේ:',
+    snellDefBody: 'වර්තනාංක n₁ සහ n₂ වන විනිවිද පෙනෙන මාධ්‍ය දෙකක මායිමකට ආලෝකය පතනය වන විට, ස්නෙල්ගේ නියමයට අනුව වර්තන කෝණය θ₂ ගණනය කෙරේ: n₁ sin(θ₁) = n₂ sin(θ₂).',
 
     tirTitle: '2. පූර්ණ අභ්‍යන්තර පරාවර්තනය (TIR) සහ ඡේදක කෝණය',
     tirBody: 'වර්තනාංකය වැඩි ප්‍රකාශ ඝන මාධ්‍යයක සිට (n₁) වර්තනාංකය අඩු මාධ්‍යයකට (n₂ < n₁) ආලෝකය ගමන් කරන විට, වර්තිත කිරණය අභිලම්බයෙන් ඈතට නැමේ. වර්තන කෝණය 90° වන පතන කෝණය ඡේදක කෝණය (θ_c) ලෙස හැඳින්වේ:',
@@ -82,6 +98,12 @@ const OPTICS_THEORY_NOTES = {
     fibreTitle: '3. ප්‍රකාශ තන්තු (Optical Fibre) තාක්ෂණය',
     fibreBody: 'ප්‍රකාශ තන්තු මගින් ආලෝක සංඥා පූර්ණ අභ්‍යන්තර පරාවර්තනය මගින් ගමන් කරවයි. මෙහිදී අභ්‍යන්තර මාධ්‍යයේ වර්තනාංකය (n_core) පිටත මාධ්‍යයේ වර්තනාංකයට (n_cladding) වඩා වැඩිවේ:',
 
+    lensTitle: '4. තුනී කාච සහ ප්‍රතිබිම්බ සෑදීම',
+    lensBody: 'උත්තල සහ අවතල කාච මගින් ආලෝක කිරණ වර්තනය කර තාත්වික හෝ අතථ්‍ය ප්‍රතිබිම්බ සාදයි. කාච සමීකරණය: 1/f = 1/v - 1/u (තාත්වික සඳහා ධන ලකුණු සම්මුතිය). රේඛීය විශාලනය m = v/u.',
+
+    prismTitle: '5. ප්‍රිස්ම හරහා ආලෝක වර්තනය',
+    prismBody: 'ත්‍රිකෝණාකාර වීදුරු ප්‍රිස්මයක් හරහා ගමන් කරන ආලෝකය දෙවරක් වර්තනය වේ. මුළු අපගමන කෝණය d = i₁ + i₂ - A වේ. අවම අපගමනයේදී (D_m) ආලෝකය සමමිතිකව ගමන් කරයි.',
+
     eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ සහ ඒවායේ අර්ථය',
     varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
 
@@ -90,7 +112,10 @@ const OPTICS_THEORY_NOTES = {
       tir: 'වචනාර්ථය: ඡේදක කෝණය θ_c යනු වර්තන කෝණය 90° වන පතන කෝණයයි. θ₁ > θ_c වන විට ආලෝකය 100% ක් පූර්ණ අභ්‍යන්තරව පරාවර්තනය වේ.',
       relIndex: 'වචනාර්ථය: සාපේක්ෂ වර්තනාංකය ₁n₂ මගින් මාධ්‍යයන් දෙක අතර ප්‍රවේග අනුපාතය v₁/v₂ සහ තරංග ආයාම අනුපාතය λ₁/λ₂ නිරූපණය කරයි.',
       depth: 'වචනාර්ථය: අතථ්‍ය විස්ථාපනය Δx යනු ජලයේ හෝ වීදුරු පුවරුවක ඇති වස්තුවක් ඉහළට එසවී පෙනෙන ප්‍රමාණයයි.',
-      fibre: 'වචනාර්ථය: පිළිගැනීමේ කෝණය θ_a යනු ප්‍රකාශ තන්තු අභ්‍යන්තරයේ ආලෝකය රැඳී පැවතීමට අභ්‍යන්තරයට ඇතුළු විය හැකි උපරිම කෝණයයි.'
+      fibre: 'වචනාර්ථය: පිළිගැනීමේ කෝණය θ_a යනු ප්‍රකාශ තන්තු අභ්‍යන්තරයේ ආලෝකය රැඳී පැවතීමට අභ්‍යන්තරයට ඇතුළු විය හැකි උපරිම කෝණයයි.',
+      lens: 'වචනාර්ථය: කාච සමීකරණය මගින් නාභීය දුර f, ප්‍රතිබිම්බ දුර v සහ වස්තු දුර u අතර සම්බන්ධතාව දක්වයි.',
+      magnification: 'වචනාර්ථය: විශාලනය m යනු ප්‍රතිබිම්බ උස සහ වස්තු උස අතර අනුපාතයයි (හෝ v/u).',
+      prism: 'වචනාර්ථය: අවම අපගමනයේදී D_m ආලෝක කිරණය ප්‍රිස්මය හරහා සමමිතිකව ගමන් කරයි.'
     },
 
     vars: [
@@ -101,16 +126,23 @@ const OPTICS_THEORY_NOTES = {
       { sym: 'θ₂, r', name: 'වර්තන කෝණය', unit: 'අංශක' },
       { sym: 'θc', name: 'ඡේදක කෝණය', unit: 'අංශක' },
       { sym: 'θa', name: 'ප්‍රකාශ තන්තු පිළිගැනීමේ කෝණය', unit: 'අංශක' },
+      { sym: 'f', name: 'කාචයේ නාභීය දුර', unit: 'm හෝ cm' },
+      { sym: 'u', name: 'වස්තු දුර', unit: 'm හෝ cm' },
+      { sym: 'v_dist', name: 'ප්‍රතිබිම්බ දුර', unit: 'm හෝ cm' },
+      { sym: 'm', name: 'රේඛීය විශාලනය', unit: 'ඒකක නැත' },
+      { sym: 'P', name: 'කාචයේ බලය (1/f)', unit: 'ඩයොප්ටර් (D)' },
+      { sym: 'A', name: 'ප්‍රිස්ම කෝණය', unit: 'අංශක' },
+      { sym: 'Dm', name: 'අවම අපගමන කෝණය', unit: 'අංශක' },
       { sym: 't', name: 'මාධ්‍යයේ ඝනකම', unit: 'm' },
-      { sym: 'Δx', name: 'අතථ්‍ය විස්ථාපනය', unit: 'm' },
-      { sym: 'n_core, n_cladding', name: 'තන්තු අභ්‍යන්තර සහ පිටත වර්තනාංක', unit: 'ඒකක නැත' },
+      { sym: 'Δx', name: 'අතථ්‍ය විස්ථාපනය', unit: 'm' }
     ],
 
     tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
     tips: [
       'සංඛ්‍යාතයේ නියතතාව: වර්තනයේදී ආලෝකයේ සංඛ්‍යාතය f වෙනස් නොවේ. වෙනස් වන්නේ ප්‍රවේගය v සහ තරංග ආයාමය λ පමණි (v = f λ).',
       'ප්‍රකාශ ඝන මාධ්‍ය: ප්‍රකාශ ඝන මාධ්‍යයන්හි වර්තනාංකය n වැඩි වන අතර ආලෝකයේ ප්‍රවේගය v = c/n අඩුවේ.',
-      'සත්‍ය සහ අතථ්‍ය ගැඹුර: අතථ්‍ය විස්ථාපනය Δx = t(1 - 1/n) (මෙහි t යනු වීදුරු පුවරුවේ ඝනකමයි).'
+      'සත්‍ය සහ අතථ්‍ය ගැඹුර: අතථ්‍ය විස්ථාපනය Δx = t(1 - 1/n) (මෙහි t යනු වීදුරු පුවරුවේ ඝනකමයි).',
+      'කාච සංයෝජනය: ස්පර්ශයේ තබා ඇති තුනී කාච දෙකක සමක බලය P_මුළු = P₁ + P₂ වේ.'
     ]
   },
   ta: {
@@ -122,7 +154,7 @@ const OPTICS_THEORY_NOTES = {
     tabTips: 'தேர்வுக்கான முக்கிய குறிப்புகள்',
 
     snellDefTitle: '1. எதிரொளிப்பு மற்றும் ஸ்நெல்லின் முறிவு விதி',
-    snellDefBody: 'ஒளி முறிவு எண்கள் n₁ மற்றும் n₂ கொண்ட இரு ஊடகங்களின் எல்லையை அடையும் போது, ஸ்நெல்லின் விதிப்படி முறிவுக் கோணம் θ₂ அமையும்:',
+    snellDefBody: 'ஒளி முறிவு எண்கள் n₁ மற்றும் n₂ கொண்ட இரு ஊடகங்களின் எல்லையை அடையும் போது, ஸ்நெல்லின் விதிப்படி முறிவுக் கோணம் θ₂ அமையும்: n₁ sin(θ₁) = n₂ sin(θ₂).',
 
     tirTitle: '2. முழு அக எதிரொளிப்பு (TIR) மற்றும் மாறுநிலைக் கோணம்',
     tirBody: 'ஒளி அடர்வு கூடிய ஊடகத்திலிருந்து (n₁) அடர்வு குறைந்த ஊடகத்திற்கு (n₂ < n₁) செல்லும்போது, முறிவுக் கோணம் 90° ஆகும் படுகோணம் மாறுநிலைக் கோணம் (θ_c) எனப்படும்:',
@@ -135,6 +167,12 @@ const OPTICS_THEORY_NOTES = {
     fibreTitle: '3. ஒளி இழையியல் (Optical Fibre)',
     fibreBody: 'ஒளி இழைகள் முழு அக எதிரொளிப்பு மூலம் ஒளி சிக்னல்களை கடத்துகின்றன. இதில் உள்ளக முறிவு எண் (n_core) வெளிப்பூச்சின் முறிவு எண்ணை (n_cladding) விட அதிகமாகும்:',
 
+    lensTitle: '4. மெல்லிய வில்லைகள் மற்றும் பிம்ப உருவாக்கம்',
+    lensBody: 'மெல்லிய குவிக மற்றும் குழி வில்லைகள் ஒளியை முறித்து மெய் அல்லது மாய பிம்பங்களை உருவாக்குகின்றன. வில்லைச் சமன்பாடு: 1/f = 1/v - 1/u. பெரிதாக்கம் m = v/u.',
+
+    prismTitle: '5. முப்பட்டகம் வழியே ஒளி முறிவு',
+    prismBody: 'முக்கோணக் கண்ணாடி முப்பட்டகம் வழியே செல்லும் ஒளி இருமுறை முறிவடைகிறது. மொத்த விலகல்கோணம் d = i₁ + i₂ - A. சிறும விலகலில் (D_m) ஒளி சமச்சீராகச் செல்கிறது.',
+
     eqTitle: 'முக்கிய ஒளியியல் சமன்பாடுகள்',
     varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
 
@@ -143,7 +181,10 @@ const OPTICS_THEORY_NOTES = {
       tir: 'விளக்கம்: மாறுநிலைக் கோணம் θ_c என்பது முறிவுக் கோணம் 90° ஆகும் படுகோணமாகும். θ₁ > θ_c எனில் ஒளி 100% முழு அக எதிரொளிப்படையும்.',
       relIndex: 'விளக்கம்: சார்பு முறிவு எண் ₁n₂ இரு ஊடகங்களுக்கு இடையிலான வேக விகிதம் v₁/v₂ மற்றும் அலைநீள விகிதத்தைக் குறிக்கும்.',
       depth: 'விளக்கம்: தோற்ற இடப்பெயர்ச்சி Δx என்பது தண்ணீரில் உள்ள பொருள் மேலே உயர்ந்து தோன்றும் அளவாகும்.',
-      fibre: 'விளக்கம்: ஏற்புக் கோணம் θ_a என்பது ஒளி இழைக்குள் ஒளி தங்குவதற்கு நுழையக்கூடிய அதிகபட்சக் கோணமாகும்.'
+      fibre: 'விளக்கம்: ஏற்புக் கோணம் θ_a என்பது ஒளி இழைக்குள் ஒளி தங்குவதற்கு நுழையக்கூடிய அதிகபட்சக் கோணமாகும்.',
+      lens: 'விளக்கம்: வில்லைச் சமன்பாடு குவியத்தூரம் f, பிம்பத்தூரம் v மற்றும் பொருளுருத் தூரம் u இடையேயான தொடர்பைத் தரும்.',
+      magnification: 'விளக்கம்: பெரிதாக்கம் m என்பது பிம்பத்தின் உயரத்திற்கும் பொருளின் உயரத்திற்கும் இடையிலான விகிதமாகும்.',
+      prism: 'விளக்கம்: சிறும விலகலில் D_m ஒளிக்கதிர் முப்பட்டகம் வழியே சமச்சீராகச் செல்லும்.'
     },
 
     vars: [
@@ -154,16 +195,23 @@ const OPTICS_THEORY_NOTES = {
       { sym: 'θ₂, r', name: 'முறிவுக் கோணம்', unit: 'பாகை' },
       { sym: 'θc', name: 'மாறுநிலைக் கோணம்', unit: 'பாகை' },
       { sym: 'θa', name: 'ஏற்புக் கோணம்', unit: 'பாகை' },
-      { sym: 't', name: 'ஊடகத்தின் தடிமன்', unit: 'm' },
-      { sym: 'Δx', name: 'தோற்ற இடப்பெயர்ச்சி', unit: 'm' },
-      { sym: 'n_core, n_cladding', name: 'உள்ளக மற்றும் வெளிப்பூச்சு முறிவு எண்கள்', unit: 'அலகற்றது' },
+      { sym: 'f', name: 'வில்லையின் குவியத்தூரம்', unit: 'm அல்லது cm' },
+      { sym: 'u', name: 'பொருளுருத் தூரம்', unit: 'm அல்லது cm' },
+      { sym: 'v_dist', name: 'பிம்பத்தூரம்', unit: 'm அல்லது cm' },
+      { sym: 'm', name: 'நேரியல் பெரிதாக்கம்', unit: 'அலகற்றது' },
+      { sym: 'P', name: 'வில்லையின் திறன் (1/f)', unit: 'டயோப்டர்கள் (D)' },
+      { sym: 'A', name: 'முப்பட்டகக் கோணம்', unit: 'பாகை' },
+      { sym: 'Dm', name: 'சிறும விலகல்கෝணம்', unit: 'பாகை' },
+      { sym: 't', name: 'ஊடகத்தின் தடிමන්', unit: 'm' },
+      { sym: 'Δx', name: 'தோற்ற இடப்பெயர்ச்சி', unit: 'm' }
     ],
 
-    tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
+    tipsTitle: 'உயர்தර தேர்வுக்கான முக்கிய தகவல்கள்',
     tips: [
       'அதிர்வெண்ணின் மாறாத்தன்மை: ஒளியின் அதிர்வெண் f மாறாது; வேகம் v மற்றும் அலைநீளம் λ மட்டுமே மாறுகின்றன.',
       'அடர்வு கூடிய ஊடகம்: உயர் முறிவு எண் n கொண்ட ஊடகத்தில் ஒளியின் வேகம் v = c/n குறைவாகும்.',
-      'உண்மை மற்றும் தோற்ற ஆழம்: தோற்ற இடப்பெயர்ச்சி Δx = t(1 - 1/n).'
+      'உண்மை மற்றும் தோற்ற ஆழம்: தோற்ற இடப்பெயர்ச்சி Δx = t(1 - 1/n).',
+      'வில்லைச் சேர்க்கை: தொடுகையிலுள்ள இரு மெல்லிய வில்லைகளின் சமவலுத் திறன் P_மொத்தம் = P₁ + P₂.'
     ]
   }
 };
@@ -736,28 +784,53 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
-                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                  {tn.tirTitle}
-                </h4>
-                <p>{tn.tirBody}</p>
-                <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} \quad (n_1 > n_2)" />
-                
-                <div className="bg-amber-50/70 border border-amber-200/70 p-3 rounded-lg text-amber-900 font-medium space-y-1">
-                  <span className="font-bold">{tn.tirCondTitle}</span>
-                  <ul className="list-disc list-inside space-y-0.5 pl-1">
-                    {tn.tirConds.map((cond, idx) => (
-                      <li key={idx}>{cond}</li>
-                    ))}
-                  </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                    {tn.tirTitle}
+                  </h4>
+                  <p>{tn.tirBody}</p>
+                  <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} \quad (n_1 > n_2)" />
+                  
+                  <div className="bg-amber-50/70 border border-amber-200/70 p-3 rounded-lg text-amber-900 font-medium space-y-1">
+                    <span className="font-bold">{tn.tirCondTitle}</span>
+                    <ul className="list-disc list-inside space-y-0.5 pl-1">
+                      {tn.tirConds.map((cond, idx) => (
+                        <li key={idx}>{cond}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    {tn.fibreTitle}
+                  </h4>
+                  <p>{tn.fibreBody}</p>
+                  <BlockMath math="\sin\theta_a = \sqrt{n_{\text{core}}^2 - n_{\text{cladding}}^2}" />
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
-                <h4 className="font-bold text-slate-900 text-xs">{tn.fibreTitle}</h4>
-                <p>{tn.fibreBody}</p>
-                <BlockMath math="\sin\theta_a = \sqrt{n_{core}^2 - n_{cladding}^2}" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                    {tn.lensTitle}
+                  </h4>
+                  <p>{tn.lensBody}</p>
+                  <BlockMath math="\frac{1}{f} = \frac{1}{v} - \frac{1}{u}, \quad P = \frac{1}{f}" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-600"></span>
+                    {tn.prismTitle}
+                  </h4>
+                  <p>{tn.prismBody}</p>
+                  <BlockMath math="A = r_1 + r_2, \quad d = i_1 + i_2 - A" />
+                </div>
               </div>
             </div>
           )}
@@ -766,9 +839,9 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
           {activeTheoryTab === 'formulas' && (
             <div className="space-y-5">
               <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-bold text-blue-700 text-xs">Refraction & Critical Angle</h4>
+                  <h4 className="font-bold text-blue-700 text-xs">Refraction & TIR</h4>
                   <div>
                     <BlockMath math="n_1 \sin\theta_1 = n_2 \sin\theta_2" />
                     <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.snell}</p>
@@ -777,21 +850,29 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
                     <BlockMath math="\sin\theta_c = \frac{n_2}{n_1} = \frac{1}{n}" />
                     <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.tir}</p>
                   </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-indigo-700 text-xs">Thin Lenses & Power</h4>
                   <div>
-                    <BlockMath math="{}_1 n_2 = \frac{n_2}{n_1} = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.relIndex}</p>
+                    <BlockMath math="\frac{1}{f} = \frac{1}{v} - \frac{1}{u}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.lens}</p>
+                  </div>
+                  <div>
+                    <BlockMath math="m = \frac{v}{u}, \quad P = \frac{1}{f}" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.magnification}</p>
                   </div>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-bold text-indigo-700 text-xs">Depth & Fibre Equations</h4>
+                  <h4 className="font-bold text-emerald-700 text-xs">Prisms & Depth Shift</h4>
                   <div>
                     <BlockMath math="\Delta x = t \left(1 - \frac{1}{n}\right)" />
                     <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.depth}</p>
                   </div>
                   <div>
-                    <BlockMath math="\sin\theta_{acceptance} = \sqrt{n_{\text{core}}^2 - n_{\text{cladding}}^2}" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.fibre}</p>
+                    <BlockMath math="A = r_1 + r_2, \quad d = i_1 + i_2 - A" />
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.prism}</p>
                   </div>
                 </div>
               </div>
