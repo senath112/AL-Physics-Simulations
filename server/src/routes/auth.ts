@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest, parseSessionCookie } from '../middleware/auth';
-import pool from '../services/db';
+import { AuthenticatedRequest, parseSessionCookie } from '../middleware/auth.js';
+import pool from '../services/db.js';
 
 const router = Router();
 

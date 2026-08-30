@@ -1,11 +1,11 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest, requireAuth } from '../middleware/auth';
+import { AuthenticatedRequest, requireAuth } from '../middleware/auth.js';
 import {
   createPresignedPutUrl,
   createPresignedGetUrl,
   deleteObject,
   listUserObjects,
-} from '../services/r2Service';
+} from '../services/r2Service.js';
 
 const router = Router();
 
