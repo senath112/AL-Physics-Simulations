@@ -565,10 +565,10 @@ Hence, the critical angle is 30°.`,
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-10.5rem)] lg:overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
       {/* Parameters & Lab Notebook Sidebar (3 cols) */}
-      <div className="lg:col-span-3 flex flex-col gap-3 overflow-y-auto custom-scrollbar h-full pr-1">
+      <div className="lg:col-span-3 flex flex-col gap-3">
         
         {/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
@@ -813,9 +813,9 @@ Hence, the critical angle is 30°.`,
       </div>
 
       {/* Learn Panel (Right) */}
-      <div className={`${isLearnExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-0 transition-all duration-300 flex flex-col`}>
+      <div className={`${isLearnExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} transition-all duration-300 flex flex-col`}>
         {isLearnExpanded ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
             {/* Header */}
             <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5">
