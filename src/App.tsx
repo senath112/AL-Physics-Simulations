@@ -90,6 +90,7 @@ import { LaboratoryProvider } from './context/LaboratoryContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
+import { ENABLE_LABORATORY_UI } from './config/features';
 
 type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'laboratory' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
@@ -501,30 +502,32 @@ function AppContent() {
               <span className="hidden sm:inline">Simulations</span>
             </button>
 
-            {/* Laboratory Workspace Button */}
-            <button
-              onClick={() => {
-                if (!isAuthenticated) {
-                  openAuthModal('Access to the Laboratory Workspace requires signing in with your Google account.');
-                } else {
-                  setCurrentPage('laboratory');
-                }
-              }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                currentPage === 'laboratory'
-                  ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20'
-                  : 'bg-purple-50 hover:bg-purple-100/80 text-purple-700 border border-purple-200/60'
-              }`}
-              title={isAuthenticated ? "Laboratory Workspace" : "Sign in to access Laboratory"}
-            >
-              <FlaskConical className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Laboratory</span>
-              {!isAuthenticated && (
-                <span className="text-[9px] bg-purple-200/80 text-purple-800 px-1 rounded-sm font-semibold">
-                  Auth
-                </span>
-              )}
-            </button>
+            {/* Laboratory Workspace Button (Preserved for feature flag) */}
+            {ENABLE_LABORATORY_UI && (
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    openAuthModal('Access to the Laboratory Workspace requires signing in with your Google account.');
+                  } else {
+                    setCurrentPage('laboratory');
+                  }
+                }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  currentPage === 'laboratory'
+                    ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20'
+                    : 'bg-purple-50 hover:bg-purple-100/80 text-purple-700 border border-purple-200/60'
+                }`}
+                title={isAuthenticated ? "Laboratory Workspace" : "Sign in to access Laboratory"}
+              >
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Laboratory</span>
+                {!isAuthenticated && (
+                  <span className="text-[9px] bg-purple-200/80 text-purple-800 px-1 rounded-sm font-semibold">
+                    Auth
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Visual Segmented Pill Language Switcher */}
             <div className="flex items-center gap-0.5 bg-slate-100/90 border border-slate-200 p-0.5 rounded-full shadow-inner">
@@ -1578,12 +1581,27 @@ function AppContent() {
           </div>
         )}
 
-        {/* ACTIVE LABORATORY WORKSPACE (PROTECTED) */}
+        {/* ACTIVE LABORATORY WORKSPACE (PROTECTED & PRESERVED) */}
         {currentPage === 'laboratory' && (
-          <LaboratoryDashboard 
-            onBackToSimulations={() => setCurrentPage('sims')} 
-            lang={lang} 
-          />
+          ENABLE_LABORATORY_UI ? (
+            <LaboratoryDashboard 
+              onBackToSimulations={() => setCurrentPage('sims')} 
+              lang={lang} 
+            />
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+              <h2 className="text-xl font-bold text-slate-800">Laboratory Workspace</h2>
+              <p className="text-slate-500 text-sm max-w-md">
+                The Laboratory Workspace features are currently undergoing maintenance and development.
+              </p>
+              <button
+                onClick={() => setCurrentPage('sims')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm cursor-pointer"
+              >
+                Back to Simulations
+              </button>
+            </div>
+          )
         )}
 
 

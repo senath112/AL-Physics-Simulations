@@ -13,6 +13,7 @@ import {
   Lock
 } from 'lucide-react';
 import { PracticalQuota } from '../../types/laboratory';
+import { ENABLE_LABORATORY_UI } from '../../config/features';
 
 interface SimulationLabBarProps {
   trialCount: number;
@@ -207,20 +208,22 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
         )}
       </div>
 
-      {/* Dataset status & Send to Laboratory Button */}
+      {/* Dataset status & Send to Laboratory Button (Preserved for feature flag) */}
       <div className="space-y-1.5">
-        <button
-          onClick={() => onSendToLaboratory()}
-          disabled={isSaving || isAutoRunning}
-          className="w-full py-2 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
-        >
-          <FlaskConical className="w-3.5 h-3.5" />
-          <span>
-            {isSaving
-              ? 'Transferring Dataset...'
-              : `Send to Laboratory Workspace ${trialCount > 0 ? `(${trialCount} Points)` : ''} ${quota ? `[${quota.used}/${quota.max}]` : ''}`}
-          </span>
-        </button>
+        {ENABLE_LABORATORY_UI && (
+          <button
+            onClick={() => onSendToLaboratory()}
+            disabled={isSaving || isAutoRunning}
+            className="w-full py-2 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            <span>
+              {isSaving
+                ? 'Transferring Dataset...'
+                : `Send to Laboratory Workspace ${trialCount > 0 ? `(${trialCount} Points)` : ''} ${quota ? `[${quota.used}/${quota.max}]` : ''}`}
+            </span>
+          </button>
+        )}
 
         {trialCount > 0 && (
           <div className="flex items-center justify-between px-1 text-[10px] text-slate-500 font-mono">

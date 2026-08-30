@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, LogOut, FlaskConical, ChevronDown, UserCheck } from 'lucide-react';
+import { ENABLE_LABORATORY_UI } from '../../config/features';
 
 interface UserMenuProps {
   onNavigateToLaboratory: () => void;
@@ -79,18 +80,20 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onNavigateToLaboratory }) =>
           </div>
 
           {/* Navigation Options */}
-          <div className="py-1">
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                onNavigateToLaboratory();
-              }}
-              className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors cursor-pointer"
-            >
-              <FlaskConical className="w-4 h-4 text-blue-600" />
-              <span>Laboratory Workspace</span>
-            </button>
-          </div>
+          {ENABLE_LABORATORY_UI && (
+            <div className="py-1">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onNavigateToLaboratory();
+                }}
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                <FlaskConical className="w-4 h-4 text-blue-600" />
+                <span>Laboratory Workspace</span>
+              </button>
+            </div>
+          )}
 
           {/* Sign Out */}
           <div className="border-t border-slate-100 pt-1">

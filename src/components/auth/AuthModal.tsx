@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getGoogleClientId } from '../../types/auth';
+import { ENABLE_LABORATORY_UI } from '../../config/features';
 import { X, Sparkles, ShieldCheck, FileSpreadsheet, Lock, AlertCircle } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
@@ -55,7 +56,7 @@ export const AuthModal: React.FC = () => {
             {modalPromptReason ? 'Authentication Required' : 'Sign in to Physics by Senath'}
           </h2>
           <p className="text-blue-100 text-xs mt-1 max-w-xs mx-auto">
-            {modalPromptReason || 'Sign in with your Google account to access all research laboratory features.'}
+            {modalPromptReason || (ENABLE_LABORATORY_UI ? 'Sign in with your Google account to access all research laboratory features.' : 'Sign in with your Google account to access all advanced features.')}
           </p>
         </div>
 
@@ -63,14 +64,23 @@ export const AuthModal: React.FC = () => {
         <div className="p-6 space-y-5">
           {/* Features / Benefits list */}
           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2.5 text-xs text-slate-600">
-            <div className="flex items-center gap-2.5 font-medium">
-              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>Full access to the <strong>Laboratory Workspace</strong></span>
-            </div>
-            <div className="flex items-center gap-2.5 font-medium">
-              <FileSpreadsheet className="w-4 h-4 text-indigo-600 shrink-0" />
-              <span>Save & transform simulation data into editable reports</span>
-            </div>
+            {ENABLE_LABORATORY_UI ? (
+              <>
+                <div className="flex items-center gap-2.5 font-medium">
+                  <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Full access to the <strong>Laboratory Workspace</strong></span>
+                </div>
+                <div className="flex items-center gap-2.5 font-medium">
+                  <FileSpreadsheet className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <span>Save & transform simulation data into editable reports</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2.5 font-medium">
+                <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Full access to <strong>Physics by Senath</strong> features</span>
+              </div>
+            )}
             <div className="flex items-center gap-2.5 font-medium">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Secure Google Identity login (no extra passwords required)</span>
