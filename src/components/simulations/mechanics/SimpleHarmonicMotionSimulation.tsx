@@ -6,15 +6,132 @@ import {
   RotateCcw, 
   Sparkles, 
   Info, 
+  BookOpen,
+  Maximize2,
+  FileText,
+  Lightbulb,
+  CheckCircle2,
+  Activity,
   Plus
 } from 'lucide-react';
 import { calculateSHMState, SHMParameters } from '../../../physics/shmPhysics';
-import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { shmGraphs } from '../../graphing/presets';
-import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
+
+const SHM_THEORY_NOTES = {
+  en: {
+    badge: 'Waves & Oscillations • Interactive Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Physical Laws',
+    tabFormulas: 'Equations & SI Units',
+    tabTips: 'A/L Exam Insights',
+
+    shmDefTitle: '1. Definition of Simple Harmonic Motion (SHM)',
+    shmDefBody: 'A particle executes Simple Harmonic Motion if its acceleration (a) is directly proportional to its displacement (x) from a fixed equilibrium position and is always directed towards that equilibrium position.',
+    
+    oscTypesTitle: '2. Oscillating Systems in G.C.E. A/L Physics',
+    springTitle: 'Mass-Spring Oscillator:',
+    springBody: 'Restoring force F = -k x. Angular frequency depends solely on mass (m) and spring constant (k):',
+    pendulumTitle: 'Simple Pendulum:',
+    pendulumBody: 'For small angular displacements (θ ≤ 10°), restoring force F ≈ -(m g / L) x. Angular frequency depends solely on length (L) and g:',
+    
+    dampingTitle: '3. Energy & Damping Regimes',
+    dampingBody: 'In undamped SHM, mechanical energy continuously transforms between Kinetic Energy (Ek) and Potential Energy (Ep) while Total Energy (E) remains constant. When damping force F_d = -b v is present:',
+    dampedList: [
+      'Undamped (b = 0): Constant total energy E = ½ m ω² A².',
+      'Underdamped: Oscillates with exponentially decaying amplitude A(t) = A₀ e^(-bt/2m).',
+      'Critically Damped: Returns to equilibrium in minimum time without overshooting.',
+      'Overdamped: Sluggishly returns to equilibrium without oscillating.'
+    ],
+
+    eqTitle: 'Essential Syllabus Equations',
+    kinematicsTitle: 'Kinematics Equations',
+    energiesTitle: 'Energy Equations',
+
+    tipsTitle: 'G.C.E. A/L Exam Key Insights',
+    tips: [
+      'Mass Independence in Simple Pendulums: Period T = 2π√(L/g) is independent of bob mass m.',
+      'Velocity vs Acceleration Extremes: Velocity is maximum at equilibrium (x=0); Acceleration is maximum at turning points (x=±A).',
+      'Equipartition Point: At displacement x = ±A/√2, Kinetic Energy equals Potential Energy (Ek = Ep = ½ E_total).'
+    ]
+  },
+  si: {
+    badge: 'තරංග සහ දෝලන • අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ නියම',
+    tabFormulas: 'සමීකරණ සහ ඒකක',
+    tabTips: 'උසස් පෙළ විභාග සටහන්',
+
+    shmDefTitle: '1. සරල අනුවර්තී චලිතයේ අර්ථ දැක්වීම (SHM)',
+    shmDefBody: 'වස්තුවක ත්වරණය (a), ස්ථිර ලක්ෂ්‍යයක (සමතුලිත පිහිටීම) සිට ඇති විස්ථාපනයට (x) ඍජුව සමානුපාතික වන අතර, එම ත්වරණය සැමවිටම සමතුලිත පිහිටීම දෙසට යොමුව පවතී නම් එය සරල අනුවර්තී චලිතයක් ලෙස හැඳින්වේ.',
+
+    oscTypesTitle: '2. උසස් පෙළ විෂය නිර්දේශයේ දෝලන පද්ධති',
+    springTitle: 'දුනු-ස්කන්ධ පද්ධතිය:',
+    springBody: 'ප්‍රත්‍යානයන බලය F = -k x. කෝණික සංඛ්‍යාතය ස්කන්ධය (m) සහ දුනු නියතය (k) මත පදනම් වේ:',
+    pendulumTitle: 'සරල ලෝලකය:',
+    pendulumBody: 'කුඩා කෝණික විස්ථාපන සඳහා (θ ≤ 10°) ප්‍රත්‍යානයන බලය F ≈ -(m g / L) x. කෝණික සංඛ්‍යාතය දිග (L) සහ g මත පදනම් වේ:',
+
+    dampingTitle: '3. ශක්තිය සහ අවපාතන තත්ත්ව',
+    dampingBody: 'අවපාතනය නොවූ SHM හි මුළු යාන්ත්‍රික ශක්තිය (E) නියතව පවතින අතර, ගති ශක්තිය (Ek) සහ විභව ශක්තිය (Ep) අතර එකිනෙකට පරිවර්තනය වේ. අවපාතන බලය F_d = -b v ඇතුළත් වූ විට:',
+    dampedList: [
+      'අවපාතන නොවූ (b = 0): මුළු ශක්තිය නියතව පවතී E = ½ m ω² A².',
+      'අඩු අවපාතන: විස්තාරය ඝාතීය ලෙස අඩුවේ A(t) = A₀ e^(-bt/2m).',
+      'අවසාන අවපාතන: දෝලනය නොවී අවම කාලයකින් සමතුලිතතාවට පැමිණේ.',
+      'අධි අවපාතන: දෝලනය නොවී ඉතා සෙමින් සමතුලිතතාවට පැමිණේ.'
+    ],
+
+    eqTitle: 'විෂය නිර්දේශයේ ප්‍රධාන සමීකරණ',
+    kinematicsTitle: 'SHM චලිත විද්‍යාත්මක සමීකරණ',
+    energiesTitle: 'ශක්ති සමීකරණ',
+
+    tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
+    tips: [
+      'ලෝලකයේ ආවර්ත කාලය: T = 2π√(L/g) ආවර්ත කාලය ස්කන්ධය (m) මත රඳා නොපවතී.',
+      'උපරිම ප්‍රවේගය සහ ත්වරණය: ප්‍රවේගය උපරිම වන්නේ සමතුලිත ලක්ෂ්‍යයේදී (x=0); ත්වරණය උපරිම වන්නේ කෙළවර ලක්ෂ්‍යවලදී (x=±A).',
+      'ශක්ති සමතුලිත ලක්ෂ්‍යය: x = ±A/√2 විස්ථාපනයේදී ගති ශක්තිය සහ විභව ශක්තිය එකිනෙකට සමාන වේ (Ek = Ep).'
+    ]
+  },
+  ta: {
+    badge: 'அலைகள் மற்றும் ஊசலாட்டங்கள் • குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
+    tabTips: 'தேர்வுக்கான முக்கிய குறிப்புகள்',
+
+    shmDefTitle: '1. எளிய இசை இயக்கத்தின் வரைவிலக்கணம் (SHM)',
+    shmDefBody: 'ஒரு பொருளின் முடுக்கம் (a) அதன் சமநிலை இடத்திலிருந்து இடப்பெயர்ச்சிக்கு (x) நேர் விகிதசமமாகவும், எப்போதும் சமநிலை இடத்தை நோக்கியதாகவும் அமைந்தால் அது எளிய இசை இயக்கம் எனப்படும்.',
+
+    oscTypesTitle: '2. அலைவு அமைப்புகள்',
+    springTitle: 'வில்-திணிவு அமைப்பு:',
+    springBody: 'மீட்டமை விசை F = -k x. கோண அதிர்வெண் திணிவு (m) மற்றும் வில் மாறிலி (k) என்பவற்றில் தங்கியுள்ளது:',
+    pendulumTitle: 'எளிய ஊசல்:',
+    pendulumBody: 'சிறிய கோண இடப்பெயர்ச்சிகளுக்கு (θ ≤ 10°) மீட்டமை விசை F ≈ -(m g / L) x. கோண அதிர்வெண் நீளம் (L) மற்றும் g என்பவற்றில் தங்கியுள்ளது:',
+
+    dampingTitle: '3. ஆற்றல் மற்றும் தணிப்பு நிலைகள்',
+    dampingBody: 'தணிக்கப்படாத SHM இல் மொத்த இயந்திர ஆற்றல் (E) மாறிலியாக இருக்கும். தணிப்பு விசை F_d = -b v சேர்க்கப்படும் போது:',
+    dampedList: [
+      'தணிக்கப்படாதது (b = 0): மாறா மொத்த ஆற்றல் E = ½ m ω² A².',
+      'குறை தணிப்பு: வீச்சு அதிவேகமாகக் குறைகிறது A(t) = A₀ e^(-bt/2m).',
+      'முக்கிய தணிப்பு: அலைவுறாமல் மிகக் குறைந்த நேரத்தில் சமநிலையை அடைகிறது.',
+      'அதிக தணிப்பு: அலைவுறாமல் மெதுவாக சமநிலையை அடைகிறது.'
+    ],
+
+    eqTitle: 'முக்கிய பாடத்திட்ட சமன்பாடுகள்',
+    kinematicsTitle: 'SHM இயக்கவியல் சமன்பாடுகள்',
+    energiesTitle: 'ஆற்றல் சமன்பாடுகள்',
+
+    tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
+    tips: [
+      'ஊசலின் திணிவு சாரா நிலை: அலைவுக்காலம் T = 2π√(L/g) ஊசல்குண்டின் திணிவு m இல் தங்கியிருக்காது.',
+      'அதிகபட்ச திசைவேகம் மற்றும் முடுக்கம்: சமநிலையில் (x=0) திசைவேகம் அதிகம்; நுனிகளில் (x=±A) முடுக்கம் அதிகம்.',
+      'சம ஆற்றல் புள்ளி: x = ±A/√2 இடப்பெயர்ச்சியில் இயக்க ஆற்றலும் நிலை ஆற்றலும் சமமாகும் (Ek = Ep).'
+    ]
+  }
+};
 
 export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -90,8 +207,11 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
+
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
-  const [explainMode, setExplainMode] = useState<boolean>(true);
+  const [explainMode] = useState<boolean>(true);
   const [showRefCircle, setShowRefCircle] = useState<boolean>(true);
   
   // Controls
@@ -105,9 +225,6 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const timeRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
-
-  // Lab Notes
-  const [notes, setNotes] = useState<string>('');
 
   // Canvas interaction
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -793,51 +910,176 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       title: mode === 'pendulum' ? 'T² vs Length L (Slope = 4π²/g)' : 'T² vs Mass m (Slope = 4π²/k)',
       showRegression: true,
     },
-    notes,
   });
 
-  const handleDownloadPDF = () => {
-    const parameterMap = {
-      'Simulation Mode': mode === 'spring' ? 'Mass-Spring System' : 'Simple Pendulum',
-      'Mass (m)': `${mass.toFixed(2)} kg`,
-      'Damping Coefficient (b)': `${damping.toFixed(2)} N s/m`,
-      'Initial Amplitude (A)': `${amplitude.toFixed(2)} ${mode === 'spring' ? 'm' : 'rad'}`,
-      'Calculated Period (T)': `${period.toFixed(3)} s`,
-      'Total Energy (E)': `${shmState.totalEnergy.toFixed(3)} J`
-    };
-    downloadReportAsPDF('Simple Harmonic Motion Lab Report', parameterMap, recorder.recordedRows, notes);
-  };
+  const tn = SHM_THEORY_NOTES[lang] || SHM_THEORY_NOTES.en;
 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      {/* Header & View Mode Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            Simple Harmonic Motion (SHM) Explainer
-            <span className="text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">Core Theory</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-black uppercase tracking-wider text-indigo-700 mb-1">
+            <Sparkles className="w-3 h-3 text-indigo-600" />
+            {tn.badge}
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+            Simple Harmonic Motion (SHM)
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Study mass-spring oscillators, simple pendulums, phase orbits, and damping envelopes.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Explain Mode Toggle */}
+        {/* View Mode Toggle Pill Buttons */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
           <button
-            onClick={() => setExplainMode(!explainMode)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
-              explainMode 
-                ? 'bg-indigo-600 text-white shadow-sm' 
-                : 'bg-white border border-slate-200 hover:border-slate-350 text-slate-600'
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-indigo-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            Explain Mode {explainMode ? 'ON' : 'OFF'}
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
           </button>
         </div>
       </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Physical Laws */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl space-y-1.5">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.shmDefTitle}</h3>
+                <p>{tn.shmDefBody}</p>
+                <div className="pt-1 text-center font-bold text-indigo-700">
+                  <BlockMath math="a = -\omega^2 x" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                    {tn.springTitle}
+                  </h4>
+                  <p>{tn.springBody}</p>
+                  <BlockMath math="\omega = \sqrt{\frac{k}{m}}, \quad T = 2\pi\sqrt{\frac{m}{k}}" />
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                    {tn.pendulumTitle}
+                  </h4>
+                  <p>{tn.pendulumBody}</p>
+                  <BlockMath math="\omega = \sqrt{\frac{g}{L}}, \quad T = 2\pi\sqrt{\frac{L}{g}}" />
+                </div>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
+                <h4 className="font-bold text-slate-900 text-xs">{tn.dampingTitle}</h4>
+                <p>{tn.dampingBody}</p>
+                <ul className="list-disc list-inside space-y-1 pl-1 text-slate-600">
+                  {tn.dampedList.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & SI Units */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-indigo-700 text-xs">{tn.kinematicsTitle}</h4>
+                  <BlockMath math="x(t) = A \cos(\omega t + \phi)" />
+                  <BlockMath math="v(t) = -\omega A \sin(\omega t + \phi) = \pm \omega \sqrt{A^2 - x^2}" />
+                  <BlockMath math="a(t) = -\omega^2 A \cos(\omega t + \phi) = -\omega^2 x" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-700 text-xs">{tn.energiesTitle}</h4>
+                  <BlockMath math="E_k = \frac{1}{2} m v^2 = \frac{1}{2} m \omega^2 (A^2 - x^2)" />
+                  <BlockMath math="E_p = \frac{1}{2} m \omega^2 x^2" />
+                  <BlockMath math="E_{total} = E_k + E_p = \frac{1}{2} m \omega^2 A^2 = \text{Constant}" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Exam Insights */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-3">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-amber-500" />
+                {tn.tipsTitle}
+              </h3>
+              <div className="space-y-2.5">
+                {tn.tips.map((tip, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl text-xs text-amber-900 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Sandbox Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1182,10 +1424,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
         </div>
       </div>
 
-      {/* Numerical Data Graph & Lab Book Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Scientific Graph Laboratory */}
+      {/* Automatic Real-time Graph Section */}
+      <div className="w-full">
         <ScientificGraphLab
           graphs={shmGraphs}
           trials={recorder.recordedRows}
@@ -1194,48 +1434,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           onRecordTrial={recorder.recordTrial}
           onClearTrials={recorder.clearTrials}
           columns={recorder.columns}
-          height={280}
+          height={320}
         />
-
-        {/* Lab Notes & Laboratory Workspace */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-          {ENABLE_OBSERVATION_NOTEBOOKS && (
-            <>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.labNotes}</h3>
-                <span className="text-xs font-mono text-slate-400 font-bold">
-                  {recorder.trialCount} Data Points Logged
-                </span>
-              </div>
-
-              <textarea
-                placeholder="Log experimental observations, write deductions here. (e.g. Damping factor reduces total mechanical energy exponentially...)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full h-24 border border-slate-200 rounded-lg p-3 text-xs outline-none focus:border-indigo-500 transition-colors custom-scrollbar"
-              />
-            </>
-          )}
-
-          <SimulationLabBar
-            trialCount={recorder.trialCount}
-            onRecordTrial={recorder.recordTrial}
-            onRecordFullRun={recorder.recordFullRun}
-            isAutoRecording={recorder.isAutoRecording}
-            onToggleAutoRecord={recorder.toggleAutoRecord}
-            isAutoRunning={recorder.isAutoRunning}
-            autoRunProgress={recorder.autoRunProgress}
-            onStartAutoRun={recorder.startAutoRun}
-            onCancelAutoRun={recorder.cancelAutoRun}
-            onSendToLaboratory={recorder.sendToLaboratory}
-            onDownloadPDF={handleDownloadPDF}
-            onClearTrials={recorder.clearTrials}
-            isSaving={recorder.isSaving}
-            statusMessage={recorder.statusMessage}
-            quota={recorder.quota}
-          />
-        </div>
-
       </div>
 
     </div>
