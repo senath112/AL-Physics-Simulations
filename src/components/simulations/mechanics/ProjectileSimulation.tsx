@@ -1,6 +1,232 @@
+import { BlockMath } from '../../Math';
+import { Sparkles, BookOpen, Maximize2, FileText, Lightbulb, Activity, AlertTriangle } from 'lucide-react';
+const PROJECTILE_THEORY_NOTES = {
+  en: {
+    badge: 'Mechanics • Projectile Motion Interactive Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Vector Resolution',
+    tabFormulas: 'Equations & Derivations',
+    tabTips: 'Common Mistakes & Senath Rules',
+
+    sec1Title: '1. The Basic Idea of Projectile Motion',
+    sec1Body: 'A projectile is an object moving in two dimensions under the single influence of gravity (ignoring air resistance). Motion is split into independent horizontal and vertical components:',
+    sec1List: [
+      'Horizontal Motion: Constant velocity u_x = u cos θ (no horizontal force, a_x = 0).',
+      'Vertical Motion: Constant gravitational acceleration a_y = -g downwards.'
+    ],
+
+    sec2Title: '2. Resolving Initial Velocity',
+    sec2Body: 'If a projectile is launched with velocity u at angle θ to the horizontal:',
+    sec2Parallel: 'Horizontal component: u_x = u cos θ (remains unchanged throughout flight).',
+    sec2Perp: 'Vertical component: u_y = u sin θ (decreases to 0 at peak, reverses downwards).',
+
+    sec3Title: '3. Time of Flight (T)',
+    sec3Body: 'The total time taken to return to the launching horizontal level (y = 0): T = 2 u sin θ / g.',
+
+    sec4Title: '4. Maximum Height (H)',
+    sec4Body: 'At the apex, vertical velocity becomes zero (v_y = 0). Maximum height reached: H = (u² sin² θ) / (2 g).',
+
+    sec5Title: '5. Horizontal Range (R)',
+    sec5Body: 'The horizontal distance travelled during time of flight T: R = u_x · T = (u² sin 2θ) / g.',
+
+    sec6Title: '6. Maximum Range Angle & Complementary Angles',
+    sec6Body: 'Max range occurs at launch angle θ = 45° (since sin 90° = 1). Complementary launch angles (θ and 90° - θ) yield the EXACT SAME horizontal range for the same speed!',
+
+    sec7Title: '7. Trajectory Equation (Paraboloid Path)',
+    sec7Body: 'Eliminating time t from x = (u cos θ)t and y = (u sin θ)t - ½ gt² gives the equation of a parabola: y = x tan θ - (g x²) / (2 u² cos² θ).',
+
+    sec8Title: '8. Velocity & Direction at Any Time t',
+    sec8Body: 'Horizontal: v_x = u cos θ. Vertical: v_y = u sin θ - g t. Total speed v = √(v_x² + v_y²) and angle α = arctan(v_y / v_x).',
+
+    sec9Title: '9. Common Pitfalls & Mistakes ⚠️',
+    mistakes: [
+      '❌ Mistake 1: Assuming total velocity is zero at highest point (Wrong! Vertical v_y = 0, but horizontal v_x = u cos θ remains active!).',
+      '❌ Mistake 2: Confusing sin² θ with sin 2θ (H uses sin² θ, whereas Range R uses sin 2θ).',
+      '❌ Mistake 3: Forgetting horizontal acceleration is zero (Wrong! a_x = 0 when air resistance is ignored).',
+      '❌ Mistake 4: Adding horizontal and vertical components directly without vector Pythagoras (Wrong! Speed v = √(v_x² + v_y²)).'
+    ],
+
+    formulaBoxTitle: '📌 Essential Projectile Motion Formula Box',
+
+    senathHeader: '🧠 Physics by Senath — Golden Rules of Projectiles',
+    senathCoreBox: 'Always resolve velocity into u_x = u cos θ and u_y = u sin θ. Treat X and Y motions 100% independently!',
+    senathSteps: [
+      '1. Resolve launch velocity: u_x = u cos θ, u_y = u sin θ',
+      '2. Time to apex: t_top = u sin θ / g',
+      '3. Total flight time: T = 2 t_top = (2 u sin θ) / g',
+      '4. Maximum height: H = (u² sin² θ) / (2 g)',
+      '5. Range: R = (u² sin 2θ) / g (Max at θ = 45°)'
+    ],
+    senathMotto: 'At the apex, speed is NOT zero! The projectile still moves horizontally at u cos θ.',
+
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+    vars: [
+      { sym: 'u', name: 'Initial Launch Speed', unit: 'm/s' },
+      { sym: 'θ', name: 'Launch Angle', unit: 'degrees (°)' },
+      { sym: 'u_x', name: 'Horizontal Velocity (u cos θ)', unit: 'm/s' },
+      { sym: 'u_y', name: 'Initial Vertical Velocity (u sin θ)', unit: 'm/s' },
+      { sym: 'g', name: 'Gravitational Acceleration', unit: 'm/s²' },
+      { sym: 'T', name: 'Total Flight Time', unit: 's' },
+      { sym: 'H', name: 'Maximum Height', unit: 'm' },
+      { sym: 'R', name: 'Horizontal Range', unit: 'm' },
+      { sym: 'v_y', name: 'Vertical Velocity at time t', unit: 'm/s' },
+      { sym: 'v', name: 'Net Speed at time t', unit: 'm/s' },
+      { sym: 'α', name: 'Flight Direction Angle at time t', unit: 'degrees (°)' }
+    ]
+  },
+  si: {
+    badge: 'යාන්ත්‍ර විද්‍යාව • ප්‍රක්ෂේපිත චලිතය අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ දෛශික විභේදනය',
+    tabFormulas: 'සමීකරණ සහ ගණනය කිරීම්',
+    tabTips: 'සාමාන්‍ය වැරදි සහ සෙනත් නීති',
+
+    sec1Title: '1. ප්‍රක්ෂේපිත චලිතයේ මූලික සංකල්පය',
+    sec1Body: 'ගුරුත්වාකර්ෂණ බලපෑම යටතේ පමණක් ද්විමානව සිදුවන චලිතය ප්‍රක්ෂේපිත චලිතය ලෙස හැඳින්වේ. මෙය ස්වාධීන සංරචක දෙකකට බෙදිය හැක:',
+    sec1List: [
+      'තිරස් චලිතය: නියත ප්‍රවේගය u_x = u cos θ (තිරස් ත්වරණයක් නැත, a_x = 0).',
+      'සිරස් චලිතය: නියත ගුරුත්වජ ත්වරණය a_y = -g (පහළට).'
+    ],
+
+    sec2Title: '2. ආරම්භක ප්‍රවේගය විභේදනය කිරීම',
+    sec2Body: 'u ප්‍රවේගයෙන් θ කෝණයකින් ප්‍රක්ෂේපණය කරන විට:',
+    sec2Parallel: 'තිරස් සංරචකය: u_x = u cos θ (ගමන පුරා නොවනස්ව පවතී).',
+    sec2Perp: 'සිරස් සංරචකය: u_y = u sin θ (මුදුනේදී 0 වී පහළට හැරේ).',
+
+    sec3Title: '3. උඩුගං කාලය / ආවර්ත කාලය (T)',
+    sec3Body: 'මුළු චලිත කාලය: T = (2 u sin θ) / g.',
+
+    sec4Title: '4. උපරිම උස (H)',
+    sec4Body: 'උපරිම උසේදී සිරස් ප්‍රවේගය ශූන්‍ය වේ (v_y = 0). උපරිම උස: H = (u² sin² θ) / (2 g).',
+
+    sec5Title: '5. තිරස් පරාසය (R)',
+    sec5Body: 'T කාලය තුළ ගමන් කරන තිරස් දුර: R = u_x · T = (u² sin 2θ) / g.',
+
+    sec6Title: '6. උපරිම පරාස කෝණය සහ අනුපූරක කෝණ',
+    sec6Body: 'උපරිම පරාසයක් ලැබෙන්නේ θ = 45° කෝණයේදීය. අනුපූරක කෝණ (θ සහ 90° - θ) සඳහා එකම තිරස් පරාසයක් ලැබේ!',
+
+    sec7Title: '7. පථයේ සමීකරණය (පරාබලික පථය)',
+    sec7Body: 'x සහ y සමීකරණවලින් t ඉවත් කළ විට ලැබෙන පරාබලික පථයේ සමීකරණය: y = x tan θ - (g x²) / (2 u² cos² θ).',
+
+    sec8Title: '8. ඕනෑම t මොහොතක ප්‍රවේගය සහ දිශාව',
+    sec8Body: 'තිරස්: v_x = u cos θ. සිරස්: v_y = u sin θ - g t. සම්ප්‍රයුක්ත ප්‍රවේගය v = √(v_x² + v_y²), tan α = v_y / v_x.',
+
+    sec9Title: '9. සිසුන් අතින් සිදුවන සාමාන්‍ය වැරදි ⚠️',
+    mistakes: [
+      '❌ වැරදි 1: උපරිම උසේදී මුළු ප්‍රවේගයම ශූන්‍ය බව සිතීම (වැරදියි! v_y = 0 වුවද තිරස් v_x = u cos θ පවතී!).',
+      '❌ වැරදි 2: sin² θ සහ sin 2θ පටලවා ගැනීම (H සඳහා sin² θ ද, පරාසය R සඳහා sin 2θ ද යොදාගනී).',
+      '❌ වැරදි 3: තිරස් ත්වරණය ශූන්‍ය බව අමතක කිරීම (වැරදියි! වාත ප්‍රතිරෝධය නැති විට a_x = 0 වේ).',
+      '❌ වැරදි 4: තිරස් සහ සිරස් ප්‍රවේග ඍජුව එකතු කිරීම (වැරදියි! v = √(v_x² + v_y²) දෛශික එකතුව යොදන්න).'
+    ],
+
+    formulaBoxTitle: '📌 ප්‍රධාන සමීකරණ එකතුව',
+
+    senathHeader: '🧠 Physics by Senath — ප්‍රක්ෂේපිත චලිතයේ ස්වර්ණමය නීති',
+    senathCoreBox: 'ආරම්භක ප්‍රවේගය u_x = u cos θ සහ u_y = u sin θ ලෙස විභේදනය කරන්න. තිරස් සහ සිරස් චලිත 100%ක් ස්වාධීනව සලකන්න!',
+    senathSteps: [
+      '1. ප්‍රවේගය විභේදනය කරන්න: u_x = u cos θ, u_y = u sin θ',
+      '2. මුදුනට යාමට ගතවන කාලය: t_top = u sin θ / g',
+      '3. මුළු ගමන් කාලය: T = 2 t_top = (2 u sin θ) / g',
+      '4. උපරිම උස: H = (u² sin² θ) / (2 g)',
+      '5. පරාසය: R = (u² sin 2θ) / g (උපරිම θ = 45°)'
+    ],
+    senathMotto: 'උපරිම උසේදී ප්‍රවේගය ශූන්‍ය නොවේ! තිරස්ව u cos θ ප්‍රවේගයෙන් චලනය වේ.',
+
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+    vars: [
+      { sym: 'u', name: 'ආරම්භක ප්‍රක්ෂේපණ ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'θ', name: 'ප්‍රක්ෂේපණ කෝණය', unit: 'අංශක (°)' },
+      { sym: 'u_x', name: 'තිරස් ප්‍රවේග සංරචකය (u cos θ)', unit: 'm/s' },
+      { sym: 'u_y', name: 'ආරම්භක සිරස් ප්‍රවේගය (u sin θ)', unit: 'm/s' },
+      { sym: 'g', name: 'ගුරුත්වජ ත්වරණය', unit: 'm/s²' },
+      { sym: 'T', name: 'මුළු චලිත කාලය', unit: 's' },
+      { sym: 'H', name: 'උපරිම උස', unit: 'm' },
+      { sym: 'R', name: 'තිරස් පරාසය', unit: 'm' },
+      { sym: 'v_y', name: 't මොහොතේ සිරස් ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'v', name: 't මොහොතේ සම්ප්‍රයුක්ත ප්‍රවේගය', unit: 'm/s' },
+      { sym: 'α', name: 't මොහොතේ චලිත දිශා කෝණය', unit: 'අංශක (°)' }
+    ]
+  },
+  ta: {
+    badge: 'இயக்கவியல் • எறிபொருள் இயக்கம் குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் திசையன் பகுப்பு',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் கணக்கீடுகள்',
+    tabTips: 'பொதுவான தவறுகள் & சேனாத் விதிகள்',
+
+    sec1Title: '1. எறிபொருள் இயக்கத்தின் அடிப்படை யோசனை',
+    sec1Body: 'ஈர்ப்பு விசையின் கீழ் இரு பரிமாணங்களில் நிகழும் இயக்கம் எறிபொருள் இயக்கமாகும்:',
+    sec1List: [
+      'கிடைத்தள இயக்கம்: மாறா திசைவேகம் u_x = u cos θ (கிடைத்தள முடுக்கம் இல்லை, a_x = 0).',
+      'செங்குத்து இயக்கம்: மாறா ஈர்ப்பு முடுக்கம் a_y = -g (கீழ்நோக்கி).'
+    ],
+
+    sec2Title: '2. ஆரம்ப திசைவேகத்தைப் பிரித்தல்',
+    sec2Body: 'u திசைவேகத்தில் θ கோணத்தில் எறியப்படும் போது:',
+    sec2Parallel: 'கிடைத்தளக் கூறு: u_x = u cos θ (இயக்கம் முழுவதும் மாறாது).',
+    sec2Perp: 'செங்குத்துக் கூறு: u_y = u sin θ (உச்சியில் 0 ஆகி கீழ்நோக்கி மாறும்).',
+
+    sec3Title: '3. மொத்தப் பறப்பு நேரம் (T)',
+    sec3Body: 'மொத்தப் பறப்பு நேரம்: T = (2 u sin θ) / g.',
+
+    sec4Title: '4. அதிகபட்ச உயரம் (H)',
+    sec4Body: 'உச்சியில் செங்குத்து திசைவேகம் சுழியாகும் (v_y = 0). அதிகபட்ச உயரம்: H = (u² sin² θ) / (2 g).',
+
+    sec5Title: '5. கிடைவீச்சு (R)',
+    sec5Body: 'T நேரத்தில் கடந்த கிடைத்தள தூரம்: R = u_x · T = (u² sin 2θ) / g.',
+
+    sec6Title: '6. அதிகபட்ச வீச்சுக் கோணம் & நிரப்புக் கோணங்கள்',
+    sec6Body: 'அதிகபட்ச வீச்சு θ = 45° இல் கிடைக்கும். நிரப்புக் கோணங்கள் (θ மற்றும் 90° - θ) ஒரே கிடைவீச்சைத் தரும்!',
+
+    sec7Title: '7. இயக்கப் பாதை சமன்பாடு (பரவளையப் பாதை)',
+    sec7Body: 'நேரம் t ஐ நீக்கக் கிடைக்கும் பரவளையப் பாதை சமன்பாடு: y = x tan θ - (g x²) / (2 u² cos² θ).',
+
+    sec8Title: '8. t நேரத்தில் திசைவேகமும் திசையும்',
+    sec8Body: 'கிடை: v_x = u cos θ. செங்குத்து: v_y = u sin θ - g t. மொத்த திசைவேகம் v = √(v_x² + v_y²).',
+
+    sec9Title: '9. பொதுவான தவறுகள் ⚠️',
+    mistakes: [
+      '❌ தவறு 1: உச்சியில் மொத்த திசைவேகம் சுழி என நினைத்தல் (தவறு! v_y = 0 ஆனால் v_x = u cos θ உள்ளது!).',
+      '❌ தவறு 2: sin² θ மற்றும் sin 2θ ஐக் குழப்புதல் (H க்கு sin² θ, R க்கு sin 2θ).',
+      '❌ தவறு 3: கிடைத்தள முடுக்கம் சுழி என்பதை மறத்தல் (தவறு! a_x = 0).',
+      '❌ தவறு 4: கிடைத்தள மற்றும் செங்குத்து திசைவேகங்களை நேரடியாகக் கூட்டுதல் (தவறு! v = √(v_x² + v_y²)).'
+    ],
+
+    formulaBoxTitle: '📌 முக்கிய சமன்பாடுகள்',
+
+    senathHeader: '🧠 Physics by Senath — எறிபொருள் பொன்விதிகள்',
+    senathCoreBox: 'எப்போதும் திசைவேகத்தை u_x = u cos θ மற்றும் u_y = u sin θ எனப் பிரிக்கவும். X மற்றும் Y இயக்கங்களை 100% தனித்தனியாகக் கருதுக!',
+    senathSteps: [
+      '1. திசைவேகத்தைப் பிரிக்கவும்: u_x = u cos θ, u_y = u sin θ',
+      '2. உச்சியை அடைய நேரம்: t_top = u sin θ / g',
+      '3. மொத்தப் பறப்பு நேரம்: T = 2 t_top = (2 u sin θ) / g',
+      '4. அதிகபட்ச உயரம்: H = (u² sin² θ) / (2 g)',
+      '5. வீச்சு: R = (u² sin 2θ) / g (θ = 45° இல் அதிகபட்சம்)'
+    ],
+    senathMotto: 'உச்சியில் திசைவேகம் சுழியல்ல! கிடைத்தளத்தில் u cos θ திசைவேகத்தில் இயங்கும்.',
+
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+    vars: [
+      { sym: 'u', name: 'ஆரம்ப எறி திசைவேகம்', unit: 'm/s' },
+      { sym: 'θ', name: 'எறிகோணம்', unit: 'பாகை (°)' },
+      { sym: 'u_x', name: 'கிடைத்தள திசைவேகக் கூறு', unit: 'm/s' },
+      { sym: 'u_y', name: 'ஆரம்ப செங்குத்து திசைவேகம்', unit: 'm/s' },
+      { sym: 'g', name: 'புவியீர்ப்பு முடுக்கம்', unit: 'm/s²' },
+      { sym: 'T', name: 'மொத்தப் பறப்பு நேரம்', unit: 's' },
+      { sym: 'H', name: 'அதிகபட்ச உயரம்', unit: 'm' },
+      { sym: 'R', name: 'கிடைவீச்சு', unit: 'm' },
+      { sym: 'v_y', name: 't நேரத்தில் செங்குத்து திசைவேகம்', unit: 'm/s' },
+      { sym: 'v', name: 't நேரத்தில் நிகர திசைவேகம்', unit: 'm/s' },
+      { sym: 'α', name: 't நேரத்தில் இயக்க திசைக் கோணம்', unit: 'பாகை (°)' }
+    ]
+  }
+};
+
 import { useState, useEffect, useRef } from 'react';
 import { useSimulation } from '../../../hooks/useSimulation';
-import { EducationalPanel } from '../../EducationalPanel';
 import {
   calculateFlightTime,
   calculateMaxHeight,
@@ -9,7 +235,7 @@ import {
   runValidationTests,
   ProjectileParameters,
 } from '../../../physics/projectilePhysics';
-import { Play, Pause, RotateCcw, SkipForward, Info, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, Info,  ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
@@ -86,6 +312,11 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
+  const tn = PROJECTILE_THEORY_NOTES[lang] || PROJECTILE_THEORY_NOTES.en;
+
+
   // 1. Simulation Parameters
   const [params, setParams] = useState<ProjectileParameters>({
     v0: 20,
@@ -96,7 +327,6 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
   const [showVectors, setShowVectors] = useState(true);
   const [validationMsg, setValidationMsg] = useState('');
-  const [isLearnExpanded, setIsLearnExpanded] = useState(true);
   const [labNotes, setLabNotes] = useState('');
 
   // Universal Simulation Data Recorder & Laboratory Transfer
@@ -441,112 +671,238 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
 
 
   // 5. Educational Data
-  const conceptText = (
-    <div className="space-y-3">
-      <p>
-        <strong>Projectile Motion</strong> is a form of motion experienced by an object or particle that is projected near the Earth's surface and moves along a curved path under the action of gravity only (neglecting air resistance).
-      </p>
-      <p>
-        The key principle of projectile motion is that <strong>horizontal and vertical motions are independent</strong>:
-      </p>
-      <ul className="list-disc pl-5 space-y-1">
-        <li>
-          <strong>Horizontal Motion:</strong> Since there is no force acting horizontally (neglecting air resistance), the horizontal acceleration is zero (\(a_x = 0\)). Thus, horizontal velocity (\(v_x\)) remains constant throughout the flight.
-        </li>
-        <li>
-          <strong>Vertical Motion:</strong> Under the influence of constant downward gravity (\(g\)), the object accelerates downward at a constant rate (\(a_y = -g\)).
-        </li>
-      </ul>
-      <p>
-        This independence produces a symmetrical <strong>parabolic trajectory</strong>.
-      </p>
-    </div>
-  );
-
-  const equations = [
-    {
-      latex: 'x(t) = v_0 \\cos(\\theta) \\cdot t',
-      description: 'Horizontal position at time t',
-    },
-    {
-      latex: 'y(t) = h_0 + v_0 \\sin(\\theta) \\cdot t - \\frac{1}{2}gt^2',
-      description: 'Vertical position at time t',
-    },
-    {
-      latex: 'v_x = v_0 \\cos(\\theta)',
-      description: 'Constant horizontal velocity component',
-    },
-    {
-      latex: 'v_y(t) = v_0 \\sin(\\theta) - gt',
-      description: 'Time-varying vertical velocity component',
-    },
-    {
-      latex: 'T_{\\text{flight}} = \\frac{v_0 \\sin(\\theta) + \\sqrt{(v_0 \\sin(\\theta))^2 + 2gh_0}}{g}',
-      description: 'Total flight duration until hitting the ground (y = 0)',
-    },
-  ];
-
-  const variables = [
-    { symbol: 'v_0', name: 'Initial launch speed', unit: 'm/s' },
-    { symbol: '\\theta', name: 'Launch angle', unit: 'degrees' },
-    { symbol: 'h_0', name: 'Initial launch height', unit: 'm' },
-    { symbol: 'g', name: 'Acceleration due to gravity', unit: 'm/s²' },
-    { symbol: 't', name: 'Elapsed time', unit: 's' },
-    { symbol: 'x', name: 'Horizontal displacement', unit: 'm' },
-    { symbol: 'y', name: 'Vertical height', unit: 'm' },
-    { symbol: 'v_x, v_y', name: 'Velocity components', unit: 'm/s' },
-  ];
-
-  const observations = [
-    'Change the launch angle to 45° (from ground h0 = 0m). Notice that this angle maximizes the horizontal range.',
-    'Increase the initial height (h0). Observe that the maximum range angle shifts below 45°.',
-    'Notice that horizontal velocity component (vx, red arrow) remains perfectly constant, while vertical velocity (vy, orange arrow) decreases linearly, becomes zero at the peak, and increases negatively downward.',
-    'Set the launch angle to 90°. Watch the projectile travel straight up and down, returning along the same axis.',
-  ];
-
-  const challenges = [
-    {
-      question: 'A projectile is launched from ground level (h0 = 0 m) with an initial velocity of 20 m/s at an angle of 30° to the horizontal. Assuming g = 10 m/s², calculate the horizontal range of the projectile.',
-      options: ['17.3 m', '20.0 m', '34.6 m', '40.0 m'],
-      correctAnswer: '34.6 m',
-      solution: `1. Identify parameters:
-   v0 = 20 m/s, θ = 30°, h0 = 0 m, g = 10 m/s²
-   
-2. Use horizontal range equation for ground launch:
-   R = (v0² * sin(2θ)) / g
-   
-3. Substitute the values:
-   R = (20² * sin(2 * 30°)) / 10
-   R = (400 * sin(60°)) / 10
-   R = 40 * (√3 / 2)
-   R = 20 * √3 ≈ 20 * 1.732 = 34.64 m
-   
-Hence, the range is approximately 34.6 m.`,
-    },
-    {
-      question: 'For the same launch conditions (v0 = 20 m/s, θ = 30°, h0 = 0 m, g = 10 m/s²), find the maximum height reached above the ground.',
-      options: ['5.0 m', '10.0 m', '15.0 m', '20.0 m'],
-      correctAnswer: '5.0 m',
-      solution: `1. Calculate the initial vertical velocity:
-   vy0 = v0 * sin(θ) = 20 * sin(30°) = 20 * 0.5 = 10 m/s
-   
-2. Use the peak height equation:
-   H = vy0² / (2g)
-   
-3. Substitute values:
-   H = 10² / (2 * 10) = 100 / 20 = 5.0 m
-   
-Hence, the maximum height reached is 5.0 m.`,
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-10.5rem)] lg:overflow-hidden">
-      
-      {/* Parameters & Live Measurements Sidebar (3 cols) */}
-      <div className="lg:col-span-3 flex flex-col gap-3 overflow-y-auto custom-scrollbar h-full pr-1">
-        
-        {/* Controls Container */}
+    <div className="space-y-6">
+
+      {/* Top Header with Title and Mode Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider">{tn.badge}</span>
+            <h2 className="text-base font-extrabold text-slate-900 leading-tight">Projectile Motion</h2>
+          </div>
+        </div>
+
+        {/* View Mode Toggle Pill */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Vector Resolution */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-5 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-slate-50 border-l-4 border-blue-600 p-4 rounded-r-xl space-y-2">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.sec1Title}</h3>
+                <p>{tn.sec1Body}</p>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 font-medium pl-1">
+                  {tn.sec1List.map((item: string, idx: number) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                    {tn.sec2Title}
+                  </h4>
+                  <p>{tn.sec2Body}</p>
+                  <div className="space-y-1 text-[11px] font-semibold pt-1">
+                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-150 text-blue-900">{tn.sec2Parallel}</div>
+                    <div className="bg-indigo-50 p-2 rounded-lg border border-indigo-150 text-indigo-900">{tn.sec2Perp}</div>
+                  </div>
+                  <BlockMath math="u_x = u\cos\theta, \quad u_y = u\sin\theta" />
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                    {tn.sec7Title}
+                  </h4>
+                  <p>{tn.sec7Body}</p>
+                  <BlockMath math="y = x\tan\theta - \frac{g x^2}{2 u^2 \cos^2\theta}" />
+                </div>
+              </div>
+
+              <div className="bg-slate-900 text-slate-100 rounded-xl p-4 space-y-2 font-mono text-xs">
+                <h4 className="font-bold text-amber-400 text-xs uppercase tracking-wider">{tn.sec8Title}</h4>
+                <p className="text-slate-300 font-sans text-xs">{tn.sec8Body}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center pt-2 text-indigo-300">
+                  <div className="bg-slate-950 p-2 rounded border border-slate-800"><BlockMath math="v_x = u\cos\theta, \quad v_y = u\sin\theta - g t" /></div>
+                  <div className="bg-slate-950 p-2 rounded border border-slate-800"><BlockMath math="v = \sqrt{v_x^2 + v_y^2}, \quad \tan\alpha = \frac{v_y}{v_x}" /></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & Derivations */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-blue-700 text-xs">{tn.sec3Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec3Body}</p>
+                  <BlockMath math="T = \frac{2 u \sin\theta}{g}" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-purple-700 text-xs">{tn.sec4Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec4Body}</p>
+                  <BlockMath math="H = \frac{u^2 \sin^2\theta}{2 g}" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-700 text-xs">{tn.sec5Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec5Body}</p>
+                  <BlockMath math="R = \frac{u^2 \sin 2\theta}{g}" />
+                </div>
+              </div>
+
+              <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-4 space-y-2 text-indigo-950">
+                <h4 className="font-bold text-indigo-900 text-xs uppercase tracking-wide">{tn.sec6Title}</h4>
+                <p className="text-xs">{tn.sec6Body}</p>
+                <BlockMath math="R_{\max} = \frac{u^2}{g} \quad \text{at } \theta = 45^\circ" />
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v: { sym: string; name: string; unit: string }, idx: number) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Common Mistakes & Senath Rules */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <h3 className="font-bold text-rose-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  {tn.sec9Title}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {tn.mistakes.map((m: string, idx: number) => (
+                    <div key={idx} className="bg-rose-50/70 border border-rose-200 p-3 rounded-xl text-xs text-rose-950 font-medium">
+                      {m}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 text-white rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-amber-300 text-xs uppercase tracking-wider">{tn.formulaBoxTitle}</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono font-bold text-center">
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">T = (2 u sin θ)/g</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">H = (u² sin² θ)/(2g)</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">R = (u² sin 2θ)/g</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">θ_max = 45°</div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-5 space-y-3 shadow-md">
+                <h3 className="font-extrabold text-sm uppercase tracking-wide flex items-center gap-2 text-amber-200">
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                  {tn.senathHeader}
+                </h3>
+                <p className="text-xs text-blue-100 font-semibold">{tn.senathCoreBox}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs font-medium text-white">
+                  {tn.senathSteps.map((step: string, idx: number) => (
+                    <div key={idx} className="bg-white/10 p-2.5 rounded-xl border border-white/20">
+                      {step}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center font-extrabold text-xs text-amber-200 bg-black/20 p-2.5 rounded-xl">
+                  {tn.senathMotto}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Sandbox Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Parameters (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-4">
+{/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
             <span>{t.paramsTitle}</span>
@@ -744,8 +1100,11 @@ Hence, the maximum height reached is 5.0 m.`,
       </div>
 
 
-      {/* Interactive Simulation Viewport + Graphs (Dynamic columns based on Learn panel state) */}
-      <div className={`flex flex-col gap-3 h-full min-h-0 ${isLearnExpanded ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
+              </div>
+
+        {/* Right Column: Viewport & Graphs (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-4">
+{/* Interactive Simulation Viewport + Graphs (Dynamic columns based on Learn panel state) */}
         
         {/* Simulation Canvas Card */}
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -865,53 +1224,6 @@ Hence, the maximum height reached is 5.0 m.`,
         </div>
 
       </div>
-
-      {/* Learn Panel (Right) */}
-      <div className={`${isLearnExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-0 transition-all duration-300 flex flex-col`}>
-        {isLearnExpanded ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            {/* Learn Title Bar with Collapse Button */}
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-blue-600" />
-                <span className="font-bold text-xs text-slate-700 uppercase tracking-wider">Learn</span>
-              </div>
-              <button 
-                onClick={() => setIsLearnExpanded(false)}
-                className="p-1 hover:bg-slate-200 text-slate-500 rounded cursor-pointer transition-colors"
-                title="Collapse Learn panel"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0">
-              <EducationalPanel
-                conceptText={conceptText}
-                equations={equations}
-                variables={variables}
-                observations={observations}
-                challenges={challenges}
-              />
-            </div>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsLearnExpanded(true)}
-            className="flex-1 bg-white border border-slate-200 hover:border-blue-400 rounded-lg shadow-sm flex flex-col items-center py-4 cursor-pointer hover:bg-slate-50 transition-all select-none"
-            title="Expand Learn panel"
-          >
-            <ChevronLeft className="w-5 h-5 text-slate-500 mb-2" />
-            <BookOpen className="w-5 h-5 text-blue-600 mb-6" />
-            <span 
-              className="text-xs font-bold text-slate-500 uppercase tracking-widest"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-            >
-              Learn
-            </span>
-          </button>
-        )}
-      </div>
-
     </div>
   );
 }
