@@ -281,7 +281,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { inclinedPlaneGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
+import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
 
 export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -358,7 +358,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
-  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>(ENABLE_THEORY_NOTEBOOKS ? 'notebook' : 'sim_only');
   const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
   const tn = INCLINED_THEORY_NOTES[lang] || INCLINED_THEORY_NOTES.en;
 
@@ -790,7 +790,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   return (
     <div className="space-y-6">
 
-      {/* Top Header with Title and Mode Toggle */}
+      {ENABLE_THEORY_NOTEBOOKS && (/* Top Header with Title and Mode Toggle */
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
@@ -828,9 +828,10 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           </button>
         </div>
       </div>
+      )} 
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
-      {viewMode === 'notebook' && (
+      {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (
         <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
           {/* Notebook Tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">

@@ -1,3 +1,4 @@
+import { ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Sparkles, Volume2, VolumeX, BookOpen, Maximize2, FileText, Lightbulb, CheckCircle2, Activity, Plus } from 'lucide-react';
 import { BlockMath, InlineMath } from '../../Math';
@@ -253,7 +254,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
   const tn = DOPPLER_THEORY_NOTES[lang] || DOPPLER_THEORY_NOTES.en;
-  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>(ENABLE_THEORY_NOTEBOOKS ? 'notebook' : 'sim_only');
   const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
 
   // Parameters
@@ -688,7 +689,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       </div>
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
-      {viewMode === 'notebook' && (
+      {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (
         <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
           {/* Notebook Tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">

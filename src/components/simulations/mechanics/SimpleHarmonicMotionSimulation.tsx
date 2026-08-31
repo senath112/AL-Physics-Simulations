@@ -1,3 +1,4 @@
+import { ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
 import { useState, useRef, useEffect } from 'react';
 import { BlockMath } from '../../Math';
 import { 
@@ -411,7 +412,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
-  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>(ENABLE_THEORY_NOTEBOOKS ? 'notebook' : 'sim_only');
   const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
 
   const [mode, setMode] = useState<'spring' | 'pendulum'>('spring');
@@ -1161,7 +1162,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       </div>
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
-      {viewMode === 'notebook' && (
+      {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (
         <div className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-sm space-y-5">
           {/* Notebook Tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">

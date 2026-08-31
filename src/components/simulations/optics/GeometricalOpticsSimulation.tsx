@@ -1,3 +1,4 @@
+import { ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
 import { useState, useRef, useEffect } from 'react';
 import { BlockMath } from '../../Math';
 import { Sparkles, Info, BookOpen, Maximize2, FileText, Lightbulb, CheckCircle2, Activity, Plus } from 'lucide-react';
@@ -218,7 +219,7 @@ const OPTICS_THEORY_NOTES = {
 
 export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const tn = OPTICS_THEORY_NOTES[lang] || OPTICS_THEORY_NOTES.en;
-  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>(ENABLE_THEORY_NOTEBOOKS ? 'notebook' : 'sim_only');
   const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
 
   // Parameters
@@ -734,7 +735,7 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
       </div>
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
-      {viewMode === 'notebook' && (
+      {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (
         <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
           {/* Notebook Tabs */}
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
