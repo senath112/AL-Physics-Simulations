@@ -514,7 +514,7 @@ export function ElectromagneticInductionSimulation({ lang = 'en' }: { lang?: 'en
             <span className="text-[10px] text-slate-400 font-semibold italic">Drag the magnet horizontally to induce EMF!</span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}

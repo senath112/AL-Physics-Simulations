@@ -353,7 +353,7 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas
               ref={canvasRef} onClick={handleCanvasClick}
               className="border border-slate-100 rounded-lg cursor-crosshair bg-slate-50/20 shadow-inner"

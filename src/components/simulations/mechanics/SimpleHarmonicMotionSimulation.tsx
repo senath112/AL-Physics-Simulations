@@ -1748,7 +1748,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
               </div>
             </div>
             
-            <div className="w-full overflow-x-auto flex justify-center py-2">
+            <div className="w-full min-h-[420px] overflow-x-auto flex items-center justify-center py-4 bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 className="border border-slate-100 rounded-lg bg-white cursor-grab active:cursor-grabbing select-none shadow-sm"

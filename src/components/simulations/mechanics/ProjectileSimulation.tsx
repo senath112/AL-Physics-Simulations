@@ -1129,7 +1129,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           </div>
 
           {/* Canvas Wrapper */}
-          <div className="flex-1 relative bg-slate-50/20 canvas-grid-bg min-h-0">
+          <div className="w-full min-h-[420px] h-[420px] relative bg-slate-50/20 canvas-grid-bg rounded-xl overflow-hidden shadow-inner">
             <canvas
               ref={canvasRef}
               onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}

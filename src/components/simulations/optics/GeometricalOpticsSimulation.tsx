@@ -1169,7 +1169,7 @@ export function GeometricalOpticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si
           {/* Visual Canvas Panel */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col items-center">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 self-start">Visual Ray Viewport</h3>
-            <div className="w-full overflow-x-auto flex justify-center py-2">
+            <div className="w-full min-h-[420px] overflow-x-auto flex items-center justify-center py-4 bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 className="border border-slate-100 rounded-lg bg-white cursor-crosshair select-none shadow-sm"

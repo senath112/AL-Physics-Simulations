@@ -590,7 +590,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             </span>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas 
               ref={canvasRef} 
               onMouseDown={handleMouseDown}

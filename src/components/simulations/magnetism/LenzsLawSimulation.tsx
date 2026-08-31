@@ -863,7 +863,7 @@ export function LenzsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
               </div>
             </div>
             
-            <div className="w-full overflow-x-auto flex justify-center py-2">
+            <div className="w-full min-h-[420px] overflow-x-auto flex items-center justify-center py-4 bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
