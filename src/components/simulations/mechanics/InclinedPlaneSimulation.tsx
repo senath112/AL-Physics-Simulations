@@ -1,13 +1,282 @@
+import { BlockMath } from '../../Math';
+import { Sparkles, BookOpen, Maximize2, FileText, Lightbulb, Activity, AlertTriangle } from 'lucide-react';
+const INCLINED_THEORY_NOTES = {
+  en: {
+    badge: 'Mechanics • Friction on an Inclined Plane Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Force Resolution',
+    tabFormulas: 'Equations & Motion Regimes',
+    tabTips: 'Common Mistakes & Senath Core Rules',
+
+    // Sec 1 & 2
+    sec1Title: '1. The Situation & Forces on an Incline',
+    sec1Body: 'Consider a block of mass m resting on a rough plane inclined at angle θ. The three primary forces acting on the block are:',
+    sec1List: [
+      'Weight (mg): Acts vertically downward towards Earth center.',
+      'Normal Reaction (R): Acts perpendicular to the inclined surface.',
+      'Friction (F): Acts parallel to the inclined surface.'
+    ],
+
+    sec2Title: '2. Why Do We Resolve the Weight?',
+    sec2Body: 'The weight mg does not act along or perpendicular to the plane. Resolving it into two orthogonal components:',
+    sec2Parallel: 'Parallel to plane: W_∥ = mg sin θ (pulls block down the slope).',
+    sec2Perp: 'Perpendicular to plane: W_⊥ = mg cos θ (pushes block into the surface).',
+
+    // Sec 3 & 4
+    sec3Title: '3. Normal Reaction Equation',
+    sec3Body: 'Since there is no acceleration perpendicular to the incline, forces balance vertically to the surface: R = mg cos θ. Friction depends directly on R.',
+
+    sec4Title: '4. What Does Friction Really Do?',
+    sec4Body: 'Friction opposes the TENDENCY of relative motion between surfaces (NOT simply direction of motion!).',
+    sec4RuleDown: 'Block tending/moving down slope → Friction F acts UP the slope.',
+    sec4RuleUp: 'Block pushed/moving up slope → Friction F acts DOWN the slope.',
+
+    // Sec 5 & 6
+    sec5Title: '5. Limiting Friction & Maximum Value',
+    sec5Body: 'When slipping is imminent, static friction reaches its maximum: F_max = μ_s R = μ_s mg cos θ.',
+
+    sec6Title: '6. Static Friction Behavior',
+    sec6Body: 'Static friction is self-adjusting (F_s ≤ μ_s R). It takes whatever value is necessary to prevent slipping up to F_max.',
+
+    // Sec 7 & 8
+    sec7Title: '7. Block at Rest & Equilibrium Condition',
+    sec7Body: 'For a block at rest tending to slide down: F = mg sin θ. Slipping occurs only when mg sin θ > μ_s mg cos θ ⟹ tan θ > μ_s. Thus for rest: tan θ ≤ μ_s.',
+
+    sec8Title: '8. Angle of Friction / Angle of Repose (θ_r)',
+    sec8Body: 'The maximum incline angle at which a block remains at rest is the Angle of Repose θ_r: μ_s = tan θ_r.',
+
+    // Sec 9 & 10
+    sec9Title: '9. Block Sliding Down the Plane',
+    sec9Body: 'Along the plane: mg sin θ - F_k = m a. Since F_k = μ_k mg cos θ, acceleration is: a = g (sin θ - μ_k cos θ).',
+
+    sec10Title: '10. Block Pushed Up the Plane',
+    sec10Body: 'When an external force P pushes the block up: P - mg sin θ - F_k = m a ⟹ a = (P/m) - g sin θ - μ_k g cos θ.',
+
+    // Sec 11 & 12
+    sec11Title: '11. Useful Force Resolution Diagram',
+    sec11Body: 'Decomposing weight mg along and perpendicular to the incline surface:',
+
+    sec12Title: '12. Common Pitfalls & Mistakes ⚠️',
+    mistakes: [
+      '❌ Mistake 1: Using mg cos θ along the plane (Wrong! mg sin θ is parallel, mg cos θ is perpendicular).',
+      '❌ Mistake 2: Always setting static friction equal to μ R (Wrong! Static friction F_s ≤ μ_s R is self-adjusting).',
+      '❌ Mistake 3: Assuming friction always opposes velocity (Wrong! Friction opposes relative motion or its TENDENCY).',
+      '❌ Mistake 4: Assuming Normal reaction R = mg on incline (Wrong! R = mg cos θ on an incline).'
+    ],
+
+    // Formula Box & Senath Core Rules
+    formulaBoxTitle: '📌 Essential Inclined Plane Formula Box',
+
+    senathHeader: '🧠 Physics by Senath — The Core Idea',
+    senathCoreBox: 'When you see a rough inclined plane, immediately resolve weight: mg sin θ (down slope), mg cos θ (into plane).',
+    senathSteps: [
+      '1. Calculate Normal Reaction: R = mg cos θ',
+      '2. Determine tendency of relative motion',
+      '3. Assign direction of friction (opposite tendency)',
+      '4. Select static (F_s ≤ μ_s R) or kinetic (F_k = μ_k R) equation',
+      '5. Apply ∑F = m a along the slope'
+    ],
+    senathMotto: 'Don’t memorize friction direction. Determine it from the tendency of motion!',
+
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+    vars: [
+      { sym: 'm', name: 'Mass of Block', unit: 'kg' },
+      { sym: 'θ', name: 'Incline Angle', unit: 'degrees (°)' },
+      { sym: 'g', name: 'Gravitational Acceleration', unit: 'm/s²' },
+      { sym: 'R, N', name: 'Normal Reaction Force', unit: 'N' },
+      { sym: 'W_∥', name: 'Weight Parallel (mg sin θ)', unit: 'N' },
+      { sym: 'W_⊥', name: 'Weight Perpendicular (mg cos θ)', unit: 'N' },
+      { sym: 'F', name: 'Friction Force', unit: 'N' },
+      { sym: 'μs', name: 'Static Friction Coefficient', unit: 'Dimensionless' },
+      { sym: 'μk', name: 'Kinetic Friction Coefficient', unit: 'Dimensionless' },
+      { sym: 'θ_r', name: 'Angle of Repose (tan θ_r = μs)', unit: 'degrees (°)' },
+      { sym: 'a', name: 'Acceleration down/up slope', unit: 'm/s²' }
+    ]
+  },
+  si: {
+    badge: 'යාන්ත්‍ර විද්‍යාව • ආනත තලයක ඝර්ෂණය අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ බල බෙදීම',
+    tabFormulas: 'සමීකරණ සහ චලිත අවස්ථා',
+    tabTips: 'සාමාන්‍ය වැරදි සහ සෙනත් නීති',
+
+    sec1Title: '1. ආනත තලයක ඇති වස්තුවක් මත ක්‍රියාකරන බල',
+    sec1Body: 'θ කෝණයකින් ආනත රළු තලයක් මත ඇති m ස්කන්ධයක් සහිත වස්තුවක් සලකන්න. එහි ක්‍රියාකරන ප්‍රධාන බල 3කි:',
+    sec1List: [
+      'බර (mg): සිරස්ව පහළට පෘථිවි කේන්ද්‍රය දෙසට.',
+      'අභිලම්භ ප්‍රතික්‍රියාව (R): ආනත තලයට ලම්බකව ඉහළට.',
+      'ඝර්ෂණ බලය (F): ආනත තලයට සමාන්තරව.'
+    ],
+
+    sec2Title: '2. බර (mg) විභේදනය කරන්නේ ඇයි?',
+    sec2Body: 'mg බර තලයට සමාන්තරව හෝ ලම්බකව ක්‍රියා නොකරයි. එම නිසා එය ලම්බක සංරචක දෙකකට බෙදනු ලැබේ:',
+    sec2Parallel: 'තලයට සමාන්තරව: W_∥ = mg sin θ (වස්තුව තලය දිගේ පහළට අදියි).',
+    sec2Perp: 'තලයට ලම්බකව: W_⊥ = mg cos θ (වස්තුව තලයට තද කරයි).',
+
+    sec3Title: '3. අභිලම්භ ප්‍රතික්‍රියා සමීකරණය',
+    sec3Body: 'තලයට ලම්බකව ත්වරණයක් නැති නිසා බල සමතුලිත වේ: R = mg cos θ. ඝර්ෂණය කෙළින්ම R මත රඳා පවතී.',
+
+    sec4Title: '4. ඝර්ෂණ බලයේ සැබෑ කාර්යභාරය',
+    sec4Body: 'ඝර්ෂණය සැමවිටම සාපේක්ෂ චලිත ප්‍රවණතාවට ප්‍රතිවිරුද්ධව ක්‍රියා කරයි (චලිතයේ දිශාවට පමණක් නොවේ!).',
+    sec4RuleDown: 'වස්තුව පහළට ලිස්සා යාමට තත් කරන්නේ නම් → ඝර්ෂණය F ඉහළට ක්‍රියා කරයි.',
+    sec4RuleUp: 'වස්තුව ඉහළට තල්ලු කරන්නේ/යන්නේ නම් → ඝර්ෂණය F පහළට ක්‍රියා කරයි.',
+
+    sec5Title: '5. සීමාකාරී ඝර්ෂණය',
+    sec5Body: 'වස්තුව ලිස්සා යාමට ආසන්න වන විට ස්ථිතික ඝර්ෂණය උපරිම වේ: F_max = μ_s R = μ_s mg cos θ.',
+
+    sec6Title: '6. ස්ථිතික ඝර්ෂණයේ ස්වභාවය',
+    sec6Body: 'ස්ථිතික ඝර්ෂණය ස්වයං-සංස්ථාපන බලයකි (F_s ≤ μ_s R). ලිස්සා යාම වැළැක්වීමට අවශ්‍ය ප්‍රමාණයට පමණක් සකස් වේ.',
+
+    sec7Title: '7. තලය මත නිශ්චලව ඇති වස්තුවක සමතුලිතතාව',
+    sec7Body: 'පහළට ලිස්සා යාමට තත් කරන නිශ්චල වස්තුවක් සඳහා: F = mg sin θ. ලිස්සා යාම සිදුවන්නේ mg sin θ > μ_s mg cos θ ⟹ tan θ > μ_s වන විටය. නිශ්චලතාව සඳහා: tan θ ≤ μ_s.',
+
+    sec8Title: '8. ඝර්ෂණ කෝණය / ස්වාභාවික ආනති කෝණය (θ_r)',
+    sec8Body: 'වස්තුවක් තලය මත නිශ්චලව තැබිය හැකි උපරිම කෝණය ස්වාභාවික ආනති කෝණය θ_r වේ: μ_s = tan θ_r.',
+
+    sec9Title: '9. වස්තුව තලය දිගේ පහළට ලිස්සා යාම',
+    sec9Body: 'තලය දිගේ: mg sin θ - F_k = m a. මෙහි F_k = μ_k mg cos θ නිසා ත්වරණය: a = g (sin θ - μ_k cos θ).',
+
+    sec10Title: '10. වස්තුව තලය දිගේ ඉහළට තල්ලු කිරීම',
+    sec10Body: 'බාහිර P බලයකින් ඉහළට තල්ලු කරන විට: P - mg sin θ - F_k = m a ⟹ a = (P/m) - g sin θ - μ_k g cos θ.',
+
+    sec11Title: '11. බල විභේදන සටහන',
+    sec11Body: 'mg බර තලයට සමාන්තරව සහ ලම්බකව විභේදනය කිරීම:',
+
+    sec12Title: '12. සිසුන් අතින් සිදුවන සාමාන්‍ය වැරදි ⚠️',
+    mistakes: [
+      '❌ වැරදි 1: තලය දිගේ mg cos θ යෙදීම (වැරදියි! mg sin θ යනු තලයට සමාන්තර සංරචකයයි).',
+      '❌ වැරදි 2: ස්ථිතික ඝර්ෂණය සැමවිටම μ R ලෙස ගැනීම (වැරදියි! ස්ථිතික ඝර්ෂණය F_s ≤ μ_s R වේ).',
+      '❌ වැරදි 3: ඝර්ෂණය සැමවිටම ප්‍රවේගයට ප්‍රතිවිරුද්ධ බව සිතීම (වැරදියි! ඝර්ෂණය ප්‍රතිවිරුද්ධ වන්නේ සාපේක්ෂ චලිත ප්‍රවණතාවටයි).',
+      '❌ වැරදි 4: ආනත තලයක අභිලම්භ ප්‍රතික්‍රියාව R = mg ලෙස ගැනීම (වැරදියි! ආනත තලයක R = mg cos θ වේ).'
+    ],
+
+    formulaBoxTitle: '📌 ප්‍රධාන සමීකරණ එකතුව',
+
+    senathHeader: '🧠 Physics by Senath — මූලික නීතිය',
+    senathCoreBox: 'ආනත තලයක් දුටු සැනින් mg බර විභේදනය කරන්න: mg sin θ (පහළට), mg cos θ (තලයට ලම්බකව).',
+    senathSteps: [
+      '1. අභිලම්භ ප්‍රතික්‍රියාව සොයන්න: R = mg cos θ',
+      '2. සාපේක්ෂ චලිත ප්‍රවණතාව තීරණය කරන්න',
+      '3. ඝර්ෂණයේ දිශාව ලකුණු කරන්න (ප්‍රවණතාවට ප්‍රතිවිරුද්ධව)',
+      '4. ස්ථිතික (F_s ≤ μ_s R) හෝ ගතික (F_k = μ_k R) තෝරාගන්න',
+      '5. තලය දිගේ ∑F = m a යොදන්න'
+    ],
+    senathMotto: 'ඝර්ෂණයේ දිශාව කටපාඩම් කරන්න එපා! චලිත ප්‍රවණතාවෙන් තීරණය කරන්න!',
+
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+    vars: [
+      { sym: 'm', name: 'වස්තුවේ ස්කන්ධය', unit: 'kg' },
+      { sym: 'θ', name: 'ආනති කෝණය', unit: 'අංශක (°)' },
+      { sym: 'g', name: 'ගුරුත්වජ ත්වරණය', unit: 'm/s²' },
+      { sym: 'R, N', name: 'අභිලම්භ ප්‍රතික්‍රියාව', unit: 'N' },
+      { sym: 'W_∥', name: 'සමාන්තර බර සංරචකය (mg sin θ)', unit: 'N' },
+      { sym: 'W_⊥', name: 'ලම්බක බර සංරචකය (mg cos θ)', unit: 'N' },
+      { sym: 'F', name: 'ඝර්ෂණ බලය', unit: 'N' },
+      { sym: 'μs', name: 'ස්ථිතික ඝර්ෂණ සංගුණකය', unit: 'ඒකක නැත' },
+      { sym: 'μk', name: 'ගතික ඝර්ෂණ සංගුණකය', unit: 'ඒකක නැත' },
+      { sym: 'θ_r', name: 'ස්වාභාවික ආනති කෝණය (tan θ_r = μs)', unit: 'අංශක (°)' },
+      { sym: 'a', name: 'ත්වරණය', unit: 'm/s²' }
+    ]
+  },
+  ta: {
+    badge: 'இயக்கவியல் • சாய்வு தளத்தில் உராய்வு குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் விசை பகுப்பு',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் இயக்க நிலைகள்',
+    tabTips: 'பொதுவான தவறுகள் & சேனாத் விதிகள்',
+
+    sec1Title: '1. நிலைமை மற்றும் விசைகள்',
+    sec1Body: 'θ கோணத்தில் சாய்ந்துள்ள கரடுமுரடான தளத்தில் உள்ள m திணிவுள்ள பொருளைக் கருதுக. அதன் மீது செயல்படும் 3 முக்கிய விசைகள்:',
+    sec1List: [
+      'எடை (mg): செங்குத்தாக கீழ்நோக்கி.',
+      'செங்குத்து விசை (R): சாய்வு தளத்திற்கு செங்குத்தாக மேல்நோக்கி.',
+      'உராய்வு விசை (F): சாய்வு தளத்திற்கு இணையாக.'
+    ],
+
+    sec2Title: '2. எடையை (mg) ஏன் பிரிக்கிறோம்?',
+    sec2Body: 'எடை mg தளத்திற்கு இணையாகவோ செங்குத்தாகவோ செயல்படவில்லை. எனவே அது இரு கூறRenewகளாகப் பிரிக்கப்படுகிறது:',
+    sec2Parallel: 'தளத்திற்கு இணையாக: W_∥ = mg sin θ (பொருளை கீழ்நோக்கி இழுக்கிறது).',
+    sec2Perp: 'தளத்திற்கு செங்குத்தாக: W_⊥ = mg cos θ (பொருளை தளத்தின் மீது அழுத்துகிறது).',
+
+    sec3Title: '3. செங்குத்து விசை சமன்பாடு',
+    sec3Body: 'தளத்திற்கு செங்குத்தாக முடுக்கம் இல்லாததால்: R = mg cos θ. உராய்வு நேரடியாக R இல் தங்கியுள்ளது.',
+
+    sec4Title: '4. உராய்வு விசை என்ன செய்கிறது?',
+    sec4Body: 'உராய்வு எப்போதும் சார்பு இயக்கப் போக்கை எதிர்க்கிறது (இயக்க திசையை மட்டுமல்ல!).',
+    sec4RuleDown: 'பொருள் கீழ்நோக்கி நகர முயன்றால் → உராய்வு F மேல்நோக்கி செயல்படும்.',
+    sec4RuleUp: 'பொருள் மேல்நோக்கி தள்ளப்பட்டால் → உராய்வு F கீழ்நோக்கி செயல்படும்.',
+
+    sec5Title: '5. எல்லை உராய்வு',
+    sec5Body: 'பொருள் நகரத் தொடங்கும் தருணத்தில் static உராய்வு அதிகபட்சத்தை அடையும்: F_max = μ_s R = μ_s mg cos θ.',
+
+    sec6Title: '6. நிலை உராய்வின் இயல்பு',
+    sec6Body: 'நிலை உராய்வு ஒரு சுய-சரிகட்டும் விசையாகும் (F_s ≤ μ_s R).',
+
+    sec7Title: '7. ஓய்வில் உள்ள பொருளின் சமநிலை',
+    sec7Body: 'ஓய்வில் உள்ள பொருளுக்கு: F = mg sin θ. நகரத் தொடங்க: mg sin θ > μ_s mg cos θ ⟹ tan θ > μ_s. ஓய்வுக்கு: tan θ ≤ μ_s.',
+
+    sec8Title: '8. ஓய்வுக் கோணம் (θ_r)',
+    sec8Body: 'பொருள் ஓய்வில் இருக்கக்கூடிய அதிகபட்ச சாய்வுக் கோணம் ஓய்வுக் கோணம் θ_r ஆகும்: μ_s = tan θ_r.',
+
+    sec9Title: '9. பொருள் கீழ்நோக்கி நழுவுதல்',
+    sec9Body: 'தளத்தின் வழியே: mg sin θ - F_k = m a ⟹ a = g (sin θ - μ_k cos θ).',
+
+    sec10Title: '10. பொருள் மேல்நோக்கி நகருதல்',
+    sec10Body: 'வெளி விசை P மூலம் மேல்நோக்கி தள்ளப்படும் போது: P - mg sin θ - F_k = m a ⟹ a = (P/m) - g sin θ - μ_k g cos θ.',
+
+    sec11Title: '11. விசை பகுப்பு படம்',
+    sec11Body: 'எடை mg ஐ சாய்வு தளத்திற்கு இணையாகவும் செங்குத்தாகவும் பிரித்தல்:',
+
+    sec12Title: '12. பொதுவான தவறுகள் ⚠️',
+    mistakes: [
+      '❌ தவறு 1: தளத்தின் வழியே mg cos θ ஐப் பயன்படுத்துதல் (தவறு! mg sin θ இணையானது).',
+      '❌ தவறு 2: நிலை உராய்வை எப்போதும் μ R என எடுத்தல் (தவறு! F_s ≤ μ_s R).',
+      '❌ தவறு 3: உராய்வு எப்போதும் திசைவேகத்திற்கு எதிரானது என நினைத்தல் (தவறு! சார்பு இயக்கப் போக்கிற்கு எதிரானது).',
+      '❌ தவறு 4: சாய்வு தளத்தில் R = mg என எடுத்தல் (தவறு! R = mg cos θ).'
+    ],
+
+    formulaBoxTitle: '📌 முக்கிய சமன்பாடுகள்',
+
+    senathHeader: '🧠 Physics by Senath — முக்கிய விதி',
+    senathCoreBox: 'சாய்வு தளத்தைக் கண்டவுடன் எடையைப் பிரிக்கவும்: mg sin θ (கீழ்நோக்கி), mg cos θ (செங்குத்தாக).',
+    senathSteps: [
+      '1. செங்குத்து விசையைக் காணவும்: R = mg cos θ',
+      '2. சார்பு இயக்கப் போக்கைக் கண்டறியவும்',
+      '3. உராய்வு திசையைக் குறிக்கவும் (போக்கிற்கு எதிராக)',
+      '4. நிலை (F_s ≤ μ_s R) அல்லது இயக்க (F_k = μ_k R) உராய்வைத் தேர்ந்தெடுக்கவும்',
+      '5. தளத்தின் வழியே ∑F = m a ஐப் பயன்படுத்தவும்'
+    ],
+    senathMotto: 'உராய்வு திசையை மனனம் செய்யாதீர்கள்! இயக்கப் போக்கிலிருந்து தீர்மானியுங்கள்!',
+
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+    vars: [
+      { sym: 'm', name: 'திணிவு', unit: 'kg' },
+      { sym: 'θ', name: 'சாய்வுக் கோணம்', unit: 'பாகை (°)' },
+      { sym: 'g', name: 'புவியீர்ப்பு முடுக்கம்', unit: 'm/s²' },
+      { sym: 'R, N', name: 'செங்குத்து விசை', unit: 'N' },
+      { sym: 'W_∥', name: 'இணை எடைக்கூறு (mg sin θ)', unit: 'N' },
+      { sym: 'W_⊥', name: 'செங்குத்து எடைக்கூறு (mg cos θ)', unit: 'N' },
+      { sym: 'F', name: 'உராய்வு விசை', unit: 'N' },
+      { sym: 'μs', name: 'நிலை உராய்வு குணகம்', unit: 'அலகற்றது' },
+      { sym: 'μk', name: 'இயக்க உராய்வு குணகம்', unit: 'அலகற்றது' },
+      { sym: 'θ_r', name: 'ஓய்வுக் கோணம் (tan θ_r = μs)', unit: 'பாகை (°)' },
+      { sym: 'a', name: 'முடுக்கம்', unit: 'm/s²' }
+    ]
+  }
+};
+
 import { useState, useEffect, useRef } from 'react';
 import { useSimulation } from '../../../hooks/useSimulation';
-import { EducationalPanel } from '../../EducationalPanel';
 import {
   calculateInclinedForces,
   stepInclinedSimulation,
   InclinedPlaneParameters,
 } from '../../../physics/inclinedPlanePhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward,  ClipboardList } from 'lucide-react';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { inclinedPlaneGraphs } from '../../graphing/presets';
@@ -88,6 +357,11 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
+  const tn = INCLINED_THEORY_NOTES[lang] || INCLINED_THEORY_NOTES.en;
+
   const maxTrackLength = 15; // meters
 
   // 1. Parameters & State
@@ -105,7 +379,6 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   });
 
   const [showVectors, setShowVectors] = useState(true);
-  const [isLearnExpanded, setIsLearnExpanded] = useState(true);
 
   // Lab Notes State
   const [labNotes, setLabNotes] = useState('');
@@ -514,64 +787,273 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
 
   // 6. Educational Notes
-  const conceptText = (
-    <div className="space-y-3">
-      <p>
-        An <strong>Inclined Plane</strong> reduces the force required to lift a load by expanding the travel distance. When a block is placed on an incline, gravity is resolved into two perpendicular components:
-      </p>
-      <ul className="list-disc pl-5 space-y-1">
-        <li>
-          <strong>Perpendicular Component:</strong> F_perp = m * g * cos(θ). This balances the normal force: Fn = m * g * cos(θ).
-        </li>
-        <li>
-          <strong>Parallel Component:</strong> F_para = m * g * sin(θ). This acts along the slope, pulling the block down.
-        </li>
-      </ul>
-      <p>
-        The block will slide down the slope only if the parallel gravity component exceeds the maximum static friction limit: m * g * sin(θ) &gt; μs * (m * g * cos(θ)), which simplifies to: tan(θ) &gt; μs.
-      </p>
-    </div>
-  );
-
-  const equations = [
-    { latex: 'F_N = m g \\cos(\\theta)', description: 'Normal force perpendicular to incline' },
-    { latex: 'F_{\\parallel} = m g \\sin(\\theta)', description: 'Gravity force component down incline' },
-    { latex: 'f_{s,\\text{max}} = \\mu_s F_N', description: 'Static friction limit' },
-    { latex: '\\tan(\\theta_{\\text{slide}}) = \\mu_s', description: 'Critical angle where block breaks free' },
-  ];
-
-  const variables = [
-    { symbol: '\\theta', name: 'Incline slope angle', unit: 'degrees' },
-    { symbol: 'm', name: 'Mass of the sliding block', unit: 'kg' },
-    { symbol: 's', name: 'Distance traveled along slope', unit: 'm' },
-    { symbol: 'F_{\\parallel}', name: 'Parallel force down incline', unit: 'N' },
-  ];
-
-  const observations = [
-    'Set Static Friction (μs) to 0.5. Slowly increase the incline angle. Note that the block starts sliding exactly when tan(θ) exceeds μs (approx 26.5°).',
-    'Increase the mass. Notice that the critical angle required to start sliding does not change, as mass cancels out in the equation tan(θ) > μs.',
-    'Observe the normal force (blue vector arrow) shrink and gravity parallel (orange arrow) grow as the incline angle increases.',
-  ];
-
-  const challenges = [
-    {
-      question: 'A block rests on an inclined plane. If the static friction coefficient is 0.577, what is the critical angle of inclination at which the block will just begin to slide?',
-      options: ['15°', '30°', '45°', '60°'],
-      correctAnswer: '30°',
-      solution: `1. Condition to slide: tan(θ) > μs
-2. Substitute the values: tan(θ) = 0.577
-3. θ = arctan(0.577) ≈ 30°
-Hence, the critical angle is 30°.`,
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-10.5rem)] lg:overflow-hidden">
-      
-      {/* Parameters & Lab Notebook Sidebar (3 cols) */}
-      <div className="lg:col-span-3 flex flex-col gap-3 overflow-y-auto custom-scrollbar h-full pr-1">
-        
-        {/* Controls Container */}
+    <div className="space-y-6">
+
+      {/* Top Header with Title and Mode Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider">{tn.badge}</span>
+            <h2 className="text-base font-extrabold text-slate-900 leading-tight">Friction on an Inclined Plane</h2>
+          </div>
+        </div>
+
+        {/* View Mode Toggle Pill */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Force Resolution */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-5 text-xs text-slate-700 leading-relaxed">
+              {/* Sec 1: Situation */}
+              <div className="bg-slate-50 border-l-4 border-blue-600 p-4 rounded-r-xl space-y-2">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.sec1Title}</h3>
+                <p>{tn.sec1Body}</p>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 font-medium pl-1">
+                  {tn.sec1List.map((item: string, idx: number) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Sec 2 & 3: Weight Resolution & Normal Reaction */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                    {tn.sec2Title}
+                  </h4>
+                  <p>{tn.sec2Body}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px] font-semibold">
+                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-150 text-blue-900">
+                      {tn.sec2Parallel}
+                    </div>
+                    <div className="bg-indigo-50 p-2 rounded-lg border border-indigo-150 text-indigo-900">
+                      {tn.sec2Perp}
+                    </div>
+                  </div>
+                  <BlockMath math="W_{\parallel} = mg\sin\theta, \quad W_{\perp} = mg\cos\theta" />
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                    {tn.sec3Title}
+                  </h4>
+                  <p>{tn.sec3Body}</p>
+                  <BlockMath math="R = mg\cos\theta" />
+                  <p className="text-[11px] text-slate-500">Normal reaction opposes mg cos θ perpendicular to incline.</p>
+                </div>
+              </div>
+
+              {/* Sec 11: Force Resolution Diagram Box */}
+              <div className="bg-slate-900 text-slate-100 rounded-xl p-4 space-y-3 shadow-inner">
+                <h4 className="font-bold text-amber-400 text-xs uppercase tracking-wider">{tn.sec11Title}</h4>
+                <p className="text-slate-300 text-xs">{tn.sec11Body}</p>
+                
+                {/* Visual Incline Resolution Box */}
+                <div className="font-mono text-[11px] bg-slate-950 p-3.5 rounded-lg border border-slate-800 text-slate-200 text-center space-y-1">
+                  <div className="text-blue-400 font-bold">R = mg cos θ (Perpendicular Normal) ↑</div>
+                  <div>← Friction (F) &nbsp;&nbsp; [ BLOCK m ] &nbsp;&nbsp; mg sin θ (Parallel Pull Down) ↓</div>
+                  <div className="text-amber-400 font-bold">↓ mg (Vertical Weight)</div>
+                </div>
+              </div>
+
+              {/* Sec 4: What Friction Does */}
+              <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4 space-y-2 text-amber-950 font-medium">
+                <h4 className="font-bold text-amber-900 text-xs uppercase tracking-wide">{tn.sec4Title}</h4>
+                <p className="text-xs">{tn.sec4Body}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                  <div className="bg-white p-2.5 rounded-lg border border-amber-200 font-bold text-amber-900">{tn.sec4RuleDown}</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-amber-200 font-bold text-amber-900">{tn.sec4RuleUp}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & Motion Regimes */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-5">
+              {/* Sec 5, 6, 7, 8: Static, Limiting & Repose */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-indigo-700 text-xs">{tn.sec5Title} & {tn.sec6Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec5Body}</p>
+                  <BlockMath math="F_{\max} = \mu_s R = \mu_s mg\cos\theta" />
+                  <p className="text-slate-600 text-[11px]">{tn.sec6Body}</p>
+                  <BlockMath math="F_s \leq \mu_s R" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-700 text-xs">{tn.sec7Title} & {tn.sec8Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec7Body}</p>
+                  <BlockMath math="\tan\theta \leq \mu_s" />
+                  <p className="text-slate-600 text-[11px]">{tn.sec8Body}</p>
+                  <BlockMath math="\mu_s = \tan\theta_r" />
+                </div>
+              </div>
+
+              {/* Sec 9 & 10: Sliding Down vs Moving Up */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-blue-700 text-xs">{tn.sec9Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec9Body}</p>
+                  <BlockMath math="a = g(\sin\theta - \mu_k\cos\theta)" />
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-purple-700 text-xs">{tn.sec10Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec10Body}</p>
+                  <BlockMath math="a = \frac{P}{m} - g\sin\theta - \mu_k g\cos\theta" />
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v: { sym: string; name: string; unit: string }, idx: number) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Common Mistakes & Senath Core Rules */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-5">
+              {/* Sec 12: Common Pitfalls & Mistakes */}
+              <div className="space-y-3">
+                <h3 className="font-bold text-rose-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  {tn.sec12Title}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {tn.mistakes.map((m: string, idx: number) => (
+                    <div key={idx} className="bg-rose-50/70 border border-rose-200 p-3 rounded-xl text-xs text-rose-950 font-medium">
+                      {m}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Essential Formula Box */}
+              <div className="bg-slate-900 text-white rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-amber-300 text-xs uppercase tracking-wider">{tn.formulaBoxTitle}</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono font-bold text-center">
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">W_∥ = mg sin θ</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">W_⊥ = mg cos θ</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">R = mg cos θ</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">F_max = μ_s R</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">F_k = μ_k R</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">μ_s = tan θ_r</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">a = g(sin θ - μ_k cos θ)</div>
+                </div>
+              </div>
+
+              {/* Senath Core Rules */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-5 space-y-3 shadow-md">
+                <h3 className="font-extrabold text-sm uppercase tracking-wide flex items-center gap-2 text-amber-200">
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                  {tn.senathHeader}
+                </h3>
+                <p className="text-xs text-blue-100 font-semibold">{tn.senathCoreBox}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs font-medium text-white">
+                  {tn.senathSteps.map((step: string, idx: number) => (
+                    <div key={idx} className="bg-white/10 p-2.5 rounded-xl border border-white/20">
+                      {step}
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center font-extrabold text-xs text-amber-200 bg-black/20 p-2.5 rounded-xl">
+                  {tn.senathMotto}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Sandbox Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Parameters (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-4">
+{/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
             <span>{t.paramsTitle}</span>
@@ -707,8 +1189,11 @@ Hence, the critical angle is 30°.`,
         </div>
       </div>
 
-      {/* Interactive Simulation Viewport + Graphs (6/8 cols) */}
-      <div className={`flex flex-col gap-3 h-full min-h-0 ${isLearnExpanded ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
+              </div>
+
+        {/* Right Column: Viewport & Graphs (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-4">
+{/* Interactive Simulation Viewport + Graphs (6/8 cols) */}
         
         {/* Simulation Canvas Card */}
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -816,53 +1301,6 @@ Hence, the critical angle is 30°.`,
         </div>
 
       </div>
-
-      {/* Learn Panel (Right) */}
-      <div className={`${isLearnExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-0 transition-all duration-300 flex flex-col`}>
-        {isLearnExpanded ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-blue-600" />
-                <span className="font-bold text-xs text-slate-700 uppercase tracking-wider">Learn</span>
-              </div>
-              <button 
-                onClick={() => setIsLearnExpanded(false)}
-                className="p-1 hover:bg-slate-200 text-slate-500 rounded cursor-pointer transition-colors"
-                title="Collapse Learn panel"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0">
-              <EducationalPanel
-                conceptText={conceptText}
-                equations={equations}
-                variables={variables}
-                observations={observations}
-                challenges={challenges}
-              />
-            </div>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsLearnExpanded(true)}
-            className="flex-1 bg-white border border-slate-200 hover:border-blue-400 rounded-lg shadow-sm flex flex-col items-center py-4 cursor-pointer hover:bg-slate-50 transition-all select-none"
-            title="Expand Learn panel"
-          >
-            <ChevronLeft className="w-5 h-5 text-slate-500 mb-2" />
-            <BookOpen className="w-5 h-5 text-blue-600 mb-6" />
-            <span 
-              className="text-xs font-bold text-slate-500 uppercase tracking-widest"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-            >
-              Learn
-            </span>
-          </button>
-        )}
-      </div>
-
     </div>
   );
 }
