@@ -1,13 +1,244 @@
+import { BlockMath } from '../../Math';
+import { Sparkles, Info, BookOpen, Maximize2, FileText, Lightbulb, Activity } from 'lucide-react';
+const NEWTONS_THEORY_NOTES = {
+  en: {
+    badge: 'Mechanics • Newton’s Laws Interactive Notebook',
+    notebookMode: 'Interactive Notebook',
+    simOnlyMode: 'Sim Only Mode',
+    tabTheory: 'Theory & Basic Laws',
+    tabFormulas: 'Equations & Vector Method',
+    tabTips: 'Key Ideas & Senath Rules',
+
+    // Sec 1 & 2
+    sec1Title: '1. The Basic Idea of Newton’s Second Law',
+    sec1Body: 'Newton’s Second Law tells us how a resultant force changes the motion of an object. The acceleration produced is directly proportional to the net force and inversely proportional to mass.',
+    sec2Title: '2. What Does “Net Force” Mean?',
+    sec2Body: 'An object can experience multiple forces simultaneously. The net force is their vector sum: F_net = ∑F.',
+    sec2Example: 'Example: A 5 kg box pushed with 20 N right against 5 N friction left has F_net = 20 - 5 = 15 N → a = 15/5 = 3 m/s² right.',
+
+    // Sec 3, 4, 5
+    sec3Title: '3. Vector Form of Newton’s Law',
+    sec3Body: 'F_net = m a is fundamentally a vector equation. The direction of acceleration is ALWAYS identical to the direction of the net force.',
+
+    sec4Title: '4. Force vs Acceleration Relationship',
+    sec4Body: 'For constant mass m: F_net ∝ a. Doubling the net force doubles the acceleration (F → 2F ⟹ a → 2a).',
+
+    sec5Title: '5. Mass vs Acceleration Relationship',
+    sec5Body: 'For constant net force F: a ∝ 1/m. Increasing mass decreases acceleration (Heavier objects accelerate less under the same force).',
+
+    // Sec 6, 7, 8
+    sec6Title: '6. SI Unit of Force (The Newton)',
+    sec6Body: 'From F = ma, the unit is kg·m·s⁻², defined as the Newton (N). 1 N is the force required to accelerate 1 kg by 1 m/s².',
+
+    sec7Title: '7. Free-Body Diagrams (FBD)',
+    sec7Body: 'A Free-Body Diagram isolates the object to show all external forces: Normal force N (up), Weight mg (down), Applied Force (right), and Friction (left).',
+
+    sec8Title: '8. 5-Step Method for Applying Newton’s Second Law',
+    steps: [
+      'Step 1 — Draw the object: Identify the body being analysed.',
+      'Step 2 — Draw all forces: Weight, Normal force, Tension, Friction, Applied forces.',
+      'Step 3 — Choose positive directions: e.g. Right (+x), Left (-x).',
+      'Step 4 — Find resultant force: ∑F_x = m a_x and ∑F_y = m a_y.',
+      'Step 5 — Solve: Substitute knowns and solve for unknown acceleration or force.'
+    ],
+
+    // Sec 9 & 10
+    sec9Title: '9. Equilibrium (Zero Net Force)',
+    sec9Body: 'If F_net = 0, then a = 0. Zero acceleration does NOT mean zero velocity! An object can be stationary OR moving at constant velocity.',
+
+    sec10Title: '10. Newton’s Second Law and Momentum',
+    sec10Body: 'Momentum p = m v. The general law is F_net = dp/dt. For constant mass, F_net = d(mv)/dt = m a.',
+
+    // Key Ideas & Senath Exploration
+    keyIdeasHeader: '🧠 Key Ideas to Remember',
+    keyIdeas: [
+      { id: '①', title: 'Force Produces Acceleration', eq: 'F_net = m a', desc: 'Net force accelerates mass.' },
+      { id: '②', title: 'Always Use NET Force', eq: 'F_net = ∑F', desc: 'Find vector sum of all forces first.' },
+      { id: '③', title: 'Parallel Directions', eq: 'F_net ∥ a', desc: 'Acceleration points in the direction of F_net.' },
+      { id: '④', title: 'Mass Resists Acceleration', eq: 'a ∝ 1/m', desc: 'More mass leads to less acceleration.' },
+      { id: '⑤', title: 'Zero Net Force = Zero Accel', eq: 'F_net = 0 ⟹ a = 0', desc: 'Can still move at constant velocity!' }
+    ],
+
+    formulaBoxTitle: '📌 Essential Formula Box',
+
+    exploreTitle: '🧪 Physics by Senath — Explore It',
+    exploreBody: 'Change the mass and net force in the simulation below and observe acceleration live:',
+    exploreQ1: '• Keep force constant and increase mass → Watch acceleration decrease.',
+    exploreQ2: '• Keep mass constant and increase force → Watch acceleration increase.',
+    exploreSummary: 'That is Newton’s Second Law in action.',
+
+    varGuideTitle: 'Variables & SI Units Reference Guide',
+    vars: [
+      { sym: 'F_net', name: 'Resultant Net Force', unit: 'N (kg·m·s⁻²)' },
+      { sym: 'm', name: 'Mass of Object', unit: 'kg' },
+      { sym: 'a', name: 'Acceleration', unit: 'm/s²' },
+      { sym: 'F', name: 'Applied Horizontal Force', unit: 'N' },
+      { sym: 'f', name: 'Friction Force (Static/Kinetic)', unit: 'N' },
+      { sym: 'N, R', name: 'Normal Reaction Force', unit: 'N' },
+      { sym: 'mg', name: 'Gravitational Weight Force', unit: 'N' },
+      { sym: 'p', name: 'Linear Momentum (m·v)', unit: 'kg·m/s' },
+      { sym: 'μs, μk', name: 'Friction Coefficients', unit: 'Dimensionless' }
+    ]
+  },
+  si: {
+    badge: 'යාන්ත්‍ර විද්‍යාව • නියුටන්ගේ දෙවන නියමය අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    simOnlyMode: 'අනුකරණය පමණක්',
+    tabTheory: 'සිද්ධාන්ත සහ මූලික නියම',
+    tabFormulas: 'සමීකරණ සහ දෛශික ක්‍රමය',
+    tabTips: 'ප්‍රධාන සංකල්ප සහ සෙනත් නීති',
+
+    sec1Title: '1. නියුටන්ගේ දෙවන නියමයේ මූලික සංකල්පය',
+    sec1Body: 'ප්‍රතිඵල බලයක් මගින් වස්තුවක චලිතය වෙනස් වන ආකාරය නියුටන්ගේ දෙවන නියමයෙන් පැහැදිලි කරයි. ඇතිවන ත්වරණය ප්‍රතිඵල බලයට ඍජුව සමානුපාතික වන අතර ස්කන්ධයට ප්‍රතිලෝමව සමානුපාතික වේ.',
+    sec2Title: '2. "සම්ප්‍රයුක්ත බලය" යනු කුමක්ද?',
+    sec2Body: 'වස්තුවක් මත බල කිහිපයක් එකවර ක්‍රියා කළ හැක. සම්ප්‍රයුක්ත බලය යනු එම බලවල දෛශික එකතුවයි: F_net = ∑F.',
+    sec2Example: 'උදාහරණ: 5 kg පෙට්ටියක් 20 N බලයකින් දකුණට තල්ලු කරන විට 5 N ඝර්ෂණයක් වමට ක්‍රියා කරයි නම් F_net = 20 - 5 = 15 N → a = 15/5 = 3 m/s² දකුණට.',
+
+    sec3Title: '3. නියුටන් නියමයේ දෛශික ස්වරූපය',
+    sec3Body: 'F_net = m a යනු දෛශික සමීකරණයකි. ත්වරණයේ දිශාව සැමවිටම සම්ප්‍රයුක්ත බලයේ දිශාවට සමාන වේ.',
+
+    sec4Title: '4. බලය සහ ත්වරණය අතර සම්බන්ධතාව',
+    sec4Body: 'නියත ස්කන්ධයක් සඳහා: F_net ∝ a. බලය දෙගුණ කළ විට ත්වරණයද දෙගුණ වේ (F → 2F ⟹ a → 2a).',
+
+    sec5Title: '5. ස්කන්ධය සහ ත්වරණය අතර සම්බන්ධතාව',
+    sec5Body: 'නියත බලයක් සඳහා: a ∝ 1/m. ස්කන්ධය වැඩිවන විට ත්වරණය අඩුවේ (වඩා බර වස්තු එකම බලය යටතේ අඩුවෙන් ත්වරණය වේ).',
+
+    sec6Title: '6. බලයේ SI ඒකකය (නියුටන්)',
+    sec6Body: 'F = ma මගින් ඒකකය kg·m·s⁻² වන අතර එය නියුටන් (N) ලෙස හැඳින්වේ. 1 N යනු 1 kg ස්කන්ධයක 1 m/s² ත්වරණයක් ඇති කිරීමට අවශ්‍ය බලයයි.',
+
+    sec7Title: '7. නිදහස් වස්තු රූප සටහන් (FBD)',
+    sec7Body: 'නිදහස් වස්තු රූප සටහනක් මගින් වස්තුව මත ක්‍රියා කරන සියලුම බාහිර බලයන් පෙන්වයි: අභිලම්භ ප්‍රතික්‍රියාව N (ඉහළට), බර mg (පහළට), යෙදූ බලය (දකුණට), සහ ඝර්ෂණය (වමට).',
+
+    sec8Title: '8. නියුටන්ගේ දෙවන නියමය යෙදීමේ පියවර 5',
+    steps: [
+      'පියවර 1 — වස්තුව ඇඳගන්න: විශ්ලේෂණය කරන වස්තුව හඳුනාගන්න.',
+      'පියවර 2 — සියලුම බලයන් ලකුණු කරන්න: බර, අභිලම්භය, ඇදුම, ඝර්ෂණය, යෙදූ බල.',
+      'පියවර 3 — ධන දිශාව තෝරාගන්න: උදා. දකුණට (+x), වමට (-x).',
+      'පියවර 4 — සම්ප්‍රයුක්ත බලය සොයන්න: ∑F_x = m a_x සහ ∑F_y = m a_y.',
+      'පියවර 5 — විසඳන්න: දන්නා අගයන් ආදේශ කර නොදන්නා ත්වරණය හෝ බලය ගණනය කරන්න.'
+    ],
+
+    sec9Title: '9. සමතුලිතතාව (ශූන්‍ය සම්ප්‍රයුක්ත බලය)',
+    sec9Body: 'F_net = 0 නම්, a = 0 වේ. ශූන්‍ය ත්වරණය යනු ප්‍රවේගය ශූන්‍ය වීම නොවේ! වස්තුව නිශ්චලව තිබිය හැක නැතහොත් නියත ප්‍රවේගයෙන් ගමන් කළ හැක.',
+
+    sec10Title: '10. නියුටන් දෙවන නියමය සහ සංවේගය',
+    sec10Body: 'සංවේගය p = m v. සාධාරණ නියමය F_net = dp/dt වේ. නියත ස්කන්ධයක් සඳහා F_net = m a ලැබේ.',
+
+    keyIdeasHeader: '🧠 මතක තබාගත යුතු ප්‍රධාන කරුණු',
+    keyIdeas: [
+      { id: '①', title: 'බලයෙන් ත්වරණයක් ඇතිවේ', eq: 'F_net = m a', desc: 'සම්ප්‍රයුක්ත බලය මගින් ස්කන්ධය ත්වරණය කරයි.' },
+      { id: '②', title: 'සැමවිටම සම්ප්‍රයුක්ත බලය ගන්න', eq: 'F_net = ∑F', desc: 'පළමුව සියලු බලවල දෛශික එකතුව සොයන්න.' },
+      { id: '③', title: 'සමාන්තර දිශා', eq: 'F_net ∥ a', desc: 'ත්වරණයේ දිශාව සම්ප්‍රයුක්ත බලයේ දිශාවමය.' },
+      { id: '④', title: 'ස්කන්ධය ත්වරණයට බාධා කරයි', eq: 'a ∝ 1/m', desc: 'ස්කන්ධය වැඩිවන විට ත්වරණය අඩුවේ.' },
+      { id: '⑤', title: 'ශූන්‍ය බලය = ශූන්‍ය ත්වරණය', eq: 'F_net = 0 ⟹ a = 0', desc: 'නමුත් නියත ප්‍රවේගයෙන් ගමන් කළ හැක!' }
+    ],
+
+    formulaBoxTitle: '📌 ප්‍රධාන සමීකරණ එකතුව',
+
+    exploreTitle: '🧪 Physics by Senath — අත්හදා බලන්න',
+    exploreBody: 'පහත සිමියුලේෂන් එකේ ස්කන්ධය සහ යොදන බලය වෙනස් කර ත්වරණය නිරීක්ෂණය කරන්න:',
+    exploreQ1: '• බලය නියතව තබා ස්කන්ධය වැඩි කරන්න → ත්වරණය අඩුවන ආකාරය බලන්න.',
+    exploreQ2: '• ස්කන්ධය නියතව තබා බලය වැඩි කරන්න → ත්වරණය වැඩිවන ආකාරය බලන්න.',
+    exploreSummary: 'ඒ නියුටන්ගේ දෙවන නියමයයි.',
+
+    varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
+    vars: [
+      { sym: 'F_net', name: 'සම්ප්‍රයුක්ත බලය', unit: 'N (kg·m·s⁻²)' },
+      { sym: 'm', name: 'වස්තුවේ ස්කන්ධය', unit: 'kg' },
+      { sym: 'a', name: 'ත්වරණය', unit: 'm/s²' },
+      { sym: 'F', name: 'යොදනු ලබන බලය', unit: 'N' },
+      { sym: 'f', name: 'ඝර්ෂණ බලය', unit: 'N' },
+      { sym: 'N, R', name: 'අභිලම්භ ප්‍රතික්‍රියාව', unit: 'N' },
+      { sym: 'mg', name: 'ගුරුත්වාකර්ෂණ බර', unit: 'N' },
+      { sym: 'p', name: 'රේඛීය සංවේගය (m·v)', unit: 'kg·m/s' },
+      { sym: 'μs, μk', name: 'ඝර්ෂණ සංගුණක', unit: 'ඒකක නැත' }
+    ]
+  },
+  ta: {
+    badge: 'இயக்கவியல் • நியூட்டனின் இரண்டாம் விதி குறிப்பேடு',
+    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
+    tabTheory: 'கோட்பாடு மற்றும் அடிப்படை விதிகள்',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் திசையன் முறை',
+    tabTips: 'முக்கிய கருத்துக்கள் & சேனாத் விதிகள்',
+
+    sec1Title: '1. நியூட்டனின் இரண்டாம் விதியின் அடிப்படை யோசனை',
+    sec1Body: 'தொகுபயன் விசை ஒரு பொருளின் இயக்கத்தை எவ்வாறு மாற்றுகிறது என்பதை நியூட்டனின் இரண்டாம் விதி கூறுகிறது. உருவாகும் முடுக்கம் தொகுபயன் விசைக்கு ನೇர்விகிதசமமாகவும் திணிவுக்கு எதிர்விகிதசமமாகவும் இருக்கும்.',
+    sec2Title: '2. "தொகுபயன் விசை" என்றால் என்ன?',
+    sec2Body: 'ஒரு பொருளின் மீது பல விசைகள் ஒரே நேரத்தில் செயல்படலாம். தொகுபயன் விசை என்பது அவற்றின் திசையன் கூட்டுத்தொகையாகும்: F_net = ∑F.',
+    sec2Example: 'எடுத்துக்காட்டு: 5 kg பெட்டி மீது 20 N வலப்புறமும் 5 N உராய்வு இடப்புறமும் செயல்பட்டால் F_net = 20 - 5 = 15 N → a = 15/5 = 3 m/s² வலப்புறம்.',
+
+    sec3Title: '3. திசையன் வடிவம்',
+    sec3Body: 'F_net = m a என்பது அடிப்படையில் ஒரு திசையன் சமன்பாடாகும். முடுக்கத்தின் திசை எப்போதும் தொகுபயன் விசையின் திசையிலேயே இருக்கும்.',
+
+    sec4Title: '4. விசை மற்றும் முடுக்கம்',
+    sec4Body: 'மாறாத் திணிவுக்கு: F_net ∝ a. விசையை இரட்டிப்பாக்கினால் முடுக்கமும் இரட்டிப்பாகும் (F → 2F ⟹ a → 2a).',
+
+    sec5Title: '5. திணிவு மற்றும் முடுக்கம்',
+    sec5Body: 'மாறாத் தொகுபயன் விசைக்கு: a ∝ 1/m. திணிவை அதிகரிக்கும் போது முடுக்கம் குறையும்.',
+
+    sec6Title: '6. விசையின் SI அலகு (நியூட்டன்)',
+    sec6Body: 'F = ma மூலம் அலகு kg·m·s⁻² ஆகும், இது நியூட்டன் (N) எனப்படும். 1 N என்பது 1 kg திணிவை 1 m/s² முடுக்கத்தில் நகர்த்தத் தேவையான விசையாகும்.',
+
+    sec7Title: '7. தனிப்பொருள் விசைப் படங்கள் (FBD)',
+    sec7Body: 'ஒரு தனிப்பொருள் விசைப்படம் பொருளின் மீது செயல்படும் அனைத்து வெளி விசைகளையும் காட்டுகிறது: செங்குத்து விசை N (மேலே), எடை mg (கீழே), செலுத்திய விசை (வலது), மற்றும் உராய்வு (இடது).',
+
+    sec8Title: '8. நியூட்டனின் இரண்டாம் விதியை 적용ிக்கும் 5 படிகள்',
+    steps: [
+      'படி 1 — பொருளை வரையவும்: பகுப்பாய்வு செய்யப்படும் பொருளை அடையாளம் காணவும்.',
+      'படி 2 — அனைத்து விசைகளையும் வரையவும்: எடை, செங்குத்து விசை, இழுவிசை, உராய்வு, செலுத்திய விசை.',
+      'படி 3 — நேர் திசையைத் தேர்ந்தெடுக்கவும்: எ.கா. வலது (+x), இடது (-x).',
+      'படி 4 — தொகுபயன் விசையைக் காணவும்: ∑F_x = m a_x மற்றும் ∑F_y = m a_y.',
+      'படி 5 — தீர்க்கவும்: தெரிந்த மதிப்புகளைப் பிரதியிட்டு முடுக்கம் அல்லது விசையைக் கணக்கிடவும்.'
+    ],
+
+    sec9Title: '9. சமநிலை (சுழி தொகுபயன் விசை)',
+    sec9Body: 'F_net = 0 எனில், a = 0. சுழி முடுக்கம் என்பது சுழி திசைவேகம் என்று அர்த்தமல்ல! பொருள் ஓய்வில் இருக்கலாம் அல்லது மாறா திசைவேகத்தில் இயங்கலாம்.',
+
+    sec10Title: '10. நியூட்டனின் இரண்டாம் விதியும் உந்தமும்',
+    sec10Body: 'உந்தம் p = m v. பொதுவான விதி F_net = dp/dt ஆகும். மாறாத் திணிவுக்கு F_net = m a கிடைக்கும்.',
+
+    keyIdeasHeader: '🧠 நினைவில் கொள்ள வேண்டிய முக்கிய கருத்துக்கள்',
+    keyIdeas: [
+      { id: '①', title: 'விசை முடுக்கத்தை உருவாக்குகிறது', eq: 'F_net = m a', desc: 'தொகுபயன் விசை திணிவை முடுக்குகிறது.' },
+      { id: '②', title: 'எப்போதும் தொகுபயன் விசையைப் பயன்படுத்தவும்', eq: 'F_net = ∑F', desc: 'முதலில் அனைத்து விசைகளின் கூட்டுத்தொகையைக் காணவும்.' },
+      { id: '③', title: 'ஒரே திசை', eq: 'F_net ∥ a', desc: 'முடுக்கம் F_net இன் திசையிலேயே இருக்கும்.' },
+      { id: '④', title: 'திணிவு முடுக்கத்தை எதிர்க்கிறது', eq: 'a ∝ 1/m', desc: 'அதிக திணிவு குறைந்த முடுக்கத்தைத் தரும்.' },
+      { id: '⑤', title: 'சுழி விசை = சுழி முடுக்கம்', eq: 'F_net = 0 ⟹ a = 0', desc: 'ஆனால் மாறா திசைவேகத்தில் இயங்கலாம்!' }
+    ],
+
+    formulaBoxTitle: '📌 முக்கிய சமன்பாடுகள்',
+
+    exploreTitle: '🧪 Physics by Senath — ஆராய்க',
+    exploreBody: 'உருவகப்படுத்துதலில் திணிவு மற்றும் விசையை மாற்றி முடுக்கத்தைக் கவனியுங்கள்:',
+    exploreQ1: '• விசையை மாறிலியாக வைத்து திணிவை அதிகரிக்கவும் → முடுக்கம் குறைவதைக் காணவும்.',
+    exploreQ2: '• திணிவை மாறிலியாக வைத்து விசையை அதிகரிக்கவும் → முடுக்கம் அதிகரிப்பதைக் காணவும்.',
+    exploreSummary: 'அதுவே நியூட்டனின் இரண்டாம் விதி.',
+
+    varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
+    vars: [
+      { sym: 'F_net', name: 'தொகுபயன் விசை', unit: 'N (kg·m·s⁻²)' },
+      { sym: 'm', name: 'திணிவு', unit: 'kg' },
+      { sym: 'a', name: 'முடுக்கம்', unit: 'm/s²' },
+      { sym: 'F', name: 'செலுத்தப்படும் விசை', unit: 'N' },
+      { sym: 'f', name: 'உராய்வு விசை', unit: 'N' },
+      { sym: 'N, R', name: 'செங்குத்து விசை', unit: 'N' },
+      { sym: 'mg', name: 'ஈர்ப்பு எடை', unit: 'N' },
+      { sym: 'p', name: 'நேரியல் உந்தம் (m·v)', unit: 'kg·m/s' },
+      { sym: 'μs, μk', name: 'உராய்வு குணகங்கள்', unit: 'அலகற்றது' }
+    ]
+  }
+};
+
 import { useState, useEffect, useRef } from 'react';
 import { useSimulation } from '../../../hooks/useSimulation';
-import { EducationalPanel } from '../../EducationalPanel';
 import {
   calculateForcesAndKinematics,
   stepNewtonsSimulation,
   NewtonsLawsParameters,
 } from '../../../physics/newtonsLawsPhysics';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
-import { Play, Pause, RotateCcw, SkipForward, ChevronLeft, ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward,  ClipboardList } from 'lucide-react';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { newtonsSecondLawGraphs } from '../../graphing/presets';
@@ -88,6 +319,11 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
   };
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+  const [viewMode, setViewMode] = useState<'notebook' | 'sim_only'>('notebook');
+  const [activeTheoryTab, setActiveTheoryTab] = useState<'theory' | 'formulas' | 'tips'>('theory');
+  const tn = NEWTONS_THEORY_NOTES[lang] || NEWTONS_THEORY_NOTES.en;
+
   // 1. Parameters & State
   const [params, setParams] = useState<NewtonsLawsParameters>({
     force: 20,
@@ -103,7 +339,6 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
   });
 
   const [showVectors, setShowVectors] = useState(true);
-  const [isLearnExpanded, setIsLearnExpanded] = useState(true);
   const [isPushing, setIsPushing] = useState(false);
 
   const activeForce = isPushing ? params.force : 0;
@@ -454,68 +689,271 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
 
   // 6. Educational Data
-  const conceptText = (
-    <div className="space-y-3">
-      <p>
-        <strong>Newton’s Second Law of Motion</strong> states that the acceleration (a) of an object is directly proportional to the net force (F_net) acting on it, and inversely proportional to its mass (m).
-      </p>
-      <p className="font-semibold text-slate-800">
-        Friction Forces:
-      </p>
-      <ul className="list-disc pl-5 space-y-1">
-        <li>
-          <strong>Static Friction (fs):</strong> Opposes the start of relative motion. Its value balances the applied force up to a maximum limit: fs,max = μs * Fn.
-        </li>
-        <li>
-          <strong>Kinetic Friction (fk):</strong> Opposes active relative motion. It has a constant value once the object is sliding: fk = μk * Fn.
-        </li>
-      </ul>
-      <p>
-        Notice that static friction is always greater than or equal to kinetic friction (μs ≥ μk), causing the block to accelerate suddenly once it breaks free.
-      </p>
-    </div>
-  );
-
-  const equations = [
-    { latex: 'F_{\\text{net}} = m \\cdot a', description: "Newton's Second Law" },
-    { latex: 'F_N = m \\cdot g', description: 'Normal Force on a flat surface' },
-    { latex: 'f_{s,\\text{max}} = \\mu_s F_N', description: 'Maximum static friction threshold' },
-    { latex: 'f_k = \\mu_k F_N', description: 'Sliding kinetic friction force' },
-  ];
-
-  const variables = [
-    { symbol: 'F', name: 'Applied horizontal force', unit: 'N' },
-    { symbol: 'm', name: 'Mass of the sliding block', unit: 'kg' },
-    { symbol: 'a', name: 'Horizontal acceleration', unit: 'm/s²' },
-    { symbol: '\\mu_s, \\mu_k', name: 'Friction coefficients', unit: 'dimensionless' },
-    { symbol: 'F_N', name: 'Normal force acting upwards', unit: 'N' },
-  ];
-
-  const observations = [
-    'Set Applied Force to 10N and Mass to 5kg. If static friction limit is above 10N, the block remains locked (a = 0m/s²).',
-    'Increase the force gradually. Watch the block break free exactly when the applied force exceeds the static friction threshold.',
-    'Notice that once the block moves, the friction drops to the kinetic value, which increases acceleration instantly.',
-    'Apply a force in the opposite direction of motion. Note how the block decelerates, comes to a stop, and stays locked if force is small.',
-  ];
-
-  const challenges = [
-    {
-      question: 'A 5 kg block rests on a horizontal table. The static friction coefficient is 0.4 and gravity is 10 m/s². What is the minimum horizontal force required to make the block start sliding?',
-      options: ['10 N', '20 N', '40 N', '50 N'],
-      correctAnswer: '20 N',
-      solution: `1. Normal Force: Fn = m * g = 5 * 10 = 50 N
-2. Maximum Static Friction Limit: fs_max = μs * Fn = 0.4 * 50 = 20 N
-3. Minimum force to initiate slide must exceed 20 N.`,
-    },
-  ];
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-10.5rem)] lg:overflow-hidden">
-      
-      {/* Parameters Sidebar & Lab Notebook (3 cols) */}
-      <div className="lg:col-span-3 flex flex-col gap-3 overflow-y-auto custom-scrollbar h-full pr-1">
-        
-        {/* Controls Container */}
+    <div className="space-y-6">
+
+      {/* Top Header with Title and Mode Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider">{tn.badge}</span>
+            <h2 className="text-base font-extrabold text-slate-900 leading-tight">Newton’s Second Law of Motion</h2>
+          </div>
+        </div>
+
+        {/* View Mode Toggle Pill */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => setViewMode('notebook')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'notebook'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{tn.notebookMode}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('sim_only')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              viewMode === 'sim_only'
+                ? 'bg-white text-blue-600 shadow-xs font-extrabold'
+                : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{tn.simOnlyMode}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
+      {viewMode === 'notebook' && (
+        <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm space-y-5">
+          {/* Notebook Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+            <button
+              onClick={() => setActiveTheoryTab('theory')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'theory'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{tn.tabTheory}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('formulas')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'formulas'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>{tn.tabFormulas}</span>
+            </button>
+            <button
+              onClick={() => setActiveTheoryTab('tips')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTheoryTab === 'tips'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
+              <span>{tn.tabTips}</span>
+            </button>
+          </div>
+
+          {/* Tab 1: Theory & Basic Laws */}
+          {activeTheoryTab === 'theory' && (
+            <div className="space-y-5 text-xs text-slate-700 leading-relaxed">
+              {/* Sec 1: Basic Idea */}
+              <div className="bg-slate-50 border-l-4 border-blue-600 p-4 rounded-r-xl space-y-2">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.sec1Title}</h3>
+                <p>{tn.sec1Body}</p>
+                <div className="pt-1 text-center font-bold text-blue-700">
+                  <BlockMath math="F_{\text{net}} = m a" />
+                </div>
+              </div>
+
+              {/* Sec 2 & 3: Net Force & Vector Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                    {tn.sec2Title}
+                  </h4>
+                  <p>{tn.sec2Body}</p>
+                  <BlockMath math="\vec{F}_{\text{net}} = \sum \vec{F}" />
+                  <div className="bg-blue-50/70 p-2.5 rounded-lg border border-blue-150 text-[11px] text-blue-900 font-medium">
+                    {tn.sec2Example}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+                    {tn.sec3Title}
+                  </h4>
+                  <p>{tn.sec3Body}</p>
+                  <BlockMath math="\vec{F}_{\text{net}} = m \vec{a} \implies \vec{F}_{\text{net}} \parallel \vec{a}" />
+                </div>
+              </div>
+
+              {/* Sec 7: Free-Body Diagram (FBD) Box */}
+              <div className="bg-slate-900 text-slate-100 rounded-xl p-4 space-y-3 shadow-inner">
+                <h4 className="font-bold text-amber-400 text-xs uppercase tracking-wider">{tn.sec7Title}</h4>
+                <p className="text-slate-300 text-xs">{tn.sec7Body}</p>
+                
+                {/* Visual FBD Diagram */}
+                <div className="font-mono text-[11px] bg-slate-950 p-3 rounded-lg border border-slate-800 text-slate-200 text-center space-y-1">
+                  <div className="text-blue-400 font-bold">N (Normal Reaction) ↑</div>
+                  <div>← Friction (f) &nbsp;&nbsp; [ BOX m ] &nbsp;&nbsp; → Applied Force (F)</div>
+                  <div className="text-amber-400 font-bold">↓ W = m·g (Weight)</div>
+                  <div className="pt-2 text-indigo-300 font-bold">Resultant Vector: ∑F_x = F - f = m a</div>
+                </div>
+              </div>
+
+              {/* Sec 9 & 10: Equilibrium & Momentum */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-950 text-xs">{tn.sec9Title}</h4>
+                  <p className="text-emerald-900">{tn.sec9Body}</p>
+                  <BlockMath math="F_{\text{net}} = 0 \implies a = 0 \quad (v = \text{const or } 0)" />
+                </div>
+
+                <div className="bg-indigo-50/60 border border-indigo-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-indigo-950 text-xs">{tn.sec10Title}</h4>
+                  <p className="text-indigo-900">{tn.sec10Body}</p>
+                  <BlockMath math="\vec{p} = m \vec{v}, \quad \vec{F}_{\text{net}} = \frac{d\vec{p}}{dt}" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Equations & Vector Method */}
+          {activeTheoryTab === 'formulas' && (
+            <div className="space-y-5">
+              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.sec8Title}</h3>
+              
+              {/* 5-Step Method Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                {tn.steps.map((step: string, idx: number) => (
+                  <div key={idx} className="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1 text-xs">
+                    <div className="font-bold text-blue-700">{step.split(':')[0]}</div>
+                    <div className="text-slate-600 text-[11px]">{step.split(':')[1] || step}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sec 4, 5, 6: Relationships & SI Unit */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-blue-700 text-xs">{tn.sec4Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec4Body}</p>
+                  <BlockMath math="F_{\text{net}} \propto a \implies \frac{F_1}{a_1} = \frac{F_2}{a_2}" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-purple-700 text-xs">{tn.sec5Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec5Body}</p>
+                  <BlockMath math="a \propto \frac{1}{m} \implies m_1 a_1 = m_2 a_2" />
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-700 text-xs">{tn.sec6Title}</h4>
+                  <p className="text-slate-600 text-xs">{tn.sec6Body}</p>
+                  <BlockMath math="1\text{ N} = 1\text{ kg}\cdot\text{m}\cdot\text{s}^{-2}" />
+                </div>
+              </div>
+
+              {/* Variables & SI Units Reference Card */}
+              <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border border-blue-100 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5 text-blue-800">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  {tn.varGuideTitle}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+                  {tn.vars.map((v: { sym: string; name: string; unit: string }, idx: number) => (
+                    <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
+                      <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
+                      <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono font-bold">SI: {v.unit}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Key Ideas & Senath Rules */}
+          {activeTheoryTab === 'tips' && (
+            <div className="space-y-5">
+              {/* 5 Key Ideas */}
+              <div className="space-y-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  {tn.keyIdeasHeader}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {tn.keyIdeas.map((idea: { id: string; title: string; eq: string; desc: string }, idx: number) => (
+                    <div key={idx} className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1.5">
+                      <div className="flex items-center gap-2 font-bold text-xs text-blue-900">
+                        <span className="text-amber-500 font-extrabold text-sm">{idea.id}</span>
+                        <span>{idea.title}</span>
+                      </div>
+                      <div className="font-mono font-bold text-blue-700 text-xs bg-white p-1 rounded border border-slate-150 text-center">
+                        {idea.eq}
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium">{idea.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Essential Formula Box */}
+              <div className="bg-slate-900 text-white rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-amber-300 text-xs uppercase tracking-wider">{tn.formulaBoxTitle}</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono font-bold text-center">
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">F_net = m·a</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">F_net = dp/dt</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">p = m·v</div>
+                  <div className="bg-slate-800 p-2.5 rounded border border-slate-700">1 N = 1 kg·m/s²</div>
+                </div>
+              </div>
+
+              {/* Physics by Senath — Explore It */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-5 space-y-3 shadow-md">
+                <h3 className="font-extrabold text-sm uppercase tracking-wide flex items-center gap-2 text-amber-200">
+                  <Info className="w-5 h-5 text-amber-300" />
+                  {tn.exploreTitle}
+                </h3>
+                <p className="text-xs text-blue-100 font-medium">{tn.exploreBody}</p>
+                <div className="space-y-1 text-xs font-medium text-white bg-white/10 p-3 rounded-xl border border-white/20">
+                  <div>{tn.exploreQ1}</div>
+                  <div>{tn.exploreQ2}</div>
+                </div>
+                <div className="text-center font-bold text-xs text-amber-200 pt-1">
+                  {tn.exploreSummary}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Sandbox Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Parameters (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-4">
+{/* Controls Container */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-4 shrink-0">
           <h3 className="font-semibold text-slate-800 text-xs uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
             <span>{t.paramsTitle}</span>
@@ -652,8 +1090,8 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         </div>
       </div>
 
-      {/* Interactive Simulation Viewport + Graphs (6/8 cols) */}
-      <div className={`flex flex-col gap-3 h-full min-h-0 ${isLearnExpanded ? 'lg:col-span-6' : 'lg:col-span-8'}`}>
+        {/* Right Column: Viewport & Graphs (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-4">
         
         {/* Simulation Canvas Card */}
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -779,53 +1217,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         </div>
 
       </div>
-
-      {/* Learn Panel (Right) */}
-      <div className={`${isLearnExpanded ? 'lg:col-span-3' : 'lg:col-span-1'} h-full min-h-0 transition-all duration-300 flex flex-col`}>
-        {isLearnExpanded ? (
-          <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-blue-600" />
-                <span className="font-bold text-xs text-slate-700 uppercase tracking-wider">Learn</span>
-              </div>
-              <button 
-                onClick={() => setIsLearnExpanded(false)}
-                className="p-1 hover:bg-slate-200 text-slate-500 rounded cursor-pointer transition-colors"
-                title="Collapse Learn panel"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0">
-              <EducationalPanel
-                conceptText={conceptText}
-                equations={equations}
-                variables={variables}
-                observations={observations}
-                challenges={challenges}
-              />
-            </div>
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsLearnExpanded(true)}
-            className="flex-1 bg-white border border-slate-200 hover:border-blue-400 rounded-lg shadow-sm flex flex-col items-center py-4 cursor-pointer hover:bg-slate-50 transition-all select-none"
-            title="Expand Learn panel"
-          >
-            <ChevronLeft className="w-5 h-5 text-slate-500 mb-2" />
-            <BookOpen className="w-5 h-5 text-blue-600 mb-6" />
-            <span 
-              className="text-xs font-bold text-slate-500 uppercase tracking-widest"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-            >
-              Learn
-            </span>
-          </button>
-        )}
-      </div>
-
     </div>
+  </div>
   );
 }
