@@ -1060,7 +1060,7 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
             </span>
           </div>
 
-          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
+          <div className="w-full min-h-[320px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas ref={canvasRef} className="border border-slate-100 rounded-lg bg-slate-50/20" />
           </div>
 

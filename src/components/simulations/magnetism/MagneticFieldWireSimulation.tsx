@@ -714,7 +714,7 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
               </span>
             </div>
 
-            <div className="w-full min-h-[420px] flex items-center justify-center py-4 relative bg-slate-50/20 rounded-xl">
+            <div className="w-full min-h-[320px] flex items-center justify-center py-4 relative bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}

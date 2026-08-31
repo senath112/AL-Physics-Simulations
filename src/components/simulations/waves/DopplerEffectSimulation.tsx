@@ -1007,7 +1007,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
               </div>
             </div>
 
-            <div className="w-full min-h-[420px] flex items-center justify-center py-4 relative bg-slate-50/20 rounded-xl">
+            <div className="w-full min-h-[320px] flex items-center justify-center py-4 relative bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 className="border border-slate-100 rounded-xl bg-white select-none shadow-sm"

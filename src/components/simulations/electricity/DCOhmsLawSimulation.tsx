@@ -5,7 +5,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { dcOhmsLawGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS } from '../../../config/features';
+import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_SIMULATION_LAB_BAR } from '../../../config/features';
 
 export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -471,12 +471,12 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.title}</span>
           </div>
 
-          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
+          <div className="w-full min-h-[320px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas ref={canvasRef} className="border border-slate-100 rounded-lg bg-slate-50/20 shadow-inner" />
           </div>
 
           {/* Action buttons */}
-          <div className="border-t border-slate-100 p-4 bg-slate-50 flex items-center justify-between gap-3">
+          <div className="border-t border-slate-100 p-3 bg-slate-50 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
@@ -507,6 +507,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
         />
 
         {/* Observation log */}
+        {(ENABLE_OBSERVATION_NOTEBOOKS || ENABLE_SIMULATION_LAB_BAR) && (
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3 flex-1 flex flex-col">
           {ENABLE_OBSERVATION_NOTEBOOKS && (
             <>
@@ -542,6 +543,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
             quota={recorder.quota}
           />
         </div>
+        )}
       </div>
     </div>
   );

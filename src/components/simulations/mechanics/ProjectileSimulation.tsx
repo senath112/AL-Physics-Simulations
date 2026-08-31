@@ -241,7 +241,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { projectileGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
+import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_THEORY_NOTEBOOKS, ENABLE_SIMULATION_LAB_BAR } from '../../../config/features';
 
 export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -1056,6 +1056,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         </div>
 
         {/* Lab Notebook Container */}
+        {(ENABLE_OBSERVATION_NOTEBOOKS || ENABLE_SIMULATION_LAB_BAR) && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 flex flex-col">
           {ENABLE_OBSERVATION_NOTEBOOKS && (
             <>
@@ -1091,6 +1092,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
             quota={recorder.quota}
           />
         </div>
+        )}
 
         {validationMsg && (
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] rounded p-2.5 flex items-start gap-1.5 leading-normal shrink-0">

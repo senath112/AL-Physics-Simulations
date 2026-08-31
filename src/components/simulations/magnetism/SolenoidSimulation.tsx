@@ -511,7 +511,7 @@ export function SolenoidSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' 
             <span className="text-[10px] text-slate-400 font-semibold italic">Drag the compass to explore the field!</span>
           </div>
 
-          <div className="w-full min-h-[420px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
+          <div className="w-full min-h-[320px] flex-1 flex items-center justify-center p-4 bg-slate-50/20 rounded-xl">
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}

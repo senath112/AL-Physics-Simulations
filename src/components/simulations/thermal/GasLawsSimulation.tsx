@@ -510,7 +510,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
               </div>
             </div>
 
-            <div className="w-full min-h-[420px] overflow-x-auto flex items-center justify-center py-4 bg-slate-50/20 rounded-xl">
+            <div className="w-full min-h-[320px] overflow-x-auto flex items-center justify-center py-4 bg-slate-50/20 rounded-xl">
               <canvas
                 ref={canvasRef}
                 className="border border-slate-100 rounded-lg bg-white select-none shadow-sm"

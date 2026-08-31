@@ -243,7 +243,7 @@ import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { newtonsSecondLawGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_THEORY_NOTEBOOKS } from '../../../config/features';
+import { ENABLE_OBSERVATION_NOTEBOOKS, ENABLE_THEORY_NOTEBOOKS, ENABLE_SIMULATION_LAB_BAR } from '../../../config/features';
 
 export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
@@ -1054,6 +1054,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
 
         {/* Lab Notebook Container (Rich Log notes feature) */}
+        {(ENABLE_OBSERVATION_NOTEBOOKS || ENABLE_SIMULATION_LAB_BAR) && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm space-y-3 flex-1 flex flex-col">
           {ENABLE_OBSERVATION_NOTEBOOKS && (
             <>
@@ -1089,13 +1090,14 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
             quota={recorder.quota}
           />
         </div>
+        )}
       </div>
 
         {/* Right Column: Viewport & Graphs (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
         
         {/* Simulation Canvas Card */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col min-h-0 overflow-hidden">
           {/* Header */}
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50 rounded-t-lg shrink-0">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Newton's Second Law Viewport</span>
@@ -1112,7 +1114,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
           </div>
 
           {/* Canvas Wrapper */}
-          <div className="w-full min-h-[420px] h-[420px] relative bg-slate-50/20 canvas-grid-bg rounded-xl overflow-hidden shadow-inner">
+          <div className="w-full min-h-[300px] h-[320px] relative bg-slate-50/20 canvas-grid-bg rounded-xl overflow-hidden shadow-inner">
             <canvas
               ref={canvasRef}
               onMouseDown={(e) => handleDragStart(e.clientX)}
@@ -1141,11 +1143,11 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
           </div>
 
           {/* Controls Bar */}
-          <div className="border-t border-slate-100 p-4 bg-slate-50 flex flex-wrap items-center justify-between gap-3 rounded-b-lg shrink-0">
+          <div className="border-t border-slate-100 p-3 bg-slate-50 flex flex-wrap items-center justify-between gap-3 rounded-b-lg shrink-0">
             <div className="flex items-center gap-2">
               <button
                 onClick={togglePlay}
-                className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors shadow-sm"
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 {isPlaying ? 'Pause' : 'Play'}
@@ -1154,18 +1156,18 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
               <button
                 onClick={() => stepForward(0.02)}
                 disabled={isPlaying}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="p-1.5 border border-slate-200 bg-white hover:bg-slate-50 rounded text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 title="Step Forward (dt = 20ms)"
               >
-                <SkipForward className="w-4 h-4" />
+                <SkipForward className="w-3.5 h-3.5" />
               </button>
 
               <button
                 onClick={handleReset}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded cursor-pointer transition-colors mr-2"
+                className="p-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded cursor-pointer transition-colors mr-2"
                 title="Reset simulation"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
 
               <button
@@ -1174,7 +1176,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
                 onMouseLeave={() => setIsPushing(false)}
                 onTouchStart={() => setIsPushing(true)}
                 onTouchEnd={() => setIsPushing(false)}
-                className={`flex items-center gap-1.5 px-4 py-2 border text-xs font-semibold rounded transition-all select-none shadow-sm cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 border text-xs font-semibold rounded transition-all select-none shadow-sm cursor-pointer ${
                   isPushing 
                     ? 'bg-emerald-600 border-emerald-600 text-white translate-y-0.5' 
                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -1204,7 +1206,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         </div>
 
         {/* Scientific Graph Laboratory */}
-        <div className="shrink-0 min-h-[300px]">
+        <div className="shrink-0 min-h-[280px]">
           <ScientificGraphLab
             graphs={newtonsSecondLawGraphs}
             trials={recorder.recordedRows}
