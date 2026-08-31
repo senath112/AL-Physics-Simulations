@@ -557,6 +557,11 @@ export const circularMotionGraphs: ScientificGraphDefinition[] = [
     yUnit: 'N',
     graphType: 'scatter',
     isLinear: true,
+    transformPoint: (row) => {
+      const vSq = row.vSquared !== undefined ? Number(row.vSquared) : row.speedSq !== undefined ? Number(row.speedSq) : (Number(row.speed || row.velocity || 0) ** 2);
+      const fc = Number(row.centripetalForce || row.fc || 0);
+      return { x: vSq, y: fc };
+    },
     expectedSlopeFormula: 'm / r',
     getExpectedSlope: (p) => (p.mass || 1.0) / (p.radius || 2.0),
     getTheoreticalCurve: ([minX, maxX], p) => {
