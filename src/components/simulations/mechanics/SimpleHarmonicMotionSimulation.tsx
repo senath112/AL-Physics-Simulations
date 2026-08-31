@@ -10,7 +10,7 @@ import {
   Maximize2,
   FileText,
   Lightbulb,
-  CheckCircle2,
+  
   Activity,
   Plus
 } from 'lucide-react';
@@ -21,187 +21,319 @@ import { shmGraphs } from '../../graphing/presets';
 
 const SHM_THEORY_NOTES = {
   en: {
-    badge: 'Waves & Oscillations • Interactive Notebook',
+    badge: 'Simple Harmonic Motion (SHM) • Full Interactive Notebook',
     notebookMode: 'Interactive Notebook',
     simOnlyMode: 'Sim Only Mode',
-    tabTheory: 'Theory & Physical Laws',
-    tabFormulas: 'Equations & SI Units',
-    tabTips: 'A/L Exam Insights',
+    tabTheory: 'Theory & Basic Laws',
+    tabFormulas: 'Equations & Derivations',
+    tabTips: 'Quick Comparison & Senath Rules',
 
-    shmDefTitle: '1. Definition of Simple Harmonic Motion (SHM)',
-    shmDefBody: 'A particle executes Simple Harmonic Motion if its acceleration (a) is directly proportional to its displacement (x) from a fixed equilibrium position and is always directed towards that equilibrium position.',
+    // Section 1 & 2
+    sec1Title: '1. What is Simple Harmonic Motion?',
+    sec1Body: 'Simple Harmonic Motion (SHM) is an oscillatory motion in which the acceleration of the object is directly proportional to its displacement from the equilibrium position, and always directed towards the equilibrium position.',
+    sec1SignExpl: 'The negative sign is extremely important. It tells us that acceleration is always directed towards the equilibrium position.',
     
-    oscTypesTitle: '2. Oscillating Systems in G.C.E. A/L Physics',
-    springTitle: 'Mass-Spring Oscillator:',
-    springBody: 'Restoring force F = -k x. Angular frequency depends solely on mass (m) and spring constant (k):',
-    pendulumTitle: 'Simple Pendulum:',
-    pendulumBody: 'For small angular displacements (θ ≤ 10°), restoring force F ≈ -(m g / L) x. Angular frequency depends solely on length (L) and g:',
-    
-    dampingTitle: '3. Energy & Damping Regimes',
-    dampingBody: 'In undamped SHM, mechanical energy continuously transforms between Kinetic Energy (Ek) and Potential Energy (Ep) while Total Energy (E) remains constant. When damping force F_d = -b v is present:',
-    dampedList: [
-      'Undamped (b = 0): Constant total energy E = ½ m ω² A².',
-      'Underdamped: Oscillates with exponentially decaying amplitude A(t) = A₀ e^(-bt/2m).',
-      'Critically Damped: Returns to equilibrium in minimum time without overshooting.',
-      'Overdamped: Sluggishly returns to equilibrium without oscillating.'
+    sec2Title: '2. The Basic Idea & Restoring Force',
+    sec2Body: 'Imagine a mass attached to a spring on a frictionless surface. Whenever displaced from equilibrium, a restoring force acts to pull/push it back towards equilibrium.',
+    sec2Right: 'Displaced Right (x > 0): Restoring force acts to the left (F ←) towards equilibrium.',
+    sec2Left: 'Displaced Left (x < 0): Restoring force acts to the right (F →) towards equilibrium.',
+
+    // Section 3
+    sec3Title: '3. Conditions for SHM',
+    sec3Eq: 'At Equilibrium (x = 0): Acceleration a = 0, Speed v is MAXIMUM.',
+    sec3Ext: 'At Maximum Displacement (x = ±A): Acceleration |a| = ω²A is MAXIMUM, Speed v = 0.',
+
+    // Section 4
+    sec4Title: '4. Important Quantities & Fundamental Relations',
+    quantities: [
+      { sym: 'x', name: 'Displacement', desc: 'Distance & direction from equilibrium position' },
+      { sym: 'A', name: 'Amplitude', desc: 'Maximum displacement from equilibrium' },
+      { sym: 'T', name: 'Period', desc: 'Time taken for one complete oscillation' },
+      { sym: 'f', name: 'Frequency', desc: 'Number of complete oscillations per second' },
+      { sym: 'ω', name: 'Angular Frequency', desc: 'Rate of change of phase angle (2πf)' }
     ],
 
-    eqTitle: 'Essential Syllabus Equations & Verbal Meaning',
-    kinematicsTitle: 'Kinematics Equations',
-    energiesTitle: 'Energy & Period Equations',
-    varGuideTitle: 'Variables & SI Units Reference Guide',
+    // Section 5, 6, 7
+    sec5Title: '5. SHM Displacement Equations',
+    sec5Body: 'The displacement of an object undergoing SHM varies sinusoidally with initial phase φ:',
     
-    eqExpl: {
-      accel: 'Verbal Meaning: Acceleration (a) is proportional to displacement (x) from equilibrium, but acts in the opposite direction (- sign).',
-      vel: 'Verbal Meaning: Speed (v) is maximum at equilibrium (x = 0, v = ωA) and drops to zero at the turning endpoints (x = ±A).',
-      springT: 'Verbal Meaning: Period (T) increases with larger mass m and decreases with a stiffer spring k.',
-      pendT: 'Verbal Meaning: Period (T) increases with longer pendulum length L. Notice that pendulum period does NOT depend on bob mass m.',
-      energy: 'Verbal Meaning: Total mechanical energy stays constant, continuously converting between Ek (max at x=0) and Ep (max at x=±A).'
-    },
+    sec6Title: '6. Velocity in SHM & Maximum Speed',
+    sec6Body: 'Differentiating x = A sin(ωt + φ) with respect to time yields velocity v = dx/dt = Aω cos(ωt + φ). Expressed in terms of position:',
+    sec6Vmax: 'Maximum speed occurs at the equilibrium position (x = 0): v_max = ωA.',
 
+    sec7Title: '7. Acceleration in SHM & Maximum Acceleration',
+    sec7Body: 'Acceleration is proportional to negative displacement: a = -ω²x. Maximum acceleration occurs at extreme positions (x = ±A): a_max = ω²A.',
+
+    // Section 8, 9, 10
+    sec8Title: '8. Restoring Force in SHM',
+    sec8Body: 'From Newton’s second law F = ma and a = -ω²x, we get F = -mω²x. Thus restoring force is proportional to displacement.',
+
+    sec9Title: '9. Spring–Mass System',
+    sec9Body: 'For Hooke’s Law F = -kx and F = -mω²x, we obtain mω² = k → ω = √(k/m). The oscillation period is T = 2π√(m/k). Increasing m increases T; increasing k decreases T.',
+
+    sec10Title: '10. Simple Pendulum (Small Oscillations)',
+    sec10Body: 'For small angular displacements (θ ≤ 10°), period T = 2π√(L/g). Period T ∝ √L and T ∝ 1/√g. For small oscillations, the period does NOT depend on the mass of the bob.',
+
+    // Section 11 & 12
+    sec11Title: '11. Energy in SHM & Energy Transformations',
+    sec11Body: 'Total mechanical energy remains constant in ideal SHM: E = ½ k A² = ½ m ω² A². Energy continuously converts between Kinetic Energy (K) and Potential Energy (U).',
+    sec12PE: 'Potential Energy: U = ½ k x²',
+    sec12KE: 'Kinetic Energy: K = E - U = ½ k (A² - x²)',
+
+    // Section 13 & 14
+    sec13Title: '13. Phase Relationships & SHM Graphs',
+    phaseList: [
+      'x and a are 180° (π rad) out of phase (opposite directions).',
+      'x and v are 90° (π/2 rad) out of phase.',
+      'v and a are 90° (π/2 rad) out of phase.'
+    ],
+
+    sec14Title: '14. One Complete Oscillation',
+    sec14Body: 'During one cycle (0 → +A → 0 → -A → 0), the object passes through equilibrium twice. Total distance travelled in one oscillation = 4A.',
+
+    // Section 15 & 16
+    sec15Title: '15. Quick Comparison Table across Positions',
+    matrix: [
+      { pos: '+A (Right Extreme)', disp: 'Maximum (+A)', speed: '0', accel: 'Maximum (-ω²A)', ke: '0', pe: 'Maximum (½kA²)' },
+      { pos: '0 (Equilibrium)', disp: '0', speed: 'Maximum (ωA)', accel: '0', ke: 'Maximum (½kA²)', pe: 'Minimum (0)' },
+      { pos: '-A (Left Extreme)', disp: 'Maximum (-A)', speed: '0', accel: 'Maximum (+ω²A)', ke: '0', pe: 'Maximum (½kA²)' }
+    ],
+
+    sec16Title: '16. Most Important Formulae Cheat-Sheet',
+
+    // Senath Rules & Interactive Reflection
+    senathHeader: '🧠 Physics by Senath — Remember This',
+    rules: [
+      { title: '1. Acceleration Rule', formula: 'a = -ω²x', desc: 'Acceleration ALWAYS points towards equilibrium.' },
+      { title: '2. Maximum Speed Rule', formula: 'v_max = ωA', desc: 'Maximum speed ALWAYS occurs at equilibrium (x = 0).' },
+      { title: '3. Maximum Acceleration Rule', formula: 'a_max = ω²A', desc: 'Maximum acceleration ALWAYS occurs at extreme displacement (x = ±A).' }
+    ],
+    senathSummary: 'Far from equilibrium → Acceleration is LARGE. At equilibrium → Velocity is LARGE.',
+    
+    reflectionTitle: '🧪 Interactive Simulation Reflection Question',
+    reflectionQ: 'Why does the velocity become maximum when the acceleration becomes zero?',
+    reflectionAns: 'Because acceleration is the rate of change of velocity (dv/dt = 0). When acceleration is zero at equilibrium, velocity reaches a local turning point (maximum value) before starting to decrease on the other side!',
+    varGuideTitle: 'Variables & SI Units Reference Guide',
     vars: [
+      { sym: 'x', name: 'Displacement', unit: 'm' },
+      { sym: 'A', name: 'Amplitude', unit: 'm' },
+      { sym: 'v', name: 'Velocity', unit: 'm/s' },
       { sym: 'a', name: 'Acceleration', unit: 'm/s²' },
-      { sym: 'x', name: 'Displacement from equilibrium', unit: 'm' },
-      { sym: 'A', name: 'Amplitude (Max displacement)', unit: 'm' },
-      { sym: 'v', name: 'Instantaneous Velocity', unit: 'm/s' },
-      { sym: 'ω', name: 'Angular Frequency (2πf)', unit: 'rad/s' },
+      { sym: 'T', name: 'Period', unit: 's' },
       { sym: 'f', name: 'Frequency', unit: 'Hz (s⁻¹)' },
-      { sym: 'T', name: 'Time Period', unit: 's' },
-      { sym: 'm', name: 'Mass of body', unit: 'kg' },
-      { sym: 'k', name: 'Spring Stiffness Constant', unit: 'N/m' },
+      { sym: 'ω', name: 'Angular Frequency', unit: 'rad/s' },
+      { sym: 'm', name: 'Mass', unit: 'kg' },
+      { sym: 'k', name: 'Spring Constant', unit: 'N/m' },
       { sym: 'L', name: 'Pendulum Length', unit: 'm' },
       { sym: 'g', name: 'Gravitational Acceleration', unit: 'm/s²' },
-      { sym: 'Ek, Ep', name: 'Kinetic & Potential Energy', unit: 'J (Joules)' },
+      { sym: 'E', name: 'Total Energy', unit: 'J' },
+      { sym: 'K', name: 'Kinetic Energy', unit: 'J' },
+      { sym: 'U', name: 'Potential Energy', unit: 'J' }
     ],
-
-    tipsTitle: 'G.C.E. A/L Exam Key Insights',
-    tips: [
-      'Mass Independence in Simple Pendulums: Period T = 2π√(L/g) is independent of bob mass m.',
-      'Velocity vs Acceleration Extremes: Velocity is maximum at equilibrium (x=0); Acceleration is maximum at turning points (x=±A).',
-      'Equipartition Point: At displacement x = ±A/√2, Kinetic Energy equals Potential Energy (Ek = Ep = ½ E_total).'
-    ]
   },
   si: {
-    badge: 'තරංග සහ දෝලන • අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'සරල අනුවර්තී චලිතය (SHM) • පූර්ණ අන්තර්ක්‍රියාකාරී සටහන් පොත',
     notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
     simOnlyMode: 'අනුකරණය පමණක්',
-    tabTheory: 'සිද්ධාන්ත සහ නියම',
-    tabFormulas: 'සමීකරණ සහ ඒකක',
-    tabTips: 'උසස් පෙළ විභාග සටහන්',
+    tabTheory: 'සිද්ධාන්ත සහ මූලික නියම',
+    tabFormulas: 'සමීකරණ සහ ගණනය කිරීම්',
+    tabTips: 'සංසන්දනාත්මක සටහන් සහ සෙනත් නීති',
 
-    shmDefTitle: '1. සරල අනුවර්තී චලිතයේ අර්ථ දැක්වීම (SHM)',
-    shmDefBody: 'වස්තුවක ත්වරණය (a), ස්ථිර ලක්ෂ්‍යයක (සමතුලිත පිහිටීම) සිට ඇති විස්ථාපනයට (x) ඍජුව සමානුපාතික වන අතර, එම ත්වරණය සැමවිටම සමතුලිත පිහිටීම දෙසට යොමුව පවතී නම් එය සරල අනුවර්තී චලිතයක් ලෙස හැඳින්වේ.',
+    sec1Title: '1. සරල අනුවර්තී චලිතය (SHM) යනු කුමක්ද?',
+    sec1Body: 'වස්තුවක ත්වරණය (a), එහි සමතුලිත පිහිටීමේ සිට ඇති විස්ථාපනයට (x) ඍජුව සමානුපාතික වන අතර, එම ත්වරණය සැමවිටම සමතුලිත පිහිටීම දෙසට යොමුව පවතී නම් එය සරල අනුවර්තී චලිතයකි.',
+    sec1SignExpl: 'ඍණ ලකුණ (-): ත්වරණය සැමවිටම විස්ථාපනයට ප්‍රතිවිරුද්ධව සමතුලිත ලක්ෂ්‍යය දෙසට යොමුව ඇති බව පෙන්වයි.',
 
-    oscTypesTitle: '2. උසස් පෙළ විෂය නිර්දේශයේ දෝලන පද්ධති',
-    springTitle: 'දුනු-ස්කන්ධ පද්ධතිය:',
-    springBody: 'ප්‍රත්‍යානයන බලය F = -k x. කෝණික සංඛ්‍යාතය ස්කන්ධය (m) සහ දුනු නියතය (k) මත පදනම් වේ:',
-    pendulumTitle: 'සරල ලෝලකය:',
-    pendulumBody: 'කුඩා කෝණික විස්ථාපන සඳහා (θ ≤ 10°) ප්‍රත්‍යානයන බලය F ≈ -(m g / L) x. කෝණික සංඛ්‍යාතය දිග (L) සහ g මත පදනම් වේ:',
+    sec2Title: '2. මූලික සංකල්පය සහ ප්‍රත්‍යානයන බලය',
+    sec2Body: 'ඝර්ෂණයක් නැති පෘෂ්ඨයක් මත ඇති දුනු-ස්කන්ධ පද්ධතියක් ගැන සිතන්න. වස්තුව සමතුලිතතාවයෙන් ඉවතට තල්ලු කළ විට ප්‍රත්‍යානයන බලයක් ක්‍රියා කරයි.',
+    sec2Right: 'දකුණට විස්ථාපනය කළ විට (x > 0): ප්‍රත්‍යානයන බලය වමට ක්‍රියා කරයි (F ←).',
+    sec2Left: 'වමට විස්ථාපනය කළ විට (x < 0): ප්‍රත්‍යානයන බලය දකුණට ක්‍රියා කරයි (F →).',
 
-    dampingTitle: '3. ශක්තිය සහ අවපාතන තත්ත්ව',
-    dampingBody: 'අවපාතනය නොවූ SHM හි මුළු යාන්ත්‍රික ශක්තිය (E) නියතව පවතින අතර, ගති ශක්තිය (Ek) සහ විභව ශක්තිය (Ep) අතර එකිනෙකට පරිවර්තනය වේ. අවපාතන බලය F_d = -b v ඇතුළත් වූ විට:',
-    dampedList: [
-      'අවපාතන නොවූ (b = 0): මුළු ශක්තිය නියතව පවතී E = ½ m ω² A².',
-      'අඩු අවපාතන: විස්තාරය ඝාතීය ලෙස අඩුවේ A(t) = A₀ e^(-bt/2m).',
-      'අවසාන අවපාතන: දෝලනය නොවී අවම කාලයකින් සමතුලිතතාවට පැමිණේ.',
-      'අධි අවපාතන: දෝලනය නොවී ඉතා සෙමින් සමතුලිතතාවට පැමිණේ.'
+    sec3Title: '3. SHM සඳහා කොන්දේසි',
+    sec3Eq: 'සමතුලිත පිහිටීමේදී (x = 0): ත්වරණය a = 0 වන අතර ප්‍රවේගය v උපරිම වේ.',
+    sec3Ext: 'උපරිම විස්ථාපනයේදී (x = ±A): ත්වරණය |a| = ω²A උපරිම වන අතර ප්‍රවේගය v = 0 වේ.',
+
+    sec4Title: '4. වැදගත් භෞතික රාශි',
+    quantities: [
+      { sym: 'x', name: 'විස්ථාපනය', desc: 'සමතුලිත පිහිටීමේ සිට ඇති දුර සහ දිශාව' },
+      { sym: 'A', name: 'විස්තාරය', desc: 'සමතුලිත පිහිටීමේ සිට ඇති උපරිම විස්ථාපනය' },
+      { sym: 'T', name: 'ආවර්ත කාලය', desc: 'එක් පූර්ණ දෝලනයක් සඳහා ගතවන කාලය' },
+      { sym: 'f', name: 'සංඛ්‍යාතය', desc: 'තත්පරයකදී සිදුවන පූර්ණ දෝලන ගණන' },
+      { sym: 'ω', name: 'කෝණික සංඛ්‍යාතය', desc: 'කලා කෝණය වෙනස්වීමේ ශීඝ්‍රතාව (2πf)' }
     ],
 
-    eqTitle: 'ප්‍රධාන සමීකරණ සහ ඒවායේ භෞතික අර්ථය',
-    kinematicsTitle: 'SHM චලිත විද්‍යාත්මක සමීකරණ',
-    energiesTitle: 'ශක්තිය සහ ආවර්ත කාල සමීකරණ',
+    sec5Title: '5. SHM විස්ථාපන සමීකරණ',
+    sec5Body: 'ආරම්භක කලා කෝණය φ වන විට SHM දෝලනය වන වස්තුවක විස්ථාපනය සයින් හෝ කොසයින් ලෙස දැක්විය හැක:',
+
+    sec6Title: '6. SHM හි ප්‍රවේගය සහ උපරිම ප්‍රවේගය',
+    sec6Body: 'x = A sin(ωt + φ) කාලයෙන් අවකලනය කළ විට v = dx/dt = Aω cos(ωt + φ) ලැබේ. ස්ථානය අනුව ප්‍රවේගය:',
+    sec6Vmax: 'උපරිම ප්‍රවේගය සමතුලිත පිහිටීමේදී (x = 0) සිදුවේ: v_max = ωA.',
+
+    sec7Title: '7. SHM හි ත්වරණය සහ උපරිම ත්වරණය',
+    sec7Body: 'ත්වරණය විස්ථාපනයට ප්‍රතිවිරුද්ධව සමානුපාතික වේ: a = -ω²x. උපරිම ත්වරණය කෙළවර ලක්ෂ්‍යවලදී (x = ±A) සිදුවේ: a_max = ω²A.',
+
+    sec8Title: '8. ප්‍රත්‍යානයන බලය',
+    sec8Body: 'නියුටන්ගේ දෙවන නියමයෙන් F = ma සහ a = -ω²x ආදේශ කළ විට F = -mω²x ලැබේ. එනම් බලය විස්ථාපනයට සමානුපාතික වේ.',
+
+    sec9Title: '9. දුනු–ස්කන්ධ පද්ධතිය',
+    sec9Body: 'හුක්ගේ නියමය F = -kx සහ F = -mω²x මගින් mω² = k → ω = √(k/m) ලැබේ. ආවර්ත කාලය T = 2π√(m/k) වේ. ස්කන්ධය m වැඩිවන විට T වැඩිවේ; k වැඩිවන විට T අඩුවේ.',
+
+    sec10Title: '10. සරල ලෝලකය (කුඩා දෝලන)',
+    sec10Body: 'කුඩා කෝණික විස්ථාපන සඳහා (θ ≤ 10°), ආවර්ත කාලය T = 2π√(L/g) වේ. T ∝ √L සහ T ∝ 1/√g වේ. කුඩා දෝලන සඳහා ආවර්ත කාලය ලෝලකයේ ස්කන්ධය මත රඳා නොපවතී.',
+
+    sec11Title: '11. ශක්තිය සහ ශක්ති පරිවර්තනය',
+    sec11Body: 'අවපාතනය නොවූ SHM හි මුළු යාන්ත්‍රික ශක්තිය E = ½ k A² නියතව පවතී. ගති ශක්තිය (K) සහ විභව ශක්තිය (U) අතර නිරන්තරයෙන් පරිවර්තනය වේ.',
+    sec12PE: 'විභව ශක්තිය: U = ½ k x²',
+    sec12KE: 'ගති ශක්තිය: K = E - U = ½ k (A² - x²)',
+
+    sec13Title: '13. කලා සම්බන්ධතා සහ ප්‍රස්ථාර',
+    phaseList: [
+      'x සහ a එකිනෙකට 180° (π rad) ප්‍රති-කලා වේ (ප්‍රතිවිරුද්ධ දිශා).',
+      'x සහ v එකිනෙකට 90° (π/2 rad) කලා වෙනසක් පවතී.',
+      'v සහ a එකිනෙකට 90° (π/2 rad) කලා වෙනසක් පවතී.'
+    ],
+
+    sec14Title: '14. එක් පූර්ණ දෝලනයක්',
+    sec14Body: 'එක් පූර්ණ චක්‍රයකදී (0 → +A → 0 → -A → 0), වස්තුව දෙවරක් සමතුලිතතාව හරහා යයි. පූර්ණ දෝලනයකදී ගමන් කරන මුළු දුර = 4A.',
+
+    sec15Title: '15. පිහිටීම් අනුව සංසන්දනාත්මක වගුව',
+    matrix: [
+      { pos: '+A (දකුණු කෙළවර)', disp: 'උපරිම (+A)', speed: '0', accel: 'උපරිම (-ω²A)', ke: '0', pe: 'උපරිම (½kA²)' },
+      { pos: '0 (සමතුලිතතාව)', disp: '0', speed: 'උපරිම (ωA)', accel: '0', ke: 'උපරිම (½kA²)', pe: 'අවම (0)' },
+      { pos: '-A (වම් කෙළවර)', disp: 'උපරිම (-A)', speed: '0', accel: 'උපරිම (+ω²A)', ke: '0', pe: 'උපරිම (½kA²)' }
+    ],
+
+    sec16Title: '16. සියලුම ප්‍රධාන සමීකරණ එකතුව',
+
+    senathHeader: '🧠 Physics by Senath — මතක තබා ගන්න',
+    rules: [
+      { title: '1. ත්වරණ නීතිය', formula: 'a = -ω²x', desc: 'ත්වරණය සැමවිටම සමතුලිත පිහිටීම දෙසට යොමුවේ.' },
+      { title: '2. උපරිම ප්‍රවේග නීතිය', formula: 'v_max = ωA', desc: 'උපරිම ප්‍රවේගය සැමවිටම සමතුලිත පිහිටීමේදී (x = 0) සිදුවේ.' },
+      { title: '3. උපරිම ත්වරණ නීතිය', formula: 'a_max = ω²A', desc: 'උපරිම ත්වරණය සැමවිටම උපරිම විස්ථාපනයේදී (x = ±A) සිදුවේ.' }
+    ],
+    senathSummary: 'සමතුලිතතාවයෙන් ඈතදී → ත්වරණය ඉහළයි. සමතුලිතතාවයේදී → ප්‍රවේගය ඉහළයි.',
+
+    reflectionTitle: '🧪 අන්තර්ක්‍රියාකාරී සිමියුලේෂන් චින්තන ප්‍රශ්නය',
+    reflectionQ: 'ත්වරණය ශූන්‍ය වන විට ප්‍රවේගය උපරිම වන්නේ ඇයි?',
+    reflectionAns: 'මන්දයත් ත්වරණය යනු ප්‍රවේගයේ වෙනස්වීමේ ශීඝ්‍රතාවයි (dv/dt = 0). සමතුලිතතාවයේදී ත්වරණය ශූන්‍ය වන විට, ප්‍රවේගය එහි උපරිම අගයට ළඟා වේ!',
     varGuideTitle: 'පරාමිතීන් සහ SI ඒකක නාමාවලිය',
-
-    eqExpl: {
-      accel: 'වචනාර්ථය: ත්වරණය විස්ථාපනයට සමානුපාතික වන අතර සැමවිටම සමතුලිත ලක්ෂ්‍යය දෙසට යොමුවේ (- ලකුණ).',
-      vel: 'වචනාර්ථය: ප්‍රවේගය සමතුලිත ලක්ෂ්‍යයේදී (x = 0) උපරිම වන අතර (v = ωA) කෙළවර ලක්ෂ්‍යවලදී (x = ±A) ශූන්‍ය වේ.',
-      springT: 'වචනාර්ථය: ස්කන්ධය m වැඩිවන විට ආවර්ත කාලය T වැඩිවේ; දුන්නෙහි තදබව k වැඩිවන විට ආවර්ත කාලය අඩුවේ.',
-      pendT: 'වචනාර්ථය: දිග L වැඩිවන විට ආවර්ත කාලය T වැඩිවේ. ලෝලකයේ ආවර්ත කාලය ස්කන්ධය මත රඳා නොපවතී.',
-      energy: 'වචනාර්ථය: මුළු යාන්ත්‍රික ශක්තිය නියතව පවතින අතර ගති ශක්තිය සහ විභව ශක්තිය අතර නිරන්තරයෙන් පරිවර්තනය වේ.'
-    },
-
     vars: [
+      { sym: 'x', name: 'විස්ථාපනය', unit: 'm' },
+      { sym: 'A', name: 'විස්තාරය', unit: 'm' },
+      { sym: 'v', name: 'ප්‍රවේගය', unit: 'm/s' },
       { sym: 'a', name: 'ත්වරණය', unit: 'm/s²' },
-      { sym: 'x', name: 'සමතුලිත ලක්ෂ්‍යයේ සිට විස්ථාපනය', unit: 'm' },
-      { sym: 'A', name: 'විස්තාරය (උපරිම විස්ථාපනය)', unit: 'm' },
-      { sym: 'v', name: 'ක්ෂණික ප්‍රවේගය', unit: 'm/s' },
-      { sym: 'ω', name: 'කෝණික සංඛ්‍යාතය (2πf)', unit: 'rad/s' },
-      { sym: 'f', name: 'සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
       { sym: 'T', name: 'ආවර්ත කාලය', unit: 's' },
-      { sym: 'm', name: 'වස්තුවේ ස්කන්ධය', unit: 'kg' },
+      { sym: 'f', name: 'සංඛ්‍යාතය', unit: 'Hz (s⁻¹)' },
+      { sym: 'ω', name: 'කෝණික සංඛ්‍යාතය', unit: 'rad/s' },
+      { sym: 'm', name: 'ස්කන්ධය', unit: 'kg' },
       { sym: 'k', name: 'දුන්නෙහි නියතය', unit: 'N/m' },
       { sym: 'L', name: 'ලෝලකයේ දිග', unit: 'm' },
       { sym: 'g', name: 'ගුරුත්වජ ත්වරණය', unit: 'm/s²' },
-      { sym: 'Ek, Ep', name: 'ගති සහ විභව ශක්තිය', unit: 'J (ජූල්)' },
+      { sym: 'E', name: 'මුළු ශක්තිය', unit: 'J' },
+      { sym: 'K', name: 'ගති ශක්තිය', unit: 'J' },
+      { sym: 'U', name: 'විභව ශක්තිය', unit: 'J' }
     ],
-
-    tipsTitle: 'උසස් පෙළ විභාගයට වැදගත් කරුණු',
-    tips: [
-      'ලෝලකයේ ආවර්ත කාලය: T = 2π√(L/g) ආවර්ත කාලය ස්කන්ධය (m) මත රඳා නොපවතී.',
-      'උපරිම ප්‍රවේගය සහ ත්වරණය: ප්‍රවේගය උපරිම වන්නේ සමතුලිත ලක්ෂ්‍යයේදී (x=0); ත්වරණය උපරිම වන්නේ කෙළවර ලක්ෂ්‍යවලදී (x=±A).',
-      'ශක්ති සමතුලිත ලක්ෂ්‍යය: x = ±A/√2 විස්ථාපනයේදී ගති ශක්තිය සහ විභව ශක්තිය එකිනෙකට සමාන වේ (Ek = Ep).'
-    ]
   },
   ta: {
-    badge: 'அலைகள் மற்றும் ஊசலாட்டங்கள் • குறிப்பேடு',
+    badge: 'எளிய சீரிசை இயக்கம் (SHM) • முழுமையான குறிப்பேடு',
     notebookMode: 'செயல்திறன் குறிப்பேடு',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
-    tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
-    tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
-    tabTips: 'தேர்வுக்கான முக்கிய குறிப்புகள்',
+    tabTheory: 'கோட்பாடு மற்றும் அடிப்படை விதிகள்',
+    tabFormulas: 'சமன்பாடுகள் மற்றும் கணக்கீடுகள்',
+    tabTips: 'ஒப்பீட்டு அட்டவணை & சேனாத் விதிகள்',
 
-    shmDefTitle: '1. எளிய இசை இயக்கத்தின் வரைவிலக்கணம் (SHM)',
-    shmDefBody: 'ஒரு பொருளின் முடுக்கம் (a) அதன் சமநிலை இடத்திலிருந்து இடப்பெயர்ச்சிக்கு (x) நேர் விகிதசமமாகவும், எப்போதும் சமநிலை இடத்தை நோக்கியதாகவும் அமைந்தால் அது எளிய இசை இயக்கம் எனப்படும்.',
+    sec1Title: '1. எளிய சீரிசை இயக்கம் (SHM) என்றால் என்ன?',
+    sec1Body: 'ஒரு பொருளின் முடுக்கம் (a), சமநிலை நிலையிலிருந்து அதன் இடப்பெயர்ச்சிக்கு (x) நேர்விகிதசமமாகவும், எப்போதும் சமநிலை நிலையை நோக்கியதாகவும் அமைந்தால் அது எளிய சீரிசை இயக்கமாகும்.',
+    sec1SignExpl: 'எதிர்மறை அடையாளம் (-): முடுக்கம் எப்போதும் இடப்பெயர்ச்சிக்கு எதிர்த்திசையில் சமநிலையை நோக்கியது என்பதை உணர்த்துகிறது.',
 
-    oscTypesTitle: '2. அலைவு அமைப்புகள்',
-    springTitle: 'வில்-திணிவு அமைப்பு:',
-    springBody: 'மீட்டமை விசை F = -k x. கோண அதிர்வெண் திணிவு (m) மற்றும் வில் மாறிலி (k) என்பவற்றில் தங்கியுள்ளது:',
-    pendulumTitle: 'எளிய ஊசல்:',
-    pendulumBody: 'சிறிய கோண இடப்பெயர்ச்சிகளுக்கு (θ ≤ 10°) மீட்டமை விசை F ≈ -(m g / L) x. கோண அதிர்வெண் நீளம் (L) மற்றும் g என்பவற்றில் தங்கியுள்ளது:',
+    sec2Title: '2. அடிப்படை யோசனை & மீட்பு விசை',
+    sec2Body: 'ஒரு வில்லியுடன் இணைக்கப்பட்ட திணிவைக் கருதுங்கள். சமநிலையிலிருந்து நகர்த்தப்படும் போது மீட்பு விசை சமநிலையை நோக்கிச் செயல்படுகிறது.',
+    sec2Right: 'வலப்புறம் நகர்த்தப்படும் போது (x > 0): மீட்பு விசை இடப்புறம் செயல்படுகிறது (F ←).',
+    sec2Left: 'இடப்புறம் நகர்த்தப்படும் போது (x < 0): மீட்பு விசை வலப்புறம் செயல்படுகிறது (F →).',
 
-    dampingTitle: '3. ஆற்றல் மற்றும் தணிப்பு நிலைகள்',
-    dampingBody: 'தணிக்கப்படாத SHM இல் மொத்த இயந்திர ஆற்றல் (E) மாறிலியாக இருக்கும். தணிப்பு விசை F_d = -b v சேர்க்கப்படும் போது:',
-    dampedList: [
-      'தணிக்கப்படாதது (b = 0): மாறா மொத்த ஆற்றல் E = ½ m ω² A².',
-      'குறை தணிப்பு: வீச்சு அதிவேகமாகக் குறைகிறது A(t) = A₀ e^(-bt/2m).',
-      'முக்கிய தணிப்பு: அலைவுறாமல் மிகக் குறைந்த நேரத்தில் சமநிலையை அடைகிறது.',
-      'அதிக தணிப்பு: அலைவுறாமல் மெதுவாக சமநிலையை அடைகிறது.'
+    sec3Title: '3. SHM க்கான நிபந்தனைகள்',
+    sec3Eq: 'சமநிலையில் (x = 0): முடுக்கம் a = 0, திசைவேகம் v அதிகபட்சம்.',
+    sec3Ext: 'அதிகபட்ச இடப்பெயர்ச்சியில் (x = ±A): முடுக்கம் |a| = ω²A அதிகபட்சம், திசைவேகம் v = 0.',
+
+    sec4Title: '4. முக்கிய அளவுகள்',
+    quantities: [
+      { sym: 'x', name: 'இடப்பெயர்ச்சி', desc: 'சமநிலையிலிருந்து தூரம் மற்றும் திசை' },
+      { sym: 'A', name: 'வீச்சு', desc: 'சமநிலையிலிருந்து அதிகபட்ச இடப்பெயர்ச்சி' },
+      { sym: 'T', name: 'அலைவுக் காலம்', desc: 'ஒரு முழு அலைவுக்கான நேரம்' },
+      { sym: 'f', name: 'அதிர்வெண்', desc: 'ஒரு வினாடிக்கான முழு அலைவுகளின் எண்ணிக்கை' },
+      { sym: 'ω', name: 'கோண அதிர்வெண்', desc: 'கட்டக் கோண மாறுபாட்டு வீதம் (2πf)' }
     ],
 
-    eqTitle: 'முக்கிய சமன்பாடுகள் மற்றும் விளக்கம்',
-    kinematicsTitle: 'SHM இயக்கவியல் சமன்பாடுகள்',
-    energiesTitle: 'ஆற்றல் மற்றும் அலைவுக் கால சமன்பாடுகள்',
+    sec5Title: '5. SHM இடப்பெயர்ச்சி சமன்பாடுகள்',
+    sec5Body: 'தொடக்கக் கட்டக் கோணம் φ கொண்ட SHM இயக்கத்தின் இடப்பெயர்ச்சி:',
+
+    sec6Title: '6. திசைவேகம் மற்றும் அதிகபட்ச திசைவேகம்',
+    sec6Body: 'x = A sin(ωt + φ) ஐ நேரத்தால் வகைக்கெழு செய்யும் போது v = dx/dt = Aω cos(ωt + φ) கிடைக்கும்:',
+    sec6Vmax: 'சமநிலையில் (x = 0) அதிகபட்ச திசைவேகம் நிகழும்: v_max = ωA.',
+
+    sec7Title: '7. முடுக்கம் மற்றும் அதிகபட்ச முடுக்கம்',
+    sec7Body: 'முடுக்கம் எதிர் இடப்பெயர்ச்சிக்கு நேர்விகிதசமம்: a = -ω²x. நுனிகளில் (x = ±A) அதிகபட்ச முடுக்கம் நிகழும்: a_max = ω²A.',
+
+    sec8Title: '8. மீட்பு விசை',
+    sec8Body: 'நியூட்டனின் இரண்டாம் விதி F = ma மற்றும் a = -ω²x என்பதால், F = -mω²x கிடைக்கும்.',
+
+    sec9Title: '9. வில்-திணிவு அமைப்பு',
+    sec9Body: 'ஹூக்கின் விதி F = -kx மற்றும் F = -mω²x மூலம், mω² = k → ω = √(k/m). அலைவுக் காலம் T = 2π√(m/k). m அதிகரிக்கும் போது T அதிகரிக்கும்; k அதிகரிக்கும் போது T குறையும்.',
+
+    sec10Title: '10. தனி ஊசல் (சிறிய அலைவுகள்)',
+    sec10Body: 'சிறிய கோண இடப்பெயர்ச்சிகளுக்கு (θ ≤ 10°), அலைவுக் காலம் T = 2π√(L/g). T ∝ √L மற்றும் T ∝ 1/√g. சிறிய அலைவுகளுக்கு அலைவுக் காலம் ஊசல்குண்டின் திணிவில் தங்கியிருக்காது.',
+
+    sec11Title: '11. ஆற்றல் மற்றும் ஆற்றல் மாற்றங்கள்',
+    sec11Body: 'மொத்த இயந்திர ஆற்றல் E = ½ k A² மாறிலியாகும். இயக்க ஆற்றலும் நிலை ஆற்றலும் தொடர்ந்து மாறுகின்றன.',
+    sec12PE: 'நிலை ஆற்றல்: U = ½ k x²',
+    sec12KE: 'இயக்க ஆற்றல்: K = E - U = ½ k (A² - x²)',
+
+    sec13Title: '13. கட்டத் தொடர்புகள் மற்றும் வரைபடங்கள்',
+    phaseList: [
+      'x மற்றும் a 180° (π rad) எதிர்க்கட்டத்தில் உள்ளன.',
+      'x மற்றும் v 90° (π/2 rad) கட்ட வேறுபாட்டில் உள்ளன.',
+      'v மற்றும் a 90° (π/2 rad) கட்ட வேறுபாட்டில் உள்ளன.'
+    ],
+
+    sec14Title: '14. ஒரு முழு அலைவு',
+    sec14Body: 'ஒரு சுழற்சியில் (0 → +A → 0 → -A → 0), பொருள் இருமுறை சமநிலையைக் கடக்கிறது. ஒரு முழு அலைவில் கடந்த மொத்தத் தூரம் = 4A.',
+
+    sec15Title: '15. நிலைகள் பற்றிய ஒப்பீட்டு அட்டவணை',
+    matrix: [
+      { pos: '+A (வலது நுனி)', disp: 'அதிகபட்சம் (+A)', speed: '0', accel: 'அதிகபட்சம் (-ω²A)', ke: '0', pe: 'அதிகபட்சம் (½kA²)' },
+      { pos: '0 (சமநிலை)', disp: '0', speed: 'அதிகபட்சம் (ωA)', accel: '0', ke: 'அதிகபட்சம் (½kA²)', pe: 'குறைந்தபட்சம் (0)' },
+      { pos: '-A (இடது நுனி)', disp: 'அதிகபட்சம் (-A)', speed: '0', accel: 'அதிகபட்சம் (+ω²A)', ke: '0', pe: 'அதிகபட்சம் (½kA²)' }
+    ],
+
+    sec16Title: '16. முக்கிய சமன்பாடுகள்',
+
+    senathHeader: '🧠 Physics by Senath — நினைவில் கொள்க',
+    rules: [
+      { title: '1. முடுக்க விதி', formula: 'a = -ω²x', desc: 'முடுக்கம் எப்போதும் சமநிலையை நோக்கியது.' },
+      { title: '2. அதிகபட்ச திசைவேக விதி', formula: 'v_max = ωA', desc: 'அதிகபட்ச திசைவேகம் எப்போதும் சமநிலையில் (x = 0) நிகழும்.' },
+      { title: '3. அதிகபட்ச முடுக்க விதி', formula: 'a_max = ω²A', desc: 'அதிகபட்ச முடுக்கம் எப்போதும் நுனிகளில் (x = ±A) நிகழும்.' }
+    ],
+    senathSummary: 'சமநிலையிலிருந்து தொலைவில் → முடுக்கம் அதிகம். சமநிலையில் → திசைவேகம் அதிகம்.',
+
+    reflectionTitle: '🧪 சிந்தனை கேள்வி',
+    reflectionQ: 'முடுக்கம் சுழியமாகும் போது திசைவேகம் ஏன் அதிகபட்சமாகிறது?',
+    reflectionAns: 'முடுக்கம் என்பது திசைவேக மாறுபாட்டு வீதமாகும் (dv/dt = 0). சமநிலையில் முடுக்கம் சுழியமாகும் போது, திசைவேகம் தன் அதிகபட்ச நிலையை அடைகிறது!',
     varGuideTitle: 'மாறிகள் மற்றும் SI அலகுகள் வழிகாட்டி',
-
-    eqExpl: {
-      accel: 'விளக்கம்: முடுக்கம் சமநிலையிலிருந்து இடப்பெயர்ச்சிக்கு நேர்விகிதசமமானது, எப்போதும் சமநிலையை நோக்கியது (- அடையாளம்).',
-      vel: 'விளக்கம்: சமநிலையில் (x = 0) திசைவேகம் அதிகம் (v = ωA), நுனிகளில் (x = ±A) சுழியம்.',
-      springT: 'விளக்கம்: திணிவு m அதிகரிக்கும் போது அலைவுக்காலம் T அதிகரிக்கும்; வில் மாறிலி k அதிகரிக்கும் போது குறையும்.',
-      pendT: 'விளக்கம்: நீளம் L அதிகரிக்கும் போது அலைவுக்காலம் T அதிகரிக்கும். திணிவு m இல் தங்கியிருக்காது.',
-      energy: 'விளக்கம்: மொத்த ஆற்றல் மாறாது, இயக்க ஆற்றலும் நிலை ஆற்றலும் ஒன்றுக்கொன்று மாறுகின்றன.'
-    },
-
     vars: [
+      { sym: 'x', name: 'இடப்பெயர்ச்சி', unit: 'm' },
+      { sym: 'A', name: 'வீச்சு', unit: 'm' },
+      { sym: 'v', name: 'திசைவேகம்', unit: 'm/s' },
       { sym: 'a', name: 'முடுக்கம்', unit: 'm/s²' },
-      { sym: 'x', name: 'சமநிலையிலிருந்து இடப்பெயர்ச்சி', unit: 'm' },
-      { sym: 'A', name: 'வீச்சு (அதிகபட்ச இடப்பெயர்ச்சி)', unit: 'm' },
-      { sym: 'v', name: 'கணநேர திசைவேகம்', unit: 'm/s' },
-      { sym: 'ω', name: 'கோண அதிர்வெண் (2πf)', unit: 'rad/s' },
-      { sym: 'f', name: 'அதிர்வெண்', unit: 'Hz (s⁻¹)' },
       { sym: 'T', name: 'அலைவுக் காலம்', unit: 's' },
+      { sym: 'f', name: 'அதிர்வெண்', unit: 'Hz (s⁻¹)' },
+      { sym: 'ω', name: 'கோண அதிர்வெண்', unit: 'rad/s' },
       { sym: 'm', name: 'திணிவு', unit: 'kg' },
       { sym: 'k', name: 'வில் மாறிலி', unit: 'N/m' },
       { sym: 'L', name: 'ஊசல் நீளம்', unit: 'm' },
       { sym: 'g', name: 'புவியீர்ப்பு முடுக்கம்', unit: 'm/s²' },
-      { sym: 'Ek, Ep', name: 'இயக்க & நிலை ஆற்றல்', unit: 'J (ஜூல்)' },
+      { sym: 'E', name: 'மொத்த ஆற்றல்', unit: 'J' },
+      { sym: 'K', name: 'இயக்க ஆற்றல்', unit: 'J' },
+      { sym: 'U', name: 'நிலை ஆற்றல்', unit: 'J' }
     ],
-
-    tipsTitle: 'உயர்தர தேர்வுக்கான முக்கிய தகவல்கள்',
-    tips: [
-      'ஊசலின் திணிவு சாரா நிலை: அலைவுக்காலம் T = 2π√(L/g) ஊசல்குண்டின் திணிவு m இல் தங்கியிருக்காது.',
-      'அதிகபட்ச திசைவேகம் மற்றும் முடுக்கம்: சமநிலையில் (x=0) திசைவேகம் அதிகம்; நுனிகளில் (x=±A) முடுக்கம் அதிகம்.',
-      'சம ஆற்றல் புள்ளி: x = ±A/√2 இடப்பெயர்ச்சியில் இயக்க ஆற்றலும் நிலை ஆற்றலும் சமமாகும் (Ek = Ep).'
-    ]
   }
 };
 
@@ -1068,76 +1200,200 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
             </button>
           </div>
 
-          {/* Tab 1: Theory & Physical Laws */}
+                    {/* Tab 1: Theory & Basic Laws */}
           {activeTheoryTab === 'theory' && (
-            <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
-              <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl space-y-1.5">
-                <h3 className="font-extrabold text-slate-900 text-sm">{tn.shmDefTitle}</h3>
-                <p>{tn.shmDefBody}</p>
-                <div className="pt-1 text-center font-bold text-indigo-700">
-                  <BlockMath math="a = -\omega^2 x" />
+            <div className="space-y-5 text-xs text-slate-700 leading-relaxed">
+              {/* Sec 1: What is SHM? */}
+              <div className="bg-slate-50 border-l-4 border-indigo-600 p-4 rounded-r-xl space-y-2">
+                <h3 className="font-extrabold text-slate-900 text-sm">{tn.sec1Title}</h3>
+                <p className="font-medium text-slate-700">{tn.sec1Body}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <div className="bg-white p-2.5 rounded-lg border border-indigo-150 text-center font-mono font-bold text-indigo-800 text-xs shadow-2xs">
+                    <BlockMath math="a \propto -x \implies \boxed{a = -\omega^2 x}" />
+                  </div>
+                  <div className="bg-indigo-50/70 p-2.5 rounded-lg border border-indigo-100 text-[11px] text-indigo-900 font-medium flex items-center">
+                    {tn.sec1SignExpl}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              {/* Sec 2: Basic Idea & Spring Diagram */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                  {tn.sec2Title}
+                </h4>
+                <p>{tn.sec2Body}</p>
+                
+                {/* Visual Spring Restoring Force Box */}
+                <div className="bg-slate-900 text-slate-100 font-mono text-[11px] p-3.5 rounded-xl space-y-2 overflow-x-auto shadow-inner">
+                  <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Mass-Spring Restoring Force Diagram</div>
+                  <div>
+                    <span className="text-amber-400">Equilibrium (x = 0):</span> ───────●─────── (Restoring Force F = 0)
+                  </div>
+                  <div>
+                    <span className="text-blue-400">Displaced Right (x &gt; 0):</span> ───────●───────→ x  |  <span className="text-rose-400 font-bold">← F</span> (Restoring force acts LEFT)
+                  </div>
+                  <div>
+                    <span className="text-purple-400">Displaced Left (x &lt; 0):</span>  x ←───────●───────  |  <span className="text-emerald-400 font-bold">F →</span> (Restoring force acts RIGHT)
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600 font-medium pt-1">
+                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-150">{tn.sec2Right}</div>
+                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-150">{tn.sec2Left}</div>
+                </div>
+              </div>
+
+              {/* Sec 3: Conditions for SHM */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-900 text-xs uppercase tracking-wide">At Equilibrium (x = 0)</h4>
+                  <p className="text-emerald-800 font-medium">{tn.sec3Eq}</p>
+                  <BlockMath math="x = 0 \implies a = 0, \quad v = v_{\max} = \omega A" />
+                </div>
+                <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-amber-900 text-xs uppercase tracking-wide">At Maximum Displacement (x = ±A)</h4>
+                  <p className="text-amber-800 font-medium">{tn.sec3Ext}</p>
+                  <BlockMath math="x = \pm A \implies |a|_{\max} = \omega^2 A, \quad v = 0" />
+                </div>
+              </div>
+
+              {/* Sec 8, 9, 10: Forces, Spring & Pendulum */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                    {tn.sec8Title}
+                  </h4>
+                  <p>{tn.sec8Body}</p>
+                  <BlockMath math="\boxed{F = ma = -m\omega^2 x}" />
+                </div>
+
                 <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
                   <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                    {tn.springTitle}
+                    {tn.sec9Title}
                   </h4>
-                  <p>{tn.springBody}</p>
-                  <BlockMath math="\omega = \sqrt{\frac{k}{m}}, \quad T = 2\pi\sqrt{\frac{m}{k}}" />
+                  <p>{tn.sec9Body}</p>
+                  <BlockMath math="\omega = \sqrt{\frac{k}{m}}, \quad \boxed{T = 2\pi\sqrt{\frac{m}{k}}}" />
                 </div>
 
                 <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
                   <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-purple-600"></span>
-                    {tn.pendulumTitle}
+                    {tn.sec10Title}
                   </h4>
-                  <p>{tn.pendulumBody}</p>
-                  <BlockMath math="\omega = \sqrt{\frac{g}{L}}, \quad T = 2\pi\sqrt{\frac{L}{g}}" />
+                  <p>{tn.sec10Body}</p>
+                  <BlockMath math="\boxed{T = 2\pi\sqrt{\frac{L}{g}}}, \quad T \propto \sqrt{L}" />
                 </div>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2">
-                <h4 className="font-bold text-slate-900 text-xs">{tn.dampingTitle}</h4>
-                <p>{tn.dampingBody}</p>
-                <ul className="list-disc list-inside space-y-1 pl-1 text-slate-600">
-                  {tn.dampedList.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
+              {/* Sec 11 & 12: Energy in SHM */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs">{tn.sec11Title}</h4>
+                <p>{tn.sec11Body}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 text-center space-y-1">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Total Energy</div>
+                    <BlockMath math="E = \frac{1}{2} k A^2" />
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 text-center space-y-1">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Potential Energy</div>
+                    <BlockMath math="U = \frac{1}{2} k x^2" />
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-slate-200 text-center space-y-1">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Kinetic Energy</div>
+                    <BlockMath math="K = \frac{1}{2} k (A^2 - x^2)" />
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Tab 2: Equations & SI Units */}
           {activeTheoryTab === 'formulas' && (
-            <div className="space-y-5">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.eqTitle}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-bold text-indigo-700 text-xs">{tn.kinematicsTitle}</h4>
-                  <div>
-                    <BlockMath math="a(t) = -\omega^2 x" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.accel}</p>
+            <div className="space-y-6">
+              {/* Sec 4: Quantities Table */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.sec4Title}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold">
+                        <th className="py-2 px-3">Quantity</th>
+                        <th className="py-2 px-3">Symbol</th>
+                        <th className="py-2 px-3">Description & SI Meaning</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-600">
+                      {tn.quantities.map((q, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-semibold text-slate-800">{q.name}</td>
+                          <td className="py-2 px-3 font-mono font-bold text-indigo-600">({q.sym})</td>
+                          <td className="py-2 px-3">{q.desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center font-bold text-indigo-700">
+                    <BlockMath math="\boxed{f = \frac{1}{T}}" />
                   </div>
-                  <div>
-                    <BlockMath math="v(t) = \pm \omega \sqrt{A^2 - x^2}" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.vel}</p>
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center font-bold text-indigo-700">
+                    <BlockMath math="\boxed{\omega = 2\pi f = \frac{2\pi}{T}}" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sec 5, 6, 7: Displacement, Velocity & Acceleration */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Sec 5: Displacement */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-indigo-700 text-xs">{tn.sec5Title}</h4>
+                  <p className="text-[11px] text-slate-600">{tn.sec5Body}</p>
+                  <BlockMath math="\boxed{x = A\sin(\omega t + \phi)}" />
+                  <BlockMath math="\boxed{x = A\cos(\omega t + \phi)}" />
+                </div>
+
+                {/* Sec 6: Velocity */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-blue-700 text-xs">{tn.sec6Title}</h4>
+                  <p className="text-[11px] text-slate-600">{tn.sec6Body}</p>
+                  <BlockMath math="v = \frac{dx}{dt} = A\omega\cos(\omega t + \phi)" />
+                  <BlockMath math="\boxed{v = \pm\omega\sqrt{A^2 - x^2}}" />
+                  <p className="text-[11px] text-blue-900 bg-blue-50 p-2 rounded border border-blue-150 font-medium">{tn.sec6Vmax}</p>
+                </div>
+
+                {/* Sec 7: Acceleration */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-purple-700 text-xs">{tn.sec7Title}</h4>
+                  <p className="text-[11px] text-slate-600">{tn.sec7Body}</p>
+                  <BlockMath math="\boxed{a = -\omega^2 x}" />
+                  <BlockMath math="\boxed{a_{\max} = \omega^2 A}" />
+                </div>
+              </div>
+
+              {/* Sec 13 & 14: Phase & Cycle */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-slate-900 text-xs">{tn.sec13Title}</h4>
+                  <div className="space-y-2 text-xs">
+                    {tn.phaseList.map((p, idx) => (
+                      <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-150 font-medium text-slate-700 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                        <span>{p}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-bold text-emerald-700 text-xs">{tn.energiesTitle}</h4>
-                  <div>
-                    <BlockMath math="T_{\text{spring}} = 2\pi\sqrt{\frac{m}{k}}, \quad T_{\text{pendulum}} = 2\pi\sqrt{\frac{L}{g}}" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.springT}</p>
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150 mt-1">{tn.eqExpl.pendT}</p>
-                  </div>
-                  <div>
-                    <BlockMath math="E_{\text{total}} = E_k + E_p = \frac{1}{2} m \omega^2 A^2" />
-                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-150">{tn.eqExpl.energy}</p>
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                  <h4 className="font-bold text-slate-900 text-xs">{tn.sec14Title}</h4>
+                  <p className="text-xs text-slate-600">{tn.sec14Body}</p>
+                  <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-150 text-center font-mono font-bold text-indigo-900 text-xs">
+                    Cycle Path: 0 → +A → 0 → -A → 0 (Total Distance = 4A)
                   </div>
                 </div>
               </div>
@@ -1149,7 +1405,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                   {tn.varGuideTitle}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
-                  {tn.vars.map((v, idx) => (
+                  {tn.vars.map((v: { sym: string; name: string; unit: string }, idx: number) => (
                     <div key={idx} className="bg-white/80 border border-blue-100 p-2 rounded-lg space-y-0.5">
                       <div className="font-bold text-blue-700 font-mono text-[11px]">{v.sym}</div>
                       <div className="text-slate-800 font-medium text-[11px]">{v.name}</div>
@@ -1161,20 +1417,85 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
             </div>
           )}
 
-          {/* Tab 3: Exam Insights */}
+          {/* Tab 3: Quick Comparison & Senath Rules */}
           {activeTheoryTab === 'tips' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                <Lightbulb className="w-4 h-4 text-amber-500" />
-                {tn.tipsTitle}
-              </h3>
-              <div className="space-y-2.5">
-                {tn.tips.map((tip, idx) => (
-                  <div key={idx} className="flex items-start gap-2.5 bg-amber-50/60 border border-amber-200/60 p-3 rounded-xl text-xs text-amber-900 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>{tip}</span>
-                  </div>
-                ))}
+            <div className="space-y-6">
+              {/* Sec 15: Quick Comparison Matrix Table */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.sec15Title}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-100 text-slate-800 font-bold">
+                        <th className="py-2.5 px-3">Position</th>
+                        <th className="py-2.5 px-3">Displacement (x)</th>
+                        <th className="py-2.5 px-3">Speed (v)</th>
+                        <th className="py-2.5 px-3">Acceleration (a)</th>
+                        <th className="py-2.5 px-3">Kinetic Energy (K)</th>
+                        <th className="py-2.5 px-3">Potential Energy (U)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150 text-slate-700 font-medium">
+                      {tn.matrix.map((row, idx) => (
+                        <tr key={idx} className={idx === 1 ? 'bg-emerald-50/50 font-bold text-emerald-950' : 'hover:bg-slate-50'}>
+                          <td className="py-2.5 px-3 font-bold text-indigo-700">{row.pos}</td>
+                          <td className="py-2.5 px-3">{row.disp}</td>
+                          <td className="py-2.5 px-3 font-semibold text-blue-700">{row.speed}</td>
+                          <td className="py-2.5 px-3 font-semibold text-purple-700">{row.accel}</td>
+                          <td className="py-2.5 px-3">{row.ke}</td>
+                          <td className="py-2.5 px-3">{row.pe}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Senath Golden Rules */}
+              <div className="bg-gradient-to-r from-amber-500 to-indigo-600 text-white rounded-2xl p-5 space-y-4 shadow-md">
+                <h3 className="font-extrabold text-sm uppercase tracking-wide flex items-center gap-2 text-amber-200">
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                  {tn.senathHeader}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  {tn.rules.map((r, idx) => (
+                    <div key={idx} className="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-xl space-y-1.5">
+                      <div className="font-bold text-amber-200 text-xs">{r.title}</div>
+                      <div className="font-mono font-bold text-white text-sm bg-black/20 p-1.5 rounded text-center">{r.formula}</div>
+                      <div className="text-[11px] text-amber-100 font-medium">{r.desc}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-black/20 p-3 rounded-xl text-center font-bold text-xs text-amber-100 tracking-wide">
+                  {tn.senathSummary}
+                </div>
+              </div>
+
+              {/* Sec 16: Most Important Formulae Cheat Sheet */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.sec16Title}</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs font-mono font-bold text-indigo-800">
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">a = -ω²x</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">x = A sin(ωt + φ)</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">v² = ω²(A² - x²)</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">v_max = ωA</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">a_max = ω²A</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">ω = 2πf = 2π/T</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">T = 2π√(m/k)</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">T = 2π√(L/g)</div>
+                </div>
+              </div>
+
+              {/* Interactive Simulation Reflection Question */}
+              <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-4 space-y-2.5">
+                <h3 className="font-bold text-blue-900 text-xs flex items-center gap-2">
+                  <Info className="w-4 h-4 text-blue-600" />
+                  {tn.reflectionTitle}
+                </h3>
+                <p className="font-bold text-blue-950 text-xs">{tn.reflectionQ}</p>
+                <div className="bg-white p-3 rounded-lg border border-blue-150 text-xs text-blue-900 font-medium leading-relaxed">
+                  {tn.reflectionAns}
+                </div>
               </div>
             </div>
           )}
