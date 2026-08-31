@@ -1100,15 +1100,10 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         )}
       </div>
 
-
-              </div>
-
         {/* Right Column: Viewport & Graphs (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
-{/* Interactive Simulation Viewport + Graphs (Dynamic columns based on Learn panel state) */}
-        
         {/* Simulation Canvas Card */}
-        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col min-h-0 overflow-hidden">
           {/* Header indicator */}
           <div className="border-b border-slate-100 px-4 py-2 flex items-center justify-between bg-slate-50/50 rounded-t-lg shrink-0">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Simulation Viewport</span>
@@ -1129,7 +1124,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           </div>
 
           {/* Canvas Wrapper */}
-          <div className="w-full min-h-[420px] h-[420px] relative bg-slate-50/20 canvas-grid-bg rounded-xl overflow-hidden shadow-inner">
+          <div className="w-full min-h-[300px] h-[320px] relative bg-slate-50/20 canvas-grid-bg rounded-xl overflow-hidden shadow-inner">
             <canvas
               ref={canvasRef}
               onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
@@ -1144,12 +1139,12 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           </div>
 
           {/* Play/Pause/Time Control Bar */}
-          <div className="border-t border-slate-100 p-4 bg-slate-50 flex flex-wrap items-center justify-between gap-3 rounded-b-lg shrink-0">
+          <div className="border-t border-slate-100 p-3 bg-slate-50 flex flex-wrap items-center justify-between gap-3 rounded-b-lg shrink-0">
             {/* Play/Pause controls */}
             <div className="flex items-center gap-2">
               <button
                 onClick={togglePlay}
-                className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer transition-colors shadow-sm"
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 {isPlaying ? 'Pause' : 'Play'}
@@ -1158,18 +1153,18 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
               <button
                 onClick={() => stepForward(0.02)}
                 disabled={isPlaying || time >= tFlight}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                className="p-1.5 border border-slate-200 bg-white hover:bg-slate-50 rounded text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 title="Step Forward (dt = 20ms)"
               >
-                <SkipForward className="w-4 h-4" />
+                <SkipForward className="w-3.5 h-3.5" />
               </button>
 
               <button
                 onClick={reset}
-                className="p-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded cursor-pointer transition-colors"
+                className="p-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded cursor-pointer transition-colors"
                 title="Reset simulation"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -1185,7 +1180,6 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
                 onChange={(e) => {
                   if (isPlaying) togglePlay();
                   const t = parseFloat(e.target.value);
-                  // Manually step the time
                   stepForward(t - time);
                 }}
                 className="flex-1 h-1 bg-slate-200 rounded appearance-none cursor-pointer accent-blue-600"
@@ -1211,7 +1205,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
         </div>
 
         {/* Scientific Graph Laboratory */}
-        <div className="shrink-0 min-h-[300px]">
+        <div className="shrink-0 min-h-[280px]">
           <ScientificGraphLab
             graphs={projectileGraphs}
             trials={recorder.recordedRows}
@@ -1224,6 +1218,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           />
         </div>
 
+        </div>
       </div>
     </div>
   );
