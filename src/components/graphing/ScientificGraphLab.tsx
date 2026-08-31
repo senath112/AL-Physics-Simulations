@@ -162,20 +162,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
 
     const isRealtime = activeGraph.graphType === 'realtime-series' || activeGraph.graphType === 'trajectory';
 
-    // A. Theoretical Model Curve (Always plotted smoothly)
-    if (showTheoryCurve && theoryCurve && theoryCurve.points.length > 0) {
-      traces.push({
-        x: theoryCurve.points.map((p) => p.x),
-        y: theoryCurve.points.map((p) => p.y),
-        mode: 'lines',
-        type: 'scatter',
-        name: theoryCurve.label || 'Theoretical Model',
-        line: { color: '#2563eb', width: 2.5, shape: 'spline' }, // Blue-600
-        hovertemplate: `<b>Theoretical %{yaxis.title.text}</b>: %{y:.3f} ${activeGraph.yUnit || ''}<extra></extra>`,
-      });
-    }
-
-    // B. Real-time Simulation Trajectory or Time Series Trace
+    // A. Real-time Simulation Trajectory or Time Series Trace (Simulation Run Only)
     if (isRealtime && rawPoints.length > 0) {
       const xVals = rawPoints.map((p: { x: number; y: number }) => p.x);
       const yVals = rawPoints.map((p: { x: number; y: number }) => p.y);
@@ -185,8 +172,19 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
         mode: 'lines',
         type: 'scatter',
         name: 'Simulation Run',
-        line: { color: '#10b981', width: 3, shape: 'spline' }, // Emerald-500
-        hovertemplate: `<b>Simulation %{yaxis.title.text}</b>: %{y:.3f} ${activeGraph.yUnit || ''}<extra>Live Run</extra>`,
+        line: { color: '#2563eb', width: 2.5, shape: 'spline' }, // Clean Blue-600
+        hovertemplate: `<b>Simulation %{yaxis.title.text}</b>: %{y:.3f} ${activeGraph.yUnit || ''}<extra>Simulation Run</extra>`,
+      });
+    } else if (showTheoryCurve && theoryCurve && theoryCurve.points.length > 0) {
+      // Theoretical curve displayed when no live simulation points are being streamed
+      traces.push({
+        x: theoryCurve.points.map((p) => p.x),
+        y: theoryCurve.points.map((p) => p.y),
+        mode: 'lines',
+        type: 'scatter',
+        name: theoryCurve.label || 'Simulation Model',
+        line: { color: '#2563eb', width: 2.5, shape: 'spline' }, // Blue-600
+        hovertemplate: `<b>%{yaxis.title.text}</b>: %{y:.3f} ${activeGraph.yUnit || ''}<extra></extra>`,
       });
     }
 
