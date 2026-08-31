@@ -987,39 +987,38 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
           </div>
 
           {/* Real-time Diagnostics, Math & Plotting Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="flex flex-col gap-6">
             
-            {/* Real-time parameters reading panel (4 Cols) */}
-            <div className="md:col-span-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3.5">
+            {/* Real-time parameters reading panel */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3.5">
               <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
                 {t.physicsCalculations}
               </h4>
               
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.photonEnergy}:</span>
-                  <span className="font-mono text-slate-850 font-bold">{physicsState.photonEnergy.toFixed(3)} eV</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4 text-xs">
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <span className="text-slate-500 block text-[11px] font-medium">{t.photonEnergy}</span>
+                  <span className="font-mono text-slate-850 font-bold text-sm">{physicsState.photonEnergy.toFixed(3)} eV</span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.workFunction}:</span>
-                  <span className="font-mono text-slate-850 font-bold">{activeMetal.workFunction.toFixed(2)} eV</span>
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <span className="text-slate-500 block text-[11px] font-medium">{t.workFunction}</span>
+                  <span className="font-mono text-slate-850 font-bold text-sm">{activeMetal.workFunction.toFixed(2)} eV</span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.maxKE}:</span>
-                  <span className="font-mono text-blue-600 font-extrabold">
+                <div className="bg-blue-50/60 p-2.5 rounded-lg border border-blue-100">
+                  <span className="text-blue-600 block text-[11px] font-medium">{t.maxKE}</span>
+                  <span className="font-mono text-blue-700 font-extrabold text-sm">
                     {physicsState.maxKineticEnergy.toFixed(3)} eV
                   </span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span className="text-slate-500">{t.stoppingPotential}:</span>
-                  <span className="font-mono text-red-650 font-bold">
+                <div className="bg-red-50/60 p-2.5 rounded-lg border border-red-100">
+                  <span className="text-red-600 block text-[11px] font-medium">{t.stoppingPotential}</span>
+                  <span className="font-mono text-red-700 font-bold text-sm">
                     {physicsState.stoppingPotential > 0 ? `-${physicsState.stoppingPotential.toFixed(2)} V` : '0.00 V'}
                   </span>
                 </div>
-                
-                <div className="border-t border-slate-100 pt-2.5 flex items-center justify-between font-extrabold">
-                  <span className="text-slate-600">{t.emissionStatus}:</span>
-                  <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${
+                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 flex flex-col justify-between">
+                  <span className="text-slate-600 block text-[11px] font-medium">{t.emissionStatus}</span>
+                  <span className={`text-[11px] uppercase font-extrabold px-2 py-0.5 rounded-full text-center inline-block w-fit ${
                     physicsState.hasEmission ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                   }`}>
                     {physicsState.hasEmission ? 'Emission' : 'No Emission'}
@@ -1029,7 +1028,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
             </div>
 
             {/* Scientific Graph Laboratory */}
-            <div className="w-full">
+            <div className="w-full shrink-0 min-h-[300px]">
               <ScientificGraphLab
                 graphs={photoelectricGraphs}
                 trials={recorder.recordedRows}
@@ -1037,7 +1036,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
                 onRecordTrial={recorder.recordTrial}
                 onClearTrials={recorder.clearTrials}
                 columns={recorder.columns}
-                height={300}
+                height={280}
               />
             </div>
           </div>
