@@ -1187,21 +1187,15 @@ function AppContent() {
 
         {/* ACTIVE INCLINED PLANE SIMULATION */}
         {currentPage === 'inclined_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ඇල තලයක ඝර්ෂණය • சாய்வுத்தளத்தில் உராய்வு</span>
-                <span className="text-slate-900 font-semibold text-sm">Friction on an Inclined Plane</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Friction on an Inclined Plane</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ඇල තලයක ඝර්ෂණය • சாய்வுத்தளத்தில் உராய்வு</span>
             </div>
-            {/* Load Simulator component */}
             <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
@@ -1214,22 +1208,16 @@ function AppContent() {
 
         {/* ACTIVE GEOMETRICAL OPTICS SIMULATION */}
         {currentPage === 'optics_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ජ්‍යාමිතික ප්‍රකාශ විද්‍යාව • வடிவியல் ஒளியியல்</span>
-                <span className="text-slate-900 font-semibold text-sm">Geometrical Optics Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Geometrical Optics</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ජ්‍යාමිතික ප්‍රකාශ විද්‍යාව • வடிவியல் ஒளியியல்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <GeometricalOpticsSimulation lang={lang} />
@@ -1241,22 +1229,16 @@ function AppContent() {
 
         {/* ACTIVE SIMPLE HARMONIC MOTION SIMULATION */}
         {currentPage === 'shm_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සරල අනුවර්තී චලිතය • எளிய இசை இயக்கம்</span>
-                <span className="text-slate-900 font-semibold text-sm">Simple Harmonic Motion Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Simple Harmonic Motion</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සරල අනුවර්තී චලිතය • எளிய இசை இயக்கம்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <SimpleHarmonicMotionSimulation lang={lang} />
@@ -1268,22 +1250,16 @@ function AppContent() {
 
         {/* ACTIVE PHOTOELECTRIC SIMULATION */}
         {currentPage === 'photoelectric_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ප්‍රකාශ විද්‍යුත් ආචරණය • ஒளிமின் விளைவு</span>
-                <span className="text-slate-905 font-semibold text-sm">Photoelectric Effect Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Photoelectric Effect</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ප්‍රකාශ විද්‍යුත් ආචරණය • ஒளிமின் விளைவு</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <PhotoelectricEffectSimulation lang={lang} />
@@ -1292,23 +1268,19 @@ function AppContent() {
             </div>
           </div>
         )}
+
+        {/* ACTIVE GAS LAWS SIMULATION */}
         {currentPage === 'gas_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">තාප භෞතික විද්‍යාව සහ වායු නියම • வெப்பப் பௌதிகவியலும் வாயு விதிகளும்</span>
-                <span className="text-slate-900 font-semibold text-sm">Thermal Physics & Gas Laws Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Gas Laws & Thermodynamics</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">තාප භෞතික විද්‍යාව සහ වායු නියම • வெப்பப் பௌதிகவியலும் வாயு விதிகளும்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <GasLawsSimulation lang={lang} />
@@ -1320,22 +1292,16 @@ function AppContent() {
 
         {/* ACTIVE LENZ'S LAW SIMULATION */}
         {currentPage === 'lenz_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය • ලෙන්සின் විதியும் மின்காந்தத் தூண்டலும்</span>
-                <span className="text-slate-900 font-semibold text-sm">Lenz's Law & Faraday Induction Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Lenz's Law & Faraday Induction</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ලෙන්ස්ගේ නියමය සහ විද්‍යුත් චුම්බක ප්‍රේරණය • ලෙන්සින් විதியும் மின்காந்தத் தூண்டலும்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <LenzsLawSimulation lang={lang} />
@@ -1347,22 +1313,16 @@ function AppContent() {
 
         {/* ACTIVE MAGNETIC FIELD WIRE 3D SIMULATION */}
         {currentPage === 'magnetic_field_wire' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ධාරාවක් ගෙන යන සන්නායකයක් වටා චුම්බක ක්ෂේත්‍රය • மின்னோட்ட கடத்தியைச் சுற்றியுள்ள காந்தப்புலம்</span>
-                <span className="text-slate-900 font-semibold text-sm">3D Magnetic Field Around a Straight Wire</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">3D Magnetic Field Around a Straight Wire</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ධාරාවක් ගෙන යන සන්නායකයක් වටා චුම්බක ක්ෂේත්‍රය • மின்னோட்ட கடத்தியைச் சுற்றியுள்ள காந்தப்புலம்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <MagneticFieldWireSimulation lang={lang} />
@@ -1374,22 +1334,16 @@ function AppContent() {
 
         {/* ACTIVE PARALLEL CURRENTS 3D SIMULATION */}
         {currentPage === 'parallel_currents' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සමාන්තර ධාරා සන්නායක අතර බලය • இணை கடத்திகளுக்கு இடையேயான விசை</span>
-                <span className="text-slate-900 font-semibold text-sm">3D Force Between Parallel Currents</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">3D Force Between Parallel Currents</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සමාන්තර ධාරා සන්නායක අතර බලය • இணை கடத்திகளுக்கு இடையேயான விசை</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <ParallelCurrentsSimulation lang={lang} />
@@ -1401,22 +1355,16 @@ function AppContent() {
 
         {/* ACTIVE CHARGED PARTICLE IN A MAGNETIC FIELD SIMULATION */}
         {currentPage === 'charged_particle_magnetic_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක් • காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்</span>
-                <span className="text-slate-900 font-semibold text-sm">Charged Particle in a Magnetic Field</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Charged Particle in a Magnetic Field</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">චුම්බක ක්ෂේත්‍රයක ආරෝපිත අංශුවක් • காந்தப்புலத்தில் மின்னூட்டம் பெற்ற துகள்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <ChargedParticleMagneticSimulation lang={lang} />
@@ -1428,22 +1376,16 @@ function AppContent() {
 
         {/* ACTIVE SOLENOID SIMULATION */}
         {currentPage === 'solenoid_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සොලෙනොයිඩයක චුම්බක ක්ෂේත්‍රය • வரிச்சுருளின் காந்தப்புலம்</span>
-                <span className="text-slate-900 font-semibold text-sm">Magnetic Field of a Solenoid</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Magnetic Field of a Solenoid</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සොලෙනොයිඩයක චුම්බක ක්ෂේත්‍රය • வரிச்சுருளின் காந்தப்புலம்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <SolenoidSimulation lang={lang} />
@@ -1455,22 +1397,16 @@ function AppContent() {
 
         {/* ACTIVE ELECTROMAGNETIC INDUCTION SIMULATION */}
         {currentPage === 'induction_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">විද්‍යුත් චුම්බක ප්‍රේරණය • மின்காந்தத் தூண்டல்</span>
-                <span className="text-slate-900 font-semibold text-sm">Electromagnetic Induction</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Electromagnetic Induction</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">විද්‍යුත් චුම්බක ප්‍රේරණය • மின்காந்தத் தூண்டல்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <ElectromagneticInductionSimulation lang={lang} />
@@ -1482,22 +1418,16 @@ function AppContent() {
 
         {/* ACTIVE DC CIRCUITS & OHM'S LAW SIMULATION */}
         {currentPage === 'ohms_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">සරල ධාරා පරිපථ සහ ඕම්ගේ නියමය • நேரடி மின்னோட்டச் சுற்றுகளும் ஓமின் விதியும்</span>
-                <span className="text-slate-900 font-semibold text-sm">DC Circuits & Ohm's Law</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">DC Circuits & Ohm's Law</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සරල ධාරා පරිපථ සහ ඕම්ගේ නියමය • நேரடி மின்னோட்டச் சுற்றுகளும் ஓமின் விதியும்</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <DCOhmsLawSimulation lang={lang} />
@@ -1509,22 +1439,16 @@ function AppContent() {
 
         {/* ACTIVE DOPPLER EFFECT SIMULATION */}
         {currentPage === 'doppler_sim' && (
-          <div className="flex-1 flex flex-col min-h-0 bg-slate-50">
-            {/* Simulation Nav Header */}
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between shrink-0">
-              <button 
-                onClick={() => setCurrentPage('sims')}
-                className="flex items-center gap-1 text-slate-500 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-              >
-                ← Back to Directory
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-slate-400 font-bold bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full">ඩොප්ලර් ආචරණය සහ සුපිරිධ්වනි කම්පනය • டாப்ளர் விளைவு மற்றும் ஒலி அதிர்வு</span>
-                <span className="text-slate-900 font-semibold text-sm">Doppler Effect & Sonic Boom Explainer</span>
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Doppler Effect</span>
               </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ඩොප්ලර් ආචරණය සහ සුපිරිධ්වනි කම්පනය • டாப்ளர் விளைவு மற்றும் ஒலி அதிர்வு</span>
             </div>
-            {/* Load Simulator component */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="flex-1 min-h-0">
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <DopplerEffectSimulation lang={lang} />
