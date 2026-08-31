@@ -45,46 +45,6 @@ export const newtonsSecondLawGraphs: ScientificGraphDefinition[] = [
     theoryDescription: 'According to Newton’s Second Law (F_net = ma), the slope of F vs a equals the mass m of the object.',
   },
   {
-    id: 'a_vs_f',
-    title: 'Acceleration (a) vs Force (F)',
-    xKey: 'force',
-    yKey: 'acceleration',
-    xLabel: 'Applied Force F',
-    yLabel: 'Acceleration a',
-    xUnit: 'N',
-    yUnit: 'm/s²',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: '1 / Mass (1/m)',
-    getExpectedSlope: (p) => (p.mass ? 1 / p.mass : 0.2),
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const m = p.mass || 5.0;
-      const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 50, 50);
-      const pts = [];
-      const steps = 30;
-      for (let i = 0; i <= steps; i++) {
-        const F = x0 + (i / steps) * (x1 - x0);
-        pts.push({ x: parseFloat(F.toFixed(2)), y: parseFloat((F / m).toFixed(2)) });
-      }
-      return { points: pts, label: `Theoretical a = F / ${m.toFixed(1)}`, equation: `a = F / ${m.toFixed(1)}` };
-    },
-    deducePhysics: (reg, p) => {
-      const expMass = reg.slope !== 0 ? 1 / reg.slope : 0;
-      const theoMass = p.mass || 5.0;
-      const err = calculatePercentageError(expMass, theoMass);
-      return {
-        label: 'Deduced Mass from 1/Slope',
-        formula: 'm = 1 / slope',
-        unit: 'kg',
-        experimentalValue: parseFloat(expMass.toFixed(3)),
-        theoreticalValue: parseFloat(theoMass.toFixed(3)),
-        percentageError: parseFloat(err.toFixed(2)),
-      };
-    },
-    theoryDescription: 'Acceleration is directly proportional to net force and inversely proportional to mass (a = F / m).',
-  },
-  {
     id: 'fric_vs_normal',
     title: 'Kinetic Friction (f_k) vs Normal Reaction (R)',
     xKey: 'normalForce',
@@ -157,68 +117,6 @@ export const inclinedPlaneGraphs: ScientificGraphDefinition[] = [
       return { points: pts, label: `Theoretical a = g(sinθ - μ_k cosθ)`, equation: `a = g(sinθ - μ_k cosθ)` };
     },
     theoryDescription: 'Block accelerates down slope once θ exceeds angle of repose (tanθ > μ_s). Acceleration is a = g(sinθ - μ_k cosθ).',
-  },
-  {
-    id: 'fric_vs_normal_incline',
-    title: 'Friction Force vs Normal Reaction (R)',
-    xKey: 'normalForce',
-    yKey: 'friction',
-    xLabel: 'Normal Reaction R = mg cosθ',
-    yLabel: 'Limiting Friction f_max',
-    xUnit: 'N',
-    yUnit: 'N',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: 'Coefficient of Friction μ',
-    getExpectedSlope: (p) => p.muStatic ?? 0.3,
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const mu = p.muStatic ?? 0.3;
-      const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 100, 100);
-      const pts = [];
-      for (let i = 0; i <= 20; i++) {
-        const R = x0 + (i / 20) * (x1 - x0);
-        pts.push({ x: parseFloat(R.toFixed(2)), y: parseFloat((mu * R).toFixed(2)) });
-      }
-      return { points: pts, label: `Theoretical f_max = ${mu.toFixed(2)}R`, equation: `f_max = ${mu.toFixed(2)}R` };
-    },
-    deducePhysics: (reg, p) => {
-      const theoMu = p.muStatic ?? 0.3;
-      const err = calculatePercentageError(reg.slope, theoMu);
-      return {
-        label: 'Deduced Friction Coefficient (μ)',
-        formula: 'μ = f_max / R',
-        unit: '',
-        experimentalValue: parseFloat(reg.slope.toFixed(3)),
-        theoreticalValue: parseFloat(theoMu.toFixed(3)),
-        percentageError: parseFloat(err.toFixed(2)),
-      };
-    },
-  },
-  {
-    id: 'fnet_vs_disp',
-    title: 'Net Force (F_net) vs Displacement (s)',
-    xKey: 'position',
-    yKey: 'force',
-    xLabel: 'Displacement along plane s',
-    yLabel: 'Net Force F_net',
-    xUnit: 'm',
-    yUnit: 'N',
-    graphType: 'realtime-series',
-    isLinear: true,
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const m = p.mass || 2.0;
-      const g = p.gravity || 9.81;
-      const rad = ((p.angle || 30) * Math.PI) / 180;
-      const mu_k = p.muKinetic ?? 0.2;
-      const fnet = Math.max(0, m * g * (Math.sin(rad) - mu_k * Math.cos(rad)));
-      const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 10, 10);
-      return {
-        points: [{ x: x0, y: parseFloat(fnet.toFixed(2)) }, { x: x1, y: parseFloat(fnet.toFixed(2)) }],
-        label: `Constant Net Force F_net = ${fnet.toFixed(2)} N`,
-      };
-    },
   },
 ];
 
@@ -330,32 +228,6 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
         pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat(y.toFixed(2)) });
       }
       return { points: pts, label: 'Theoretical y(t)', equation: 'y = (u sinθ)t - 1/2 g t²' };
-    },
-  },
-  {
-    id: 'x_vs_t',
-    title: 'Horizontal Distance (x) vs Time (t)',
-    xKey: 't',
-    yKey: 'x',
-    xLabel: 'Time t',
-    yLabel: 'Horizontal Position x',
-    xUnit: 's',
-    yUnit: 'm',
-    graphType: 'realtime-series',
-    isLinear: true,
-    expectedSlopeFormula: 'Horizontal Velocity u_x = u cosθ',
-    getExpectedSlope: (p) => (p.velocity || 25) * Math.cos(((p.angle || 45) * Math.PI) / 180),
-    getTheoreticalCurve: (_, p) => {
-      const v0 = p.velocity || 25;
-      const th = ((p.angle || 45) * Math.PI) / 180;
-      const g = p.gravity || 9.81;
-      const vx = v0 * Math.cos(th);
-      const totalT = (2 * v0 * Math.sin(th)) / g;
-      return {
-        points: [{ x: 0, y: 0 }, { x: parseFloat(totalT.toFixed(2)), y: parseFloat((vx * totalT).toFixed(2)) }],
-        label: `Uniform Horizontal Velocity v_x = ${vx.toFixed(1)} m/s`,
-        equation: 'x = (u cosθ)t',
-      };
     },
   },
 ];
@@ -494,39 +366,33 @@ export const pulleySystemsGraphs: ScientificGraphDefinition[] = [
 // ==========================================
 export const momentumCollisionsGraphs: ScientificGraphDefinition[] = [
   {
-    id: 'pf_vs_pi',
-    title: 'Final Momentum (p_f) vs Initial Momentum (p_i)',
-    xKey: 'initialMomentum',
-    yKey: 'finalMomentum',
-    xLabel: 'Initial Momentum p_i',
-    yLabel: 'Final Momentum p_f',
-    xUnit: 'kg·m/s',
-    yUnit: 'kg·m/s',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: 'Conservation Slope = 1.0',
-    getExpectedSlope: () => 1.0,
-    getTheoreticalCurve: ([minX, maxX]) => {
-      const x0 = minX ?? -20;
-      const x1 = maxX ?? 20;
+    id: 'ke_ratio_vs_e',
+    title: 'KE Retention Ratio vs Coefficient of Restitution (e)',
+    xKey: 'restitution',
+    yKey: 'keRatio',
+    xLabel: 'Coefficient of Restitution e',
+    yLabel: 'KE_final / KE_initial',
+    xUnit: '',
+    yUnit: '',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const m1 = p.mass1 || 2;
+      const m2 = p.mass2 || 4;
+      const pts = [];
+      for (let e = 0; e <= 1.0; e += 0.05) {
+        // For 1D collision with m2 initially at rest:
+        // KE_ratio = 1 - [(1 - e²) * m1 * m2] / [(m1 + m2)²]  (simplified for target at rest)
+        const ratio = 1 - ((1 - e * e) * m1 * m2) / ((m1 + m2) * (m1 + m2));
+        pts.push({ x: parseFloat(e.toFixed(2)), y: parseFloat(Math.max(0, Math.min(1, ratio)).toFixed(3)) });
+      }
       return {
-        points: [{ x: x0, y: x0 }, { x: x1, y: x1 }],
-        label: 'Conservation of Linear Momentum (p_f = p_i)',
-        equation: 'p_f = p_i',
+        points: pts,
+        label: `KE Retention [m₁=${m1}kg, m₂=${m2}kg]`,
+        equation: 'KE_f/KE_i = 1 - (1-e²)m₁m₂/(m₁+m₂)²',
       };
     },
-    deducePhysics: (reg) => {
-      const err = calculatePercentageError(reg.slope, 1.0);
-      return {
-        label: 'Conservation Verification',
-        formula: 'Slope = p_f / p_i',
-        unit: '',
-        experimentalValue: parseFloat(reg.slope.toFixed(3)),
-        theoreticalValue: 1.0,
-        percentageError: parseFloat(err.toFixed(2)),
-      };
-    },
-    theoryDescription: 'In an isolated system, total momentum before collision equals total momentum after (p_initial = p_final).',
+    theoryDescription: 'e=0 is perfectly inelastic (max KE loss), e=1 is perfectly elastic (KE fully conserved). Shows how kinetic energy retention depends on the coefficient of restitution.',
   },
 ];
 
@@ -634,30 +500,6 @@ export const workEnergyGraphs: ScientificGraphDefinition[] = [
       };
     },
   },
-  {
-    id: 'energy_vs_t',
-    title: 'Total Mechanical Energy vs Time (Conservation)',
-    xKey: 't',
-    yKey: 'totalEnergy',
-    xLabel: 'Time t',
-    yLabel: 'Total Mechanical Energy E',
-    xUnit: 's',
-    yUnit: 'J',
-    graphType: 'realtime-series',
-    isLinear: true,
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const m = p.mass || 2;
-      const g = p.gravity || 9.81;
-      const h0 = p.initialHeight || 10;
-      const eTot = m * g * h0;
-      const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 5, 5);
-      return {
-        points: [{ x: x0, y: parseFloat(eTot.toFixed(2)) }, { x: x1, y: parseFloat(eTot.toFixed(2)) }],
-        label: `Constant Total Energy E = ${eTot.toFixed(1)} J`,
-      };
-    },
-  },
 ];
 
 // ==========================================
@@ -665,25 +507,32 @@ export const workEnergyGraphs: ScientificGraphDefinition[] = [
 // ==========================================
 export const centreOfMassGraphs: ScientificGraphDefinition[] = [
   {
-    id: 'xcm_vs_total_m',
-    title: 'Centre of Mass X_cm vs Total Mass M',
-    xKey: 'totalMass',
+    id: 'xcm_vs_m1',
+    title: 'Centre of Mass (X_cm) vs Mass m₁',
+    xKey: 'mass1',
     yKey: 'xCM',
-    xLabel: 'Total Mass M',
-    yLabel: 'X-Centre of Mass X_cm',
+    xLabel: 'Mass m₁',
+    yLabel: 'Centre of Mass Position X_cm',
     xUnit: 'kg',
     yUnit: 'm',
-    graphType: 'scatter',
+    graphType: 'line',
     isLinear: false,
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const xVal = p.xCM ?? 5.0;
-      const x0 = minX ?? 1;
-      const x1 = Math.max(maxX ?? 20, 20);
+    getTheoreticalCurve: (_, p) => {
+      const x1 = p.x1 ?? 2.0;
+      const x2 = p.x2 ?? 8.0;
+      const m2 = p.mass2 || 3.0;
+      const pts = [];
+      for (let m1 = 0.5; m1 <= 10; m1 += 0.5) {
+        const xcm = (m1 * x1 + m2 * x2) / (m1 + m2);
+        pts.push({ x: m1, y: parseFloat(xcm.toFixed(2)) });
+      }
       return {
-        points: [{ x: x0, y: xVal }, { x: x1, y: xVal }],
-        label: `Center of Mass Position X_cm = ${xVal.toFixed(2)} m`,
+        points: pts,
+        label: `X_cm = (m₁·${x1} + ${m2}·${x2}) / (m₁ + ${m2})`,
+        equation: 'X_cm = (m₁x₁ + m₂x₂) / (m₁ + m₂)',
       };
     },
+    theoryDescription: 'As m₁ increases, the centre of mass shifts toward x₁. X_cm asymptotically approaches x₁ as m₁ → ∞.',
   },
 ];
 
@@ -1030,25 +879,6 @@ export const geometricalOpticsGraphs: ScientificGraphDefinition[] = [
     theoryDescription: 'Snell’s Law states that n₁ sin(i) = n₂ sin(r). Plotting sin(i) vs sin(r) yields a straight line through origin with slope n₂/n₁.',
   },
   {
-    id: 'i_vs_r_reflection',
-    title: 'Law of Reflection: Angle of Reflection (r) vs Angle of Incidence (i)',
-    xKey: 'incidentAngle',
-    yKey: 'reflectedAngle',
-    xLabel: 'Incident Angle i',
-    yLabel: 'Reflected Angle r',
-    xUnit: '°',
-    yUnit: '°',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: '1.0 (Angle of Incidence = Angle of Reflection)',
-    getExpectedSlope: () => 1.0,
-    getTheoreticalCurve: () => ({
-      points: [{ x: 0, y: 0 }, { x: 90, y: 90 }],
-      label: 'Law of Reflection (i = r)',
-      equation: 'r = i',
-    }),
-  },
-  {
     id: 'lens_formula',
     title: 'Lens Formula: 1/v vs 1/u',
     xKey: 'invU',
@@ -1173,31 +1003,6 @@ export const dcOhmsLawGraphs: ScientificGraphDefinition[] = [
       };
     },
     theoryDescription: 'Ohm’s Law V = IR states that for an ohmic conductor at constant temperature, voltage is directly proportional to current. Slope is resistance R.',
-  },
-  {
-    id: 'i_vs_v',
-    title: 'Current (I) vs Voltage (V)',
-    xKey: 'voltage',
-    yKey: 'current',
-    xLabel: 'Voltage V',
-    yLabel: 'Current I',
-    xUnit: 'V',
-    yUnit: 'A',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: 'Conductance G = 1/R (S)',
-    getExpectedSlope: (p) => 1 / (p.resistance || 10.0),
-    getTheoreticalCurve: ([minX, maxX], p) => {
-      const R = p.resistance || 10.0;
-      const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 20.0, 20.0);
-      const pts = [];
-      for (let i = 0; i <= 20; i++) {
-        const v = x0 + (i / 20) * (x1 - x0);
-        pts.push({ x: parseFloat(v.toFixed(2)), y: parseFloat((v / R).toFixed(3)) });
-      }
-      return { points: pts, label: `I = V / ${R.toFixed(1)} Ω`, equation: 'I = V / R' };
-    },
   },
   {
     id: 'power_vs_i',
@@ -1657,47 +1462,6 @@ export const photoelectricGraphs: ScientificGraphDefinition[] = [
       };
     },
     theoryDescription: 'Einstein’s Photoelectric Equation: K_max = hf - Φ. The slope is Planck’s constant h, the x-intercept is threshold frequency f₀ = Φ/h, and y-intercept is -Φ.',
-  },
-  {
-    id: 'vs_vs_freq',
-    title: 'Stopping Potential (V_s) vs Frequency (f)',
-    xKey: 'frequency',
-    yKey: 'stoppingVoltage',
-    xLabel: 'Photon Frequency f (× 10¹⁴ Hz)',
-    yLabel: 'Stopping Potential V_s',
-    xUnit: '10¹⁴ Hz',
-    yUnit: 'V',
-    graphType: 'scatter',
-    isLinear: true,
-    expectedSlopeFormula: 'h / e = 0.4136 V / (10¹⁴ Hz)',
-    expectedInterceptFormula: '-Φ / e',
-    getExpectedSlope: () => 0.41357,
-    getExpectedIntercept: (p) => -(p.workFunction || 2.2),
-    getTheoreticalCurve: (_, p) => {
-      const h_e = 0.41357;
-      const phi = p.workFunction || 2.2;
-      const f0 = phi / h_e;
-      const pts = [];
-      for (let f = 0; f <= 15; f += 0.5) {
-        const vs = f >= f0 ? h_e * f - phi : 0;
-        pts.push({ x: parseFloat(f.toFixed(1)), y: parseFloat(vs.toFixed(2)) });
-      }
-      return { points: pts, label: `Stopping Potential V_s = (h/e)f - (Φ/e)`, equation: 'e V_s = hf - Φ' };
-    },
-    deducePhysics: (reg) => {
-      const expHe = reg.slope;
-      const theoHe = 0.41357;
-      const err = calculatePercentageError(expHe, theoHe);
-      return {
-        label: 'Slope (h/e)',
-        formula: 'h/e = ΔV_s / Δf',
-        unit: 'V/(10¹⁴ Hz)',
-        experimentalValue: parseFloat(expHe.toFixed(4)),
-        theoreticalValue: parseFloat(theoHe.toFixed(4)),
-        percentageError: parseFloat(err.toFixed(2)),
-      };
-    },
-    theoryDescription: 'Stopping potential is related to max kinetic energy by e·V_s = K_max = hf - Φ → V_s = (h/e)f - Φ/e.',
   },
   {
     id: 'current_vs_intensity',
