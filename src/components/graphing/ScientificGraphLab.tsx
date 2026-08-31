@@ -74,23 +74,24 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     }
   };
 
-  // 1. Extract (x, y) data points for the active graph
+  // 1. Extract (x, y) data points for the active graph (Automatic plotting enabled)
   const rawPoints = useMemo(() => {
     if (!activeGraph) return [];
 
-    // If graph is a real-time time-series or trajectory, prefer realtimePoints
-    if ((activeGraph.graphType === 'realtime-series' || activeGraph.graphType === 'trajectory') && realtimePoints.length > 0) {
-      return realtimePoints
+    // A. Use realtimePoints automatically if present
+    if (realtimePoints.length > 0 && trials.length === 0) {
+      const pts = realtimePoints
         .map((p) => ({
           x: p[activeGraph.xKey] !== undefined ? Number(p[activeGraph.xKey]) : p.x,
           y: p[activeGraph.yKey] !== undefined ? Number(p[activeGraph.yKey]) : p.y,
         }))
         .filter((p) => !isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y));
+      if (pts.length > 0) return pts;
     }
 
-    // Otherwise use trials
+    // B. Use trials if logged
     if (trials.length > 0) {
-      return trials
+      const pts = trials
         .map((row) => {
           if (activeGraph.transformPoint) {
             return activeGraph.transformPoint(row);
@@ -100,9 +101,10 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
           return { x: xVal, y: yVal };
         })
         .filter((p): p is { x: number; y: number } => p !== null && !isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y));
+      if (pts.length > 0) return pts;
     }
 
-    // Fallback: if only livePoint exists and no trials yet
+    // C. Fallback: Use livePoint if provided
     if (livePoint && activeGraph.xKey in livePoint && activeGraph.yKey in livePoint) {
       const xVal = Number(livePoint[activeGraph.xKey]);
       const yVal = Number(livePoint[activeGraph.yKey]);
@@ -111,8 +113,16 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
       }
     }
 
+    // D. Automatic Theory Plot Curve generation from simulationParams
+    if (activeGraph.getTheoreticalCurve) {
+      const tc = activeGraph.getTheoreticalCurve([0, 10], simulationParams);
+      if (tc && tc.points && tc.points.length > 0) {
+        return tc.points.map((p: { x: number; y: number }) => ({ x: p.x, y: p.y }));
+      }
+    }
+
     return [];
-  }, [activeGraph, trials, realtimePoints, livePoint]);
+  }, [activeGraph, trials, realtimePoints, livePoint, simulationParams]);
 
   // 2. Compute Linear Regression
   const regression = useMemo(() => {
@@ -151,7 +161,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     let minX = 0;
     let maxX = 10;
     if (rawPoints.length > 0) {
-      const xVals = rawPoints.map((p) => p.x);
+      const xVals = rawPoints.map((p: { x: number; y: number }) => p.x);
       minX = Math.min(...xVals);
       maxX = Math.max(...xVals);
       if (minX === maxX) {
@@ -168,8 +178,8 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     if (!activeGraph) return [];
     const traces: Plotly.Data[] = [];
 
-    const xVals = rawPoints.map((p) => p.x);
-    const yVals = rawPoints.map((p) => p.y);
+    const xVals = rawPoints.map((p: { x: number; y: number }) => p.x);
+    const yVals = rawPoints.map((p: { x: number; y: number }) => p.y);
 
     // Primary experimental scatter / line trace
     if (rawPoints.length > 0) {
@@ -285,7 +295,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
 
     const exportData: DataRow[] = (trials && trials.length > 0 && columns && columns.length > 0)
       ? trials
-      : rawPoints.map((p, idx) => ({
+      : rawPoints.map((p: { x: number; y: number }, idx: number) => ({
           trial: idx + 1,
           x: p.x,
           y: p.y,
@@ -535,7 +545,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono">
-                {rawPoints.map((p, idx) => (
+                {rawPoints.map((p: { x: number; y: number }, idx: number) => (
                   <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                     <td className="py-1 px-3 border-r border-slate-100 text-center font-bold text-slate-400">
                       {idx + 1}

@@ -13,7 +13,7 @@ import {
   Lock
 } from 'lucide-react';
 import { PracticalQuota } from '../../types/laboratory';
-import { ENABLE_LABORATORY_UI } from '../../config/features';
+import { ENABLE_LABORATORY_UI, ENABLE_SIMULATION_LAB_BAR } from '../../config/features';
 
 interface SimulationLabBarProps {
   trialCount: number;
@@ -52,6 +52,8 @@ export const SimulationLabBar: React.FC<SimulationLabBarProps> = ({
   quota,
   className = '',
 }) => {
+  if (!ENABLE_SIMULATION_LAB_BAR) return null;
+
   const percentComplete = autoRunProgress 
     ? Math.round((autoRunProgress.current / autoRunProgress.total) * 100) 
     : 0;
