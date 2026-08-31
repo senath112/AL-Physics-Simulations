@@ -1215,7 +1215,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
           <ScientificGraphLab
             graphs={projectileGraphs}
             trials={recorder.recordedRows}
-            realtimePoints={tVals.map((tVal, i) => ({ t: tVal, x: xVals[i], y: yVals[i], xPos: xVals[i], yPos: yVals[i] }))}
+            realtimePoints={tVals.map((tVal, i) => ({ t: tVal, x: xVals[i], y: yVals[i], xPos: xVals[i], yPos: yVals[i], vy: vyVals[i], vx: vxVals[i], v: vVals[i] }))}
             simulationParams={{ velocity: params.v0, angle: params.angle, gravity: params.g, initialHeight: params.h0 }}
             onRecordTrial={recorder.recordTrial}
             onClearTrials={recorder.clearTrials}

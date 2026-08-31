@@ -83,6 +83,59 @@ export const newtonsSecondLawGraphs: ScientificGraphDefinition[] = [
     },
     theoryDescription: 'Kinetic friction is directly proportional to the normal reaction (f_k = μ_k · R).',
   },
+  {
+    id: 'v_vs_t_newton',
+    title: 'Velocity (v) vs Time (t)',
+    xKey: 't',
+    yKey: 'velocity',
+    xLabel: 'Time t',
+    yLabel: 'Velocity v',
+    xUnit: 's',
+    yUnit: 'm/s',
+    graphType: 'realtime-series',
+    isLinear: true,
+    expectedSlopeFormula: 'Acceleration a = F_net / m',
+    getExpectedSlope: (p) => {
+      const m = p.mass || 5.0;
+      const f = p.force || 20.0;
+      const mu = p.muKinetic ?? 0.2;
+      const g = p.gravity || 9.81;
+      const fNet = Math.max(0, f - mu * m * g);
+      return fNet / m;
+    },
+    getTheoreticalCurve: ([, maxX], p) => {
+      const m = p.mass || 5.0;
+      const f = p.force || 20.0;
+      const mu = p.muKinetic ?? 0.2;
+      const g = p.gravity || 9.81;
+      const fNet = Math.max(0, f - mu * m * g);
+      const a = fNet / m;
+      const tMax = Math.max(maxX ?? 5, 5);
+      return {
+        points: [{ x: 0, y: 0 }, { x: tMax, y: parseFloat((a * tMax).toFixed(2)) }],
+        label: `Uniform Acceleration a = ${a.toFixed(2)} m/s²`,
+        equation: 'v = at',
+      };
+    },
+    deducePhysics: (reg, p) => {
+      const m = p.mass || 5.0;
+      const f = p.force || 20.0;
+      const mu = p.muKinetic ?? 0.2;
+      const g = p.gravity || 9.81;
+      const fNet = Math.max(0, f - mu * m * g);
+      const theoA = fNet / m;
+      const err = calculatePercentageError(reg.slope, theoA);
+      return {
+        label: 'Acceleration (a)',
+        formula: 'a = Δv / Δt',
+        unit: 'm/s²',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoA.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Under constant resultant force F_net, velocity increases linearly with time (v = at). The gradient equals the acceleration produced.',
+  },
 ];
 
 // ==========================================
@@ -117,6 +170,53 @@ export const inclinedPlaneGraphs: ScientificGraphDefinition[] = [
       return { points: pts, label: `Theoretical a = g(sinθ - μ_k cosθ)`, equation: `a = g(sinθ - μ_k cosθ)` };
     },
     theoryDescription: 'Block accelerates down slope once θ exceeds angle of repose (tanθ > μ_s). Acceleration is a = g(sinθ - μ_k cosθ).',
+  },
+  {
+    id: 'v_vs_t_incline',
+    title: 'Velocity (v) vs Time (t) along Incline',
+    xKey: 't',
+    yKey: 'velocity',
+    xLabel: 'Time t',
+    yLabel: 'Velocity v',
+    xUnit: 's',
+    yUnit: 'm/s',
+    graphType: 'realtime-series',
+    isLinear: true,
+    expectedSlopeFormula: 'Acceleration a = g(sinθ - μ_k cosθ)',
+    getExpectedSlope: (p) => {
+      const g = p.gravity || 9.81;
+      const rad = ((p.angle || 30) * Math.PI) / 180;
+      const mu_k = p.muKinetic ?? 0.2;
+      return Math.max(0, g * (Math.sin(rad) - mu_k * Math.cos(rad)));
+    },
+    getTheoreticalCurve: ([, maxX], p) => {
+      const g = p.gravity || 9.81;
+      const rad = ((p.angle || 30) * Math.PI) / 180;
+      const mu_k = p.muKinetic ?? 0.2;
+      const a = Math.max(0, g * (Math.sin(rad) - mu_k * Math.cos(rad)));
+      const tMax = Math.max(maxX ?? 5, 5);
+      return {
+        points: [{ x: 0, y: 0 }, { x: tMax, y: parseFloat((a * tMax).toFixed(2)) }],
+        label: `Uniform Acceleration a = ${a.toFixed(2)} m/s²`,
+        equation: 'v = at',
+      };
+    },
+    deducePhysics: (reg, p) => {
+      const g = p.gravity || 9.81;
+      const rad = ((p.angle || 30) * Math.PI) / 180;
+      const mu_k = p.muKinetic ?? 0.2;
+      const theoA = Math.max(0, g * (Math.sin(rad) - mu_k * Math.cos(rad)));
+      const err = calculatePercentageError(reg.slope, theoA);
+      return {
+        label: 'Incline Acceleration (a)',
+        formula: 'a = Δv / Δt',
+        unit: 'm/s²',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoA.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'For motion down a uniform rough inclined plane under constant net force, velocity increases linearly with time (v = at). The gradient represents acceleration along the incline.',
   },
 ];
 
@@ -205,30 +305,48 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
     theoryDescription: 'Maximum height reached is H_max = (u² sin²θ)/(2g). It peaks at vertical launch θ = 90°.',
   },
   {
-    id: 'y_vs_t',
-    title: 'Vertical Height (y) vs Time (t)',
+    id: 'vy_vs_t',
+    title: 'Vertical Velocity (v_y) vs Time (t)',
     xKey: 't',
-    yKey: 'y',
+    yKey: 'vy',
     xLabel: 'Time t',
-    yLabel: 'Vertical Position y',
+    yLabel: 'Vertical Velocity v_y',
     xUnit: 's',
-    yUnit: 'm',
+    yUnit: 'm/s',
     graphType: 'realtime-series',
-    isLinear: false,
+    isLinear: true,
+    expectedSlopeFormula: '-g (Gravitational Acceleration)',
+    getExpectedSlope: (p) => -(p.gravity || 9.81),
     getTheoreticalCurve: (_, p) => {
       const v0 = p.velocity || 25;
       const th = ((p.angle || 45) * Math.PI) / 180;
       const g = p.gravity || 9.81;
       const vy0 = v0 * Math.sin(th);
       const totalT = (2 * vy0) / g;
-      const pts = [];
-      for (let i = 0; i <= 30; i++) {
-        const t = (i / 30) * totalT;
-        const y = Math.max(0, vy0 * t - 0.5 * g * t * t);
-        pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat(y.toFixed(2)) });
-      }
-      return { points: pts, label: 'Theoretical y(t)', equation: 'y = (u sinθ)t - 1/2 g t²' };
+      const vyFinal = vy0 - g * totalT;
+      return {
+        points: [
+          { x: 0, y: parseFloat(vy0.toFixed(2)) },
+          { x: parseFloat(totalT.toFixed(2)), y: parseFloat(vyFinal.toFixed(2)) },
+        ],
+        label: `Theoretical v_y(t) = u sinθ - gt [Slope = -g]`,
+        equation: 'v_y = u sinθ - gt',
+      };
     },
+    deducePhysics: (reg, p) => {
+      const expG = -reg.slope;
+      const theoG = p.gravity || 9.81;
+      const err = calculatePercentageError(expG, theoG);
+      return {
+        label: 'Deduced Gravity (g)',
+        formula: 'g = -Slope',
+        unit: 'm/s²',
+        experimentalValue: parseFloat(expG.toFixed(3)),
+        theoreticalValue: parseFloat(theoG.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Vertical velocity follows v_y = u sinθ - gt. It decreases linearly with slope -g, passes through zero at the apex, and becomes negative on descent.',
   },
 ];
 
@@ -291,6 +409,34 @@ export const connectedParticlesGraphs: ScientificGraphDefinition[] = [
       }
       return { points: pts, label: 'Theoretical a(m₂)', equation: 'a = (m₂ - μm₁)g / (m₁ + m₂)' };
     },
+  },
+  {
+    id: 'tension_vs_m2',
+    title: 'String Tension (T) vs Hanging Mass (m₂)',
+    xKey: 'mass2',
+    yKey: 'tension',
+    xLabel: 'Hanging Mass m₂',
+    yLabel: 'String Tension T',
+    xUnit: 'kg',
+    yUnit: 'N',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const m1 = p.mass1 || 2;
+      const mu = p.mu ?? 0.1;
+      const g = p.gravity || 9.81;
+      const pts = [];
+      for (let m2 = 0.5; m2 <= 10; m2 += 0.5) {
+        const T = (m1 * m2 * (1 + mu) * g) / (m1 + m2);
+        pts.push({ x: m2, y: parseFloat(T.toFixed(2)) });
+      }
+      return {
+        points: pts,
+        label: 'Theoretical T = [m₁m₂(1+μ)g] / (m₁+m₂)',
+        equation: 'T = m₁m₂(1+μ)g / (m₁+m₂)',
+      };
+    },
+    theoryDescription: 'Tension in the connecting string between a sliding block on a rough surface and a hanging mass is T = m₁m₂(1+μ)g / (m₁+m₂). As m₂ → ∞, T approaches m₁(1+μ)g.',
   },
 ];
 
@@ -457,6 +603,43 @@ export const circularMotionGraphs: ScientificGraphDefinition[] = [
       return { points: pts, label: 'Theoretical F_c = m v² / r', equation: 'F_c = m v² / r' };
     },
   },
+  {
+    id: 'fc_vs_omega2',
+    title: 'Centripetal Force (F_c) vs Angular Velocity Squared (ω²)',
+    xKey: 'omegaSquared',
+    yKey: 'centripetalForce',
+    xLabel: 'Angular Speed Squared ω²',
+    yLabel: 'Centripetal Force F_c',
+    xUnit: 'rad²/s²',
+    yUnit: 'N',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'm · r (Mass × Radius)',
+    getExpectedSlope: (p) => (p.mass || 1.0) * (p.radius || 2.0),
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const slope = (p.mass || 1.0) * (p.radius || 2.0);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 50, 50);
+      return {
+        points: [{ x: x0, y: parseFloat((slope * x0).toFixed(2)) }, { x: x1, y: parseFloat((slope * x1).toFixed(2)) }],
+        label: `Theoretical F_c = ${(slope).toFixed(2)} ω²`,
+        equation: 'F_c = m r ω²',
+      };
+    },
+    deducePhysics: (reg, p) => {
+      const theoSlope = (p.mass || 1.0) * (p.radius || 2.0);
+      const err = calculatePercentageError(reg.slope, theoSlope);
+      return {
+        label: 'Deduced (m·r) Product',
+        formula: 'Slope = m · r',
+        unit: 'kg·m',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoSlope.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Centripetal force expressed in terms of angular velocity is F_c = m r ω². Plotting F_c vs ω² yields a straight line through the origin with slope m·r.',
+  },
 ];
 
 // ==========================================
@@ -583,6 +766,31 @@ export const gravityOrbitsGraphs: ScientificGraphDefinition[] = [
       }
       return { points: pts, label: 'Theoretical v = √(GM/r)', equation: 'v = √(GM/r)' };
     },
+  },
+  {
+    id: 'g_vs_r',
+    title: 'Gravitational Field Strength (g) vs Distance (r)',
+    xKey: 'radius',
+    yKey: 'fieldStrength',
+    xLabel: 'Distance from Centre r',
+    yLabel: 'Gravitational Field Strength g',
+    xUnit: 'AU / 10⁶ km',
+    yUnit: 'm/s²',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const k = (p.starMass || 1.0) * 887;
+      const pts = [];
+      for (let r = 0.5; r <= 10; r += 0.5) {
+        pts.push({ x: r, y: parseFloat((k / (r * r)).toFixed(2)) });
+      }
+      return {
+        points: pts,
+        label: 'Inverse Square Law g = GM / r²',
+        equation: 'g = GM / r²',
+      };
+    },
+    theoryDescription: 'Newton’s Law of Universal Gravitation states that gravitational field strength follows the inverse square law: g = GM / r².',
   },
 ];
 
@@ -835,6 +1043,35 @@ export const shmGraphs: ScientificGraphDefinition[] = [
       };
     },
   },
+  {
+    id: 'a_vs_t_shm',
+    title: 'Acceleration (a) vs Time (t)',
+    xKey: 't',
+    yKey: 'acceleration',
+    xLabel: 'Time t',
+    yLabel: 'Acceleration a',
+    xUnit: 's',
+    yUnit: 'm/s²',
+    graphType: 'realtime-series',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const A = p.amplitude || 1.5;
+      const omega = Math.sqrt(p.mode === 'pendulum' ? 9.81 / (p.length || 1.0) : (p.springK || 20) / (p.mass || 1.0));
+      const amax = A * omega * omega;
+      const T = (2 * Math.PI) / omega;
+      const pts = [];
+      for (let i = 0; i <= 60; i++) {
+        const t = (i / 60) * (2 * T);
+        pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat((-amax * Math.cos(omega * t)).toFixed(2)) });
+      }
+      return {
+        points: pts,
+        label: 'Theoretical a(t) = -Aω² cos(ωt)',
+        equation: 'a = -Aω² cos(ωt)',
+      };
+    },
+    theoryDescription: 'In SHM, acceleration is in antiphase (180° phase difference) with displacement: a(t) = -Aω² cos(ωt). It is maximum at extreme displacements and zero at equilibrium.',
+  },
 ];
 
 // ==========================================
@@ -902,6 +1139,33 @@ export const geometricalOpticsGraphs: ScientificGraphDefinition[] = [
         equation: '1/v + 1/u = 1/f',
       };
     },
+    theoryDescription: 'For a convex lens, plotting 1/v against 1/u gives a straight line with slope -1 and y-intercept 1/f (dioptres). Used experimentally to determine focal length f.',
+  },
+  {
+    id: 'v_vs_u',
+    title: 'Conjugate Foci: Image Distance (v) vs Object Distance (u)',
+    xKey: 'u',
+    yKey: 'v',
+    xLabel: 'Object Distance u',
+    yLabel: 'Image Distance v',
+    xUnit: 'cm',
+    yUnit: 'cm',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const f = (p.focalLength || 0.2) * 100; // in cm
+      const pts = [];
+      for (let u = f + 2; u <= f * 5; u += 1) {
+        const v = (u * f) / (u - f);
+        pts.push({ x: parseFloat(u.toFixed(1)), y: parseFloat(v.toFixed(1)) });
+      }
+      return {
+        points: pts,
+        label: `Conjugate Hyperbola v = (u·f)/(u - f) [f = ${f.toFixed(0)} cm]`,
+        equation: 'v = (uf) / (u - f)',
+      };
+    },
+    theoryDescription: 'For a convex lens forming a real image, 1/v + 1/u = 1/f. The curve is a rectangular hyperbola with asymptotes at u = f and v = f, and symmetric point at u = 2f, v = 2f.',
   },
 ];
 
@@ -1023,6 +1287,54 @@ export const dcOhmsLawGraphs: ScientificGraphDefinition[] = [
       }
       return { points: pts, label: 'Joule Heating P = I²R', equation: 'P = I²R' };
     },
+  },
+  {
+    id: 'terminal_v_vs_i',
+    title: 'Terminal Voltage (V) vs Current (I) for Real Cell (V = E - Ir)',
+    xKey: 'current',
+    yKey: 'terminalVoltage',
+    xLabel: 'Circuit Current I',
+    yLabel: 'Terminal Voltage V',
+    xUnit: 'A',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: '-r (Negative Internal Resistance)',
+    expectedInterceptFormula: 'E (EMF of Cell)',
+    getExpectedSlope: (p) => -(p.internalResistance ?? 1.5),
+    getExpectedIntercept: (p) => p.emf || 12.0,
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const E = p.emf || 12.0;
+      const r = p.internalResistance ?? 1.5;
+      const iMax = E / r;
+      const x0 = minX ?? 0;
+      const x1 = Math.min(Math.max(maxX ?? 5.0, 5.0), iMax);
+      return {
+        points: [
+          { x: x0, y: parseFloat((E - r * x0).toFixed(2)) },
+          { x: x1, y: parseFloat(Math.max(0, E - r * x1).toFixed(2)) },
+        ],
+        label: `Terminal Voltage V = ${E.toFixed(1)} - ${r.toFixed(1)}I`,
+        equation: 'V = E - Ir',
+      };
+    },
+    deducePhysics: (reg, p) => {
+      const expR = -reg.slope;
+      const theoR = p.internalResistance ?? 1.5;
+      const expE = reg.intercept;
+      const theoE = p.emf || 12.0;
+      const errR = calculatePercentageError(expR, theoR);
+      return {
+        label: 'Internal Resistance (r)',
+        formula: 'r = -Slope',
+        unit: 'Ω',
+        experimentalValue: parseFloat(expR.toFixed(3)),
+        theoreticalValue: parseFloat(theoR.toFixed(3)),
+        percentageError: parseFloat(errR.toFixed(2)),
+        description: `Deduced EMF E = ${expE.toFixed(2)} V (Theory: ${theoE.toFixed(2)} V)`,
+      };
+    },
+    theoryDescription: 'For a practical cell with EMF E and internal resistance r, the terminal voltage is V = E - Ir. The slope gives -r and the y-intercept gives the open-circuit EMF E.',
   },
 ];
 
