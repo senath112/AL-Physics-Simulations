@@ -108,16 +108,12 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
   const [labNotes, setLabNotes] = useState<string>('');
 
   // Direction: +1 = CW, -1 = CCW
-  // Standard (N left, S right, positive current) -> CW
   const directionMultiplier = (currentReversed ? -1 : 1) * (fieldReversed ? -1 : 1);
 
   // Physics Calculations
   const peakTorque = N * I * area * B;
-  // Commutator rectifies torque so it's always in positive driving direction:
   const sinFactor = Math.abs(Math.sin(theta));
   const instantTorque = peakTorque * sinFactor;
-
-  // Angular speed proportional to torque / back-emf balance
   const angularSpeed = Math.max(2, Math.sqrt((peakTorque * 12) + 4));
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,7 +139,7 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     setTheta(0);
   };
 
-  // Canvas Drawing: 3D Commutator & Armature Loop
+  // Canvas Drawing: 3D Commutator & Armature Loop (Pure White BG)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -162,46 +158,94 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
 
     ctx.clearRect(0, 0, width, height);
 
-    // Deep Tech Background
-    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#0a0f1d');
-    bgGrad.addColorStop(1, '#020617');
-    ctx.fillStyle = bgGrad;
+    // Pure Clean White Background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
-    // Left and Right Magnet Pole Shoes
+    // Left and Right 3D Magnet Pole Blocks
     const poleY = 45;
     const poleH = 150;
+    const poleDepth = 18;
+
     const leftColor = fieldReversed ? '#2563eb' : '#dc2626';
+    const leftTopColor = fieldReversed ? '#60a5fa' : '#f87171';
+    const leftSideColor = fieldReversed ? '#1d4ed8' : '#b91c1c';
     const leftText = fieldReversed ? 'S' : 'N';
+
     const rightColor = fieldReversed ? '#dc2626' : '#2563eb';
+    const rightTopColor = fieldReversed ? '#f87171' : '#60a5fa';
+    const rightSideColor = fieldReversed ? '#b91c1c' : '#1d4ed8';
     const rightText = fieldReversed ? 'N' : 'S';
 
-    // Left Pole
+    // Left Pole 3D
+    ctx.save();
+    ctx.fillStyle = leftTopColor;
+    ctx.beginPath();
+    ctx.moveTo(25, poleY);
+    ctx.lineTo(25 + poleDepth, poleY - 10);
+    ctx.lineTo(75 + poleDepth, poleY - 10);
+    ctx.lineTo(75, poleY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = leftSideColor;
+    ctx.beginPath();
+    ctx.moveTo(75, poleY);
+    ctx.lineTo(75 + poleDepth, poleY - 10);
+    ctx.lineTo(75 + poleDepth, poleY + poleH - 10);
+    ctx.lineTo(75, poleY + poleH);
+    ctx.closePath();
+    ctx.fill();
+
     ctx.fillStyle = leftColor;
     ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(25, poleY, 50, poleH, [8, 0, 0, 8]);
+    ctx.roundRect(25, poleY, 50, poleH, [6, 0, 0, 6]);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 22px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(leftText, 50, poleY + poleH / 2 + 7);
+    ctx.restore();
 
-    // Right Pole
-    ctx.fillStyle = rightColor;
+    // Right Pole 3D
+    ctx.save();
+    ctx.fillStyle = rightTopColor;
     ctx.beginPath();
-    ctx.roundRect(width - 75, poleY, 50, poleH, [0, 8, 8, 0]);
+    ctx.moveTo(width - 75, poleY);
+    ctx.lineTo(width - 75 + poleDepth, poleY - 10);
+    ctx.lineTo(width - 25 + poleDepth, poleY - 10);
+    ctx.lineTo(width - 25, poleY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = rightSideColor;
+    ctx.beginPath();
+    ctx.moveTo(width - 25, poleY);
+    ctx.lineTo(width - 25 + poleDepth, poleY - 10);
+    ctx.lineTo(width - 25 + poleDepth, poleY + poleH - 10);
+    ctx.lineTo(width - 25, poleY + poleH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = rightColor;
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(width - 75, poleY, 50, poleH, [0, 6, 6, 0]);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
     ctx.fillText(rightText, width - 50, poleY + poleH / 2 + 7);
+    ctx.restore();
 
     // Magnetic Field Lines
     ctx.save();
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+    ctx.strokeStyle = 'rgba(2, 132, 199, 0.25)';
     ctx.lineWidth = 1.2;
     ctx.setLineDash([4, 4]);
     for (let fy = poleY + 20; fy <= poleY + poleH - 20; fy += 26) {
@@ -221,21 +265,21 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     ctx.save();
     ctx.translate(cX, cY);
 
-    // Axle
-    ctx.strokeStyle = '#64748b';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(0, -coilH / 2 - 25);
-    ctx.lineTo(0, coilH / 2 + 55);
-    ctx.stroke();
+    // 3D Stainless Steel Axle
+    const axleGrad = ctx.createLinearGradient(-3, 0, 3, 0);
+    axleGrad.addColorStop(0, '#64748b');
+    axleGrad.addColorStop(0.5, '#cbd5e1');
+    axleGrad.addColorStop(1, '#475569');
+    ctx.fillStyle = axleGrad;
+    ctx.fillRect(-3, -coilH / 2 - 25, 6, coilH + 80);
 
     // 3D projected coil rectangle
     const projW = coilW * Math.cos(theta);
     const tilt = 20 * Math.sin(theta);
 
-    // Draw Coil Loop
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 4;
+    // Draw Copper Coil Loop
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth = 4.5;
     ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
     ctx.beginPath();
     ctx.moveTo(-projW, -coilH / 2 + tilt);
@@ -250,11 +294,10 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     if (showForces) {
       const forceLen = Math.max(16, Math.min(45, (instantTorque / (peakTorque || 1)) * 45));
 
-      // Upwards/Downwards arrows on left/right arms
       const drawForce = (xPos: number, yPos: number, isUp: boolean) => {
         ctx.save();
-        ctx.strokeStyle = '#10b981';
-        ctx.fillStyle = '#10b981';
+        ctx.strokeStyle = '#059669';
+        ctx.fillStyle = '#059669';
         ctx.lineWidth = 3;
         const dy = isUp ? -forceLen : forceLen;
 
@@ -272,9 +315,9 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
         ctx.closePath();
         ctx.fill();
 
-        ctx.font = 'bold 9px sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText('F', xPos + 8, yPos + dy / 2);
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillStyle = '#059669';
+        ctx.fillText('F', xPos + 10, yPos + dy / 2);
         ctx.restore();
       };
 
@@ -285,13 +328,12 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       }
     }
 
-    // Split-Ring Commutator at the bottom of shaft
+    // 3D Split-Ring Commutator
     const commY = coilH / 2 + 30;
     const commR = 14;
 
-    // Draw Commutator Halves with gap
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 3.5;
     // Left half
     ctx.beginPath();
     ctx.arc(0, commY, commR, Math.PI / 2 + 0.25, (3 * Math.PI) / 2 - 0.25);
@@ -301,21 +343,20 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
     ctx.arc(0, commY, commR, -Math.PI / 2 + 0.25, Math.PI / 2 - 0.25);
     ctx.stroke();
 
-    // Carbon Brushes pressing on sides
+    // 3D Carbon Brushes pressing on sides
     ctx.fillStyle = '#1e293b';
-    ctx.strokeStyle = '#475569';
+    ctx.strokeStyle = '#0f172a';
     ctx.lineWidth = 1.5;
-    // Left brush
     ctx.fillRect(-commR - 8, commY - 4, 8, 8);
     ctx.strokeRect(-commR - 8, commY - 4, 8, 8);
-    // Right brush
+
     ctx.fillRect(commR, commY - 4, 8, 8);
     ctx.strokeRect(commR, commY - 4, 8, 8);
 
     ctx.restore();
 
     // Dynamic Direction Badge
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
     const dirText = directionMultiplier > 0 ? t.clockwise : t.counterClockwise;
@@ -451,7 +492,7 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
           {/* Turns N */}
           <div className="space-y-1.5 border-t border-slate-100 pt-3">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-amber-600">{t.turnsLabel}</span>
+              <span className="text-amber-600 font-bold">{t.turnsLabel}</span>
               <span className="text-amber-600 font-mono font-bold">{N}</span>
             </div>
             <input
@@ -582,18 +623,18 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
 
       {/* Main Viewport & Graphs */}
       <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 relative flex flex-col items-center justify-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-300">
-            <span className="font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 relative flex flex-col items-center justify-center">
+          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-700">
+            <span className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Sparkles className="w-4 h-4 text-amber-600" />
               {t.title}
             </span>
-            <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+            <span className="text-[11px] text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
               τ = NIAB·sin(θ)
             </span>
           </div>
 
-          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden shadow-inner border border-slate-700/60 bg-black">
+          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden border border-slate-200 bg-white">
             <canvas ref={canvasRef} className="w-full h-full block" />
           </div>
         </div>

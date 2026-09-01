@@ -239,6 +239,7 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // 3D Isometric Front-Perspective Drawing
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -257,114 +258,231 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
     ctx.clearRect(0, 0, width, heightPx);
 
-    const bgGrad = ctx.createLinearGradient(0, 0, width, heightPx);
-    bgGrad.addColorStop(0, '#0f172a');
-    bgGrad.addColorStop(1, '#1e293b');
-    ctx.fillStyle = bgGrad;
+    // Pure Clean White Background with Light Grid Floor
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, heightPx);
 
-    const rampStartX = 60;
-    const rampBaseY = 240;
-    const rampPixelLen = 400;
+    // Floor perspective grid lines
+    ctx.save();
+    ctx.strokeStyle = 'rgba(226, 232, 240, 0.8)';
+    ctx.lineWidth = 1;
+    for (let gy = 230; gy <= heightPx; gy += 12) {
+      ctx.beginPath();
+      ctx.moveTo(10, gy);
+      ctx.lineTo(width - 10, gy);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    const startX = rampStartX;
-    const startY = rampBaseY - rampPixelLen * sinTheta;
-    const endX = rampStartX + rampPixelLen * cosTheta;
-    const endY = rampBaseY;
+    // 3D Wedge Incline Geometry (Viewing Incline from Front Angle)
+    // Front face coordinates
+    const fStartX = 70;
+    const fBaseY = 240;
+    const rampPixels = 380;
+    const fTopX = fStartX;
+    const fTopY = fBaseY - rampPixels * sinTheta * 0.65;
+    const fEndX = fStartX + rampPixels * cosTheta * 0.95;
+    const fEndY = fBaseY;
 
+    // Extrusion 3D Depth Offset (into the screen to the right-up)
+    const depthX = 45;
+    const depthY = -25;
+
+    // 1. Incline Back / Top Slope Surface (3D Ramp Face)
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.lineTo(startX, endY);
+    ctx.moveTo(fTopX, fTopY);
+    ctx.lineTo(fEndX, fEndY);
+    ctx.lineTo(fEndX + depthX, fEndY + depthY);
+    ctx.lineTo(fTopX + depthX, fTopY + depthY);
     ctx.closePath();
 
-    const wedgeGrad = ctx.createLinearGradient(startX, startY, endX, endY);
-    wedgeGrad.addColorStop(0, 'rgba(51, 65, 85, 0.9)');
-    wedgeGrad.addColorStop(1, 'rgba(30, 41, 59, 0.95)');
-    ctx.fillStyle = wedgeGrad;
+    const rampGrad = ctx.createLinearGradient(fTopX, fTopY, fEndX, fEndY);
+    rampGrad.addColorStop(0, '#f1f5f9');
+    rampGrad.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = rampGrad;
+    ctx.fill();
+
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 2. Incline Front Triangular Face (Direct Front View of Angle θ)
+    ctx.beginPath();
+    ctx.moveTo(fTopX, fTopY);
+    ctx.lineTo(fEndX, fEndY);
+    ctx.lineTo(fStartX, fBaseY);
+    ctx.closePath();
+
+    const frontFaceGrad = ctx.createLinearGradient(fStartX, fTopY, fStartX, fBaseY);
+    frontFaceGrad.addColorStop(0, '#cbd5e1');
+    frontFaceGrad.addColorStop(1, '#94a3b8');
+    ctx.fillStyle = frontFaceGrad;
     ctx.fill();
 
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 3;
+    // 3. Side Height Support Line & Base Ground Line
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(20, endY);
-    ctx.lineTo(520, endY);
+    ctx.moveTo(20, fBaseY);
+    ctx.lineTo(width - 20, fBaseY);
     ctx.stroke();
 
-    const arcRadius = 40;
-    ctx.strokeStyle = '#38bdf8';
+    // Height Dimension Marker h
+    ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.arc(startX, endY, arcRadius, 0, -thetaRad, true);
+    ctx.moveTo(fStartX - 15, fTopY);
+    ctx.lineTo(fStartX - 15, fBaseY);
+    ctx.moveTo(fStartX - 20, fTopY); ctx.lineTo(fStartX - 10, fTopY);
+    ctx.moveTo(fStartX - 20, fBaseY); ctx.lineTo(fStartX - 10, fBaseY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`h = ${height.toFixed(2)}m`, fStartX - 22, (fTopY + fBaseY) / 2 + 3);
+
+    // Front Angle Protractor Arc θ
+    const arcRadius = 45;
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(fEndX, fEndY, arcRadius, Math.PI, Math.PI + thetaRad * 0.65, false);
     ctx.stroke();
 
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText(`θ = ${thetaDeg}°`, startX + arcRadius + 8, endY - 10);
+    ctx.fillStyle = '#0369a1';
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(`θ = ${thetaDeg}°`, fEndX - arcRadius - 8, fEndY - 8);
     ctx.restore();
 
+    // 4. Render Beautiful 3D Rolling Bodies along the Slope
     const activeList = mode === 'race' ? OBJECT_TYPES : [currentObj];
-    const trackRadius = 14;
+    const trackRadius = 15;
 
     activeList.forEach((obj, idx) => {
       const state = simState.current[obj.id];
       const normDist = rampLength > 0 ? state.s / rampLength : 0;
 
-      const uX = Math.cos(thetaRad);
-      const uY = Math.sin(thetaRad);
-      const nX = Math.sin(thetaRad);
-      const nY = -Math.cos(thetaRad);
+      // 3D lane offset across the depth width of ramp
+      const numTracks = activeList.length;
+      const laneFraction = numTracks > 1 ? (idx + 0.5) / numTracks : 0.5;
+      const laneDepthX = depthX * laneFraction;
+      const laneDepthY = depthY * laneFraction;
 
-      const trackOffset = mode === 'race' ? (idx - 2) * 5.5 : 0;
+      const trackTopX = fTopX + laneDepthX;
+      const trackTopY = fTopY + laneDepthY;
+      const trackEndX = fEndX + laneDepthX;
+      const trackEndY = fEndY + laneDepthY;
 
-      const bodyDistPx = normDist * rampPixelLen;
-      const contactX = startX + bodyDistPx * uX + trackOffset * nX;
-      const contactY = startY + bodyDistPx * uY + trackOffset * nY;
+      // Position on the slope
+      const bodyX = trackTopX + normDist * (trackEndX - trackTopX);
+      const bodyY = trackTopY + normDist * (trackEndY - trackTopY);
 
-      const centerPosX = contactX + trackRadius * nX;
-      const centerPosY = contactY + trackRadius * nY;
+      // Normal perpendicular offset upwards from the slope surface
+      const slopeAngleVisual = Math.atan2(trackEndY - trackTopY, trackEndX - trackTopX);
+      const normalX = Math.sin(slopeAngleVisual);
+      const normalY = -Math.cos(slopeAngleVisual);
 
+      const centerX = bodyX + normalX * trackRadius;
+      const centerY = bodyY + normalY * trackRadius;
+
+      // Draw realistic contact shadow
       ctx.save();
-      ctx.translate(centerPosX, centerPosY);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(bodyX, bodyY, trackRadius * 0.8, trackRadius * 0.25, slopeAngleVisual, 0, 2 * Math.PI);
+      ctx.fill();
+
+      ctx.translate(centerX, centerY);
 
       if (obj.id === 'slidingBlock') {
-        ctx.rotate(thetaRad);
-        ctx.fillStyle = obj.color;
-        ctx.strokeStyle = obj.stroke;
-        ctx.lineWidth = 2;
-        ctx.fillRect(-trackRadius, -trackRadius, trackRadius * 2, trackRadius * 2);
-        ctx.strokeRect(-trackRadius, -trackRadius, trackRadius * 2, trackRadius * 2);
+        // --- 3D Isometric Sliding Box ---
+        ctx.rotate(slopeAngleVisual);
+        const bw = trackRadius * 1.8;
+        const bh = trackRadius * 1.4;
+
+        // Front Face
+        ctx.fillStyle = '#8b5cf6';
+        ctx.strokeStyle = '#6d28d9';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(-bw / 2, -bh / 2, bw, bh);
+        ctx.strokeRect(-bw / 2, -bh / 2, bw, bh);
+
+        // Top 3D Bevel
+        ctx.fillStyle = '#a78bfa';
+        ctx.beginPath();
+        ctx.moveTo(-bw / 2, -bh / 2);
+        ctx.lineTo(-bw / 2 + 6, -bh / 2 - 6);
+        ctx.lineTo(bw / 2 + 6, -bh / 2 - 6);
+        ctx.lineTo(bw / 2, -bh / 2);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 8px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('BOX', 0, 3);
-      } else {
+
+      } else if (obj.id === 'solidSphere') {
+        // --- 3D Solid Sphere with Radial Highlight & Rotational Meridian Dots ---
         ctx.rotate(state.angle);
 
+        // 3D Sphere Spherical Gradient
+        const sGrad = ctx.createRadialGradient(-trackRadius * 0.35, -trackRadius * 0.35, trackRadius * 0.1, 0, 0, trackRadius);
+        sGrad.addColorStop(0, '#ffffff');
+        sGrad.addColorStop(0.3, '#60a5fa');
+        sGrad.addColorStop(0.85, '#2563eb');
+        sGrad.addColorStop(1, '#1e3a8a');
+
+        ctx.fillStyle = sGrad;
         ctx.beginPath();
         ctx.arc(0, 0, trackRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = obj.color;
         ctx.fill();
-        ctx.strokeStyle = obj.stroke;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#1d4ed8';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        if (obj.id === 'hollowSphere' || obj.id === 'hollowCylinder') {
-          ctx.beginPath();
-          ctx.arc(0, 0, trackRadius * 0.65, 0, 2 * Math.PI);
-          ctx.fillStyle = '#0f172a';
-          ctx.fill();
-          ctx.strokeStyle = obj.stroke;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
+        // Rotational Equator Ring & Meridian Dots
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, trackRadius, trackRadius * 0.4, 0, 0, 2 * Math.PI);
+        ctx.stroke();
 
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(trackRadius * 0.65, 0, 2.5, 0, 2 * Math.PI);
+        ctx.arc(-trackRadius * 0.65, 0, 2.5, 0, 2 * Math.PI);
+        ctx.fill();
+
+      } else if (obj.id === 'solidCylinder') {
+        // --- 3D Solid Cylinder / Disk with Extruded Metallic Body ---
+        ctx.rotate(state.angle);
+
+        // Circular Face Gradient
+        const cGrad = ctx.createRadialGradient(-trackRadius * 0.3, -trackRadius * 0.3, trackRadius * 0.1, 0, 0, trackRadius);
+        cGrad.addColorStop(0, '#ffffff');
+        cGrad.addColorStop(0.35, '#34d399');
+        cGrad.addColorStop(0.85, '#059669');
+        cGrad.addColorStop(1, '#064e3b');
+
+        ctx.fillStyle = cGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, trackRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#047857';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Radial Spokes showing rotation
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -374,18 +492,83 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
 
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
-        ctx.arc(trackRadius - 3, 0, 3, 0, 2 * Math.PI);
+        ctx.arc(0, 0, 3, 0, 2 * Math.PI);
         ctx.fill();
+
+      } else if (obj.id === 'hollowSphere') {
+        // --- 3D Hollow Sphere with Viewport Rim ---
+        ctx.rotate(state.angle);
+
+        const hsGrad = ctx.createRadialGradient(-trackRadius * 0.35, -trackRadius * 0.35, trackRadius * 0.1, 0, 0, trackRadius);
+        hsGrad.addColorStop(0, '#ffffff');
+        hsGrad.addColorStop(0.3, '#fbbf24');
+        hsGrad.addColorStop(0.85, '#d97706');
+        hsGrad.addColorStop(1, '#78350f');
+
+        ctx.fillStyle = hsGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, trackRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Hollow inner cavity
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#92400e';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, trackRadius * 0.55, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.arc(trackRadius * 0.75, 0, 2.5, 0, 2 * Math.PI);
+        ctx.fill();
+
+      } else if (obj.id === 'hollowCylinder') {
+        // --- 3D Hollow Cylinder / Ring with Core Aperture ---
+        ctx.rotate(state.angle);
+
+        const rGrad = ctx.createRadialGradient(-trackRadius * 0.35, -trackRadius * 0.35, trackRadius * 0.1, 0, 0, trackRadius);
+        rGrad.addColorStop(0, '#ffffff');
+        rGrad.addColorStop(0.35, '#f87171');
+        rGrad.addColorStop(0.85, '#dc2626');
+        rGrad.addColorStop(1, '#7f1d1d');
+
+        ctx.fillStyle = rGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, trackRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#b91c1c';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Hollow center hole
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 0, trackRadius * 0.65, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-trackRadius, 0); ctx.lineTo(-trackRadius * 0.65, 0);
+        ctx.moveTo(trackRadius * 0.65, 0); ctx.lineTo(trackRadius, 0);
+        ctx.stroke();
       }
 
       ctx.restore();
 
+      // Race mode tag
       if (mode === 'race') {
         ctx.save();
         ctx.fillStyle = obj.color;
         ctx.font = 'bold 9px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText(`${obj.id.slice(0, 6)}: ${state.s.toFixed(1)}m`, 20, 25 + idx * 16);
+        ctx.fillText(`${obj.id.slice(0, 7)}: ${state.s.toFixed(1)}m`, 20, 25 + idx * 16);
         ctx.restore();
       }
     });
@@ -639,22 +822,22 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       </div>
 
       <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 relative flex flex-col items-center justify-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-300">
-            <span className="font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 relative flex flex-col items-center justify-center">
+          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-700">
+            <span className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Sparkles className="w-4 h-4 text-amber-600" />
               {t.title}
             </span>
-            <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+            <span className="text-[11px] text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
               a = g·sin(θ) / (1 + I/mR²)
             </span>
           </div>
 
-          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden shadow-inner border border-slate-700/60 bg-black">
+          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden border border-slate-200 bg-white">
             <canvas ref={canvasRef} className="w-full h-full block" />
           </div>
 
-          <p className="text-[11px] text-slate-400 text-center mt-2.5 font-medium">
+          <p className="text-[11px] text-slate-500 text-center mt-2.5 font-medium">
             🏆 {t.raceDesc}
           </p>
         </div>

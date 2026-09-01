@@ -297,11 +297,8 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
     ctx.clearRect(0, 0, width, height);
 
-    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#090d16');
-    bgGrad.addColorStop(0.5, '#0f172a');
-    bgGrad.addColorStop(1, '#020617');
-    ctx.fillStyle = bgGrad;
+    // Pure Clean White Background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     const cx = width / 2;
@@ -311,18 +308,19 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     const x1 = cx - halfSepPx;
     const x2 = cx + halfSepPx;
 
+    // 1. Spacetime Grid (Clean Light Style)
     if (showGrid) {
       ctx.save();
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.12)';
       ctx.lineWidth = 1;
 
-      for (let gy = 40; gy <= height - 20; gy += 24) {
+      for (let gy = 30; gy <= height - 20; gy += 24) {
         ctx.beginPath();
         for (let gx = 0; gx <= width; gx += 8) {
           const d1 = Math.hypot(gx - x1, gy - cy);
           const d2 = Math.hypot(gx - x2, gy - cy);
-          const warp1 = Math.min(22, (m1 * 35) / Math.max(400, d1 * d1));
-          const warp2 = Math.min(22, (m2 * 35) / Math.max(400, d2 * d2));
+          const warp1 = Math.min(20, (m1 * 35) / Math.max(400, d1 * d1));
+          const warp2 = Math.min(20, (m2 * 35) / Math.max(400, d2 * d2));
           const warpedY = gy + warp1 + warp2;
           if (gx === 0) ctx.moveTo(gx, warpedY);
           else ctx.lineTo(gx, warpedY);
@@ -330,18 +328,19 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         ctx.stroke();
       }
 
-      for (let gx = 30; gx <= width - 20; gx += 30) {
+      for (let gx = 25; gx <= width - 20; gx += 30) {
         ctx.beginPath();
-        ctx.moveTo(gx, 20);
+        ctx.moveTo(gx, 15);
         ctx.lineTo(gx, height - 10);
         ctx.stroke();
       }
       ctx.restore();
     }
 
+    // 2. Gravitational Field Lines (Light Cyan / Gray dashes)
     if (showFieldLines) {
       ctx.save();
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+      ctx.strokeStyle = 'rgba(100, 116, 139, 0.35)';
       ctx.lineWidth = 1.2;
       ctx.setLineDash([3, 4]);
 
@@ -363,8 +362,9 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       ctx.restore();
     }
 
+    // 3. Central Line & Distance Ruler
     ctx.save();
-    ctx.strokeStyle = 'rgba(203, 213, 225, 0.3)';
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -374,7 +374,7 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.setLineDash([]);
 
     const rulerY = cy - 70;
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(x1, rulerY);
@@ -384,15 +384,15 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.stroke();
 
     const distMidX = (x1 + x2) / 2;
-    ctx.fillStyle = '#0f172a';
-    ctx.strokeStyle = '#38bdf8';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.roundRect(distMidX - 45, rulerY - 14, 90, 26, 6);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -402,6 +402,7 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     const radius1 = Math.max(14, Math.min(36, 12 + Math.cbrt(m1) * 2.4));
     const radius2 = Math.max(14, Math.min(36, 12 + Math.cbrt(m2) * 2.4));
 
+    // 4. Action-Reaction Vectors
     if (showVectors) {
       ctx.save();
       const maxForceRef = (G * 1000 * 1000) / (0.5 * 0.5);
@@ -432,24 +433,37 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = color;
         ctx.fillText(label, (fromX + toX) / 2, fromY + 22);
       };
 
-      drawArrow(x1, cy, Math.min(x1 + arrowLen, x2 - radius2 - 5), cy, '#ef4444', 'F₁₂');
-      drawArrow(x2, cy, Math.max(x2 - arrowLen, x1 + radius1 + 5), cy, '#3b82f6', 'F₂₁');
+      drawArrow(x1, cy, Math.min(x1 + arrowLen, x2 - radius2 - 5), cy, '#dc2626', 'F₁₂');
+      drawArrow(x2, cy, Math.max(x2 - arrowLen, x1 + radius1 + 5), cy, '#2563eb', 'F₂₁');
       ctx.restore();
     }
 
-    const drawMassSphere = (cx: number, cy: number, radius: number, baseColor: string, edgeColor: string, label: string, massVal: number) => {
+    // 5. 3D Celestial Spheres (Light Radial Shading & Specular Gloss)
+    const drawMassSphere3D = (cx: number, cy: number, radius: number, baseColor: string, edgeColor: string, label: string, massVal: number) => {
       ctx.save();
-      ctx.shadowColor = edgeColor;
-      ctx.shadowBlur = 16;
+      // Drop shadow on floor
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.12)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + radius + 4, radius * 0.9, radius * 0.25, 0, 0, 2 * Math.PI);
+      ctx.fill();
 
-      const grad = ctx.createRadialGradient(cx - radius * 0.35, cy - radius * 0.35, radius * 0.1, cx, cy, radius);
+      // 3D Sphere Radial Gradient
+      const grad = ctx.createRadialGradient(
+        cx - radius * 0.35,
+        cy - radius * 0.35,
+        radius * 0.08,
+        cx,
+        cy,
+        radius
+      );
       grad.addColorStop(0, '#ffffff');
       grad.addColorStop(0.3, baseColor);
-      grad.addColorStop(1, edgeColor);
+      grad.addColorStop(0.85, edgeColor);
+      grad.addColorStop(1, '#0f172a');
 
       ctx.fillStyle = grad;
       ctx.beginPath();
@@ -457,23 +471,24 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       ctx.fill();
 
       ctx.strokeStyle = edgeColor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.restore();
 
-      ctx.fillStyle = '#f8fafc';
+      ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, cx, cy + radius + 18);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 10px monospace';
       ctx.fillText(`${massVal.toFixed(0)} kg`, cx, cy + radius + 32);
     };
 
-    drawMassSphere(x1, cy, radius1, '#f87171', '#dc2626', 'Mass 1 (m₁)', m1);
-    drawMassSphere(x2, cy, radius2, '#60a5fa', '#2563eb', 'Mass 2 (m₂)', m2);
+    drawMassSphere3D(x1, cy, radius1, '#f87171', '#dc2626', 'Mass 1 (m₁)', m1);
+    drawMassSphere3D(x2, cy, radius2, '#60a5fa', '#2563eb', 'Mass 2 (m₂)', m2);
 
+    // Center Crosshairs
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(x1 - 3, cy - 1, 6, 2);
     ctx.fillRect(x1 - 1, cy - 3, 2, 6);
@@ -676,23 +691,23 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       </div>
 
       <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 relative flex flex-col items-center justify-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-300">
-            <span className="font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 relative flex flex-col items-center justify-center">
+          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-700">
+            <span className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Sparkles className="w-4 h-4 text-blue-600" />
               {t.title}
             </span>
-            <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700 flex items-center gap-1">
-              <MoveHorizontal className="w-3 h-3 text-cyan-400" />
+            <span className="text-[11px] text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+              <MoveHorizontal className="w-3 h-3 text-blue-600" />
               F = G·(m₁·m₂)/r²
             </span>
           </div>
 
-          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden shadow-inner border border-slate-700/60 bg-black">
+          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden border border-slate-200 bg-white">
             <canvas ref={canvasRef} className="w-full h-full cursor-grab active:cursor-grabbing block" />
           </div>
 
-          <p className="text-[11px] text-slate-400 text-center mt-2.5 font-medium">
+          <p className="text-[11px] text-slate-500 text-center mt-2.5 font-medium">
             {t.dragHint}
           </p>
         </div>

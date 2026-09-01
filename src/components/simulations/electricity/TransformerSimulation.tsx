@@ -139,7 +139,7 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     setEfficiency(95);
   };
 
-  // Canvas Drawing: Laminated Iron Core, Coils, and Oscilloscope
+  // Canvas Drawing: 3D Isometric Laminated Core & Oscilloscope (Pure White BG)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -158,39 +158,59 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
     ctx.clearRect(0, 0, width, height);
 
-    // Deep Tech Background
-    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-    bgGrad.addColorStop(0, '#0a0f1d');
-    bgGrad.addColorStop(1, '#020617');
-    ctx.fillStyle = bgGrad;
+    // Pure Clean White Background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     // Left Core Region: 270px, Right Oscilloscope: 270px
-    const coreX = 35;
-    const coreY = 35;
+    const coreX = 30;
+    const coreY = 40;
     const coreOuterW = 210;
-    const coreOuterH = 190;
-    const coreThick = 38;
+    const coreOuterH = 180;
+    const coreThick = 36;
+    const coreDepth = 16;
 
-    // 1. Draw Laminated Soft-Iron Core (Rectangular Hollow Frame)
+    // 1. Draw 3D Isometric Laminated Soft-Iron Core
     ctx.save();
-    ctx.fillStyle = '#334155';
-    ctx.strokeStyle = '#475569';
-    ctx.lineWidth = 2;
+
+    // Top 3D Extrusion Bevel
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.moveTo(coreX, coreY);
+    ctx.lineTo(coreX + coreDepth, coreY - 10);
+    ctx.lineTo(coreX + coreOuterW + coreDepth, coreY - 10);
+    ctx.lineTo(coreX + coreOuterW, coreY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Side 3D Extrusion Bevel
+    ctx.fillStyle = '#475569';
+    ctx.beginPath();
+    ctx.moveTo(coreX + coreOuterW, coreY);
+    ctx.lineTo(coreX + coreOuterW + coreDepth, coreY - 10);
+    ctx.lineTo(coreX + coreOuterW + coreDepth, coreY + coreOuterH - 10);
+    ctx.lineTo(coreX + coreOuterW, coreY + coreOuterH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Front Core Frame
+    ctx.fillStyle = '#64748b';
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
 
     // Outer rect
     ctx.beginPath();
     ctx.roundRect(coreX, coreY, coreOuterW, coreOuterH, 6);
     ctx.fill(); ctx.stroke();
 
-    // Inner hollow cut
-    ctx.fillStyle = '#0a0f1d';
+    // Inner hollow cut (White aperture)
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.roundRect(coreX + coreThick, coreY + coreThick, coreOuterW - 2 * coreThick, coreOuterH - 2 * coreThick, 4);
     ctx.fill(); ctx.stroke();
 
-    // Laminations effect
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+    // Laminations lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
     ctx.lineWidth = 1;
     for (let lx = coreX + 6; lx < coreX + coreOuterW; lx += 12) {
       ctx.beginPath();
@@ -200,9 +220,9 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     }
     ctx.restore();
 
-    // 2. Animated Magnetic Flux circulating in Core
+    // 2. Animated 3D Magnetic Flux circulating in Core (Cyan Pulse)
     ctx.save();
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2.5;
     ctx.setLineDash([8, 8]);
     ctx.lineDashOffset = -animTime * 15;
@@ -217,71 +237,84 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.stroke();
     ctx.restore();
 
-    // 3. Primary Coil Winding (Left Limb, Red/Amber)
+    // 3. 3D Primary Coil Winding (Left Limb, Red/Amber)
     const priX = coreX;
-    const priY = coreY + coreThick + 8;
-    const priH = coreOuterH - 2 * coreThick - 16;
+    const priY = coreY + coreThick + 6;
+    const priH = coreOuterH - 2 * coreThick - 12;
     const numPriTurnsVisual = Math.max(6, Math.min(16, Math.round(Np / 80)));
 
     ctx.save();
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 3.5;
     const priStep = priH / numPriTurnsVisual;
     for (let i = 0; i < numPriTurnsVisual; i++) {
       const wy = priY + i * priStep;
+      // 3D Copper Wire Ring
+      const wireGrad = ctx.createLinearGradient(priX - 5, wy, priX + coreThick + 5, wy);
+      wireGrad.addColorStop(0, '#dc2626');
+      wireGrad.addColorStop(0.5, '#f87171');
+      wireGrad.addColorStop(1, '#991b1b');
+      ctx.fillStyle = wireGrad;
+      ctx.strokeStyle = '#7f1d1d';
+      ctx.lineWidth = 1;
+
       ctx.beginPath();
-      ctx.ellipse(priX + coreThick / 2, wy + priStep / 2, coreThick / 2 + 5, priStep * 0.45, 0, 0, 2 * Math.PI);
-      ctx.stroke();
+      ctx.roundRect(priX - 6, wy + 2, coreThick + 12, priStep - 3, 3);
+      ctx.fill(); ctx.stroke();
     }
 
     // Primary Labels
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#dc2626';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`Primary: N_p = ${Np}`, priX + coreThick / 2, coreY + coreOuterH + 18);
     ctx.fillText(`${Vp}V AC • ${Ip.toFixed(2)}A`, priX + coreThick / 2, coreY + coreOuterH + 32);
     ctx.restore();
 
-    // 4. Secondary Coil Winding (Right Limb, Blue/Cyan)
+    // 4. 3D Secondary Coil Winding (Right Limb, Cyan/Blue)
     const secX = coreX + coreOuterW - coreThick;
     const secY = priY;
     const numSecTurnsVisual = Math.max(6, Math.min(22, Math.round(Ns / 80)));
 
     ctx.save();
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 3.5;
     const secStep = priH / numSecTurnsVisual;
     for (let i = 0; i < numSecTurnsVisual; i++) {
       const wy = secY + i * secStep;
+      const wireGrad = ctx.createLinearGradient(secX - 5, wy, secX + coreThick + 5, wy);
+      wireGrad.addColorStop(0, '#0284c7');
+      wireGrad.addColorStop(0.5, '#38bdf8');
+      wireGrad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = wireGrad;
+      ctx.strokeStyle = '#075985';
+      ctx.lineWidth = 1;
+
       ctx.beginPath();
-      ctx.ellipse(secX + coreThick / 2, wy + secStep / 2, coreThick / 2 + 5, secStep * 0.45, 0, 0, 2 * Math.PI);
-      ctx.stroke();
+      ctx.roundRect(secX - 6, wy + 2, coreThick + 12, secStep - 3, 3);
+      ctx.fill(); ctx.stroke();
     }
 
     // Secondary Labels
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`Secondary: N_s = ${Ns}`, secX + coreThick / 2, coreY + coreOuterH + 18);
     ctx.fillText(`${Vs.toFixed(1)}V AC • ${Is.toFixed(2)}A`, secX + coreThick / 2, coreY + coreOuterH + 32);
     ctx.restore();
 
-    // 5. Right Side: Dual-Trace Waveform Oscilloscope
+    // 5. Right Side: Clean Real-time Waveform Oscilloscope
     const oscX = 275;
     const oscY = 20;
     const oscW = 250;
     const oscH = height - 40;
     const oscMidY = oscY + oscH / 2;
 
-    ctx.fillStyle = '#0f172a';
-    ctx.strokeStyle = '#334155';
+    ctx.fillStyle = '#f8fafc';
+    ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.roundRect(oscX, oscY, oscW, oscH, 8);
     ctx.fill(); ctx.stroke();
 
     // Grid
-    ctx.strokeStyle = 'rgba(51, 65, 85, 0.5)';
+    ctx.strokeStyle = 'rgba(203, 213, 225, 0.8)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(oscX + 10, oscMidY);
@@ -302,7 +335,7 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     const secAmp = Math.min(55, (Vs / maxScaleV) * 55);
 
     // Primary Input Wave (Red)
-    ctx.strokeStyle = '#ef4444';
+    ctx.strokeStyle = '#dc2626';
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i <= plotW; i++) {
@@ -313,8 +346,8 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     }
     ctx.stroke();
 
-    // Secondary Output Wave (Cyan)
-    ctx.strokeStyle = '#38bdf8';
+    // Secondary Output Wave (Cyan/Blue)
+    ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let i = 0; i <= plotW; i++) {
@@ -328,9 +361,9 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     // Legend
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#dc2626';
     ctx.fillText(`● V_p = ${Vp} V`, oscX + 15, oscY + 18);
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0284c7';
     ctx.fillText(`● V_s = ${Vs.toFixed(1)} V`, oscX + 135, oscY + 18);
 
   }, [Np, Ns, Vp, RLoad, efficiency, animTime, Vs, Is, Ip]);
@@ -598,22 +631,22 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
       {/* Main Viewport & Graphs */}
       <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 overflow-y-auto">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-4 relative flex flex-col items-center justify-center">
-          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-300">
-            <span className="font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 relative flex flex-col items-center justify-center">
+          <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-700">
+            <span className="font-bold flex items-center gap-1.5 text-slate-900">
+              <Sparkles className="w-4 h-4 text-cyan-600" />
               {t.title}
             </span>
-            <span className="text-[11px] text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded-full border border-slate-700">
+            <span className="text-[11px] text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
               V_s / V_p = N_s / N_p
             </span>
           </div>
 
-          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden shadow-inner border border-slate-700/60 bg-black">
+          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden border border-slate-200 bg-white">
             <canvas ref={canvasRef} className="w-full h-full block" />
           </div>
 
-          <p className="text-[11px] text-slate-400 text-center mt-2 font-medium">
+          <p className="text-[11px] text-slate-500 text-center mt-2 font-medium">
             🧲 {t.coreFluxDesc}
           </p>
         </div>
