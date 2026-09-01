@@ -2022,7 +2022,7 @@ function AppContent() {
 
       {/* Global Footer (shown on all pages) */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto shrink-0 w-full font-medium">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 space-y-2 flex flex-col items-center">
           <p>{st.footerCopyright}</p>
           <p>
             {st.footerSub}
@@ -2031,6 +2031,27 @@ function AppContent() {
             <span className="mx-2">•</span>
             <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">{st.privacyTitle}</button>
           </p>
+          <div className="pt-1 flex items-center justify-center">
+            <a
+              href="https://stats.uptimerobot.com/aKskfVmXAs?utm_source=status_badge&utm_medium=referral"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center transition-opacity hover:opacity-80"
+              title="Physics By Senath Service Status"
+            >
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcSet="https://badge.uptimerobot.com/psp/dd4a5f8430a22107a7819a9288f21a87.svg?style=text&theme=dark"
+                />
+                <img
+                  src="https://badge.uptimerobot.com/psp/dd4a5f8430a22107a7819a9288f21a87.svg?style=text&theme=light"
+                  alt="Physics By Senath"
+                  className="h-5"
+                />
+              </picture>
+            </a>
+          </div>
         </div>
       </footer>
 
