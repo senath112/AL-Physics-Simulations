@@ -72,13 +72,28 @@ const DCOhmsLawSimulation = lazy(() =>
 const DopplerEffectSimulation = lazy(() =>
   import('./components/simulations/waves/DopplerEffectSimulation').then(m => ({ default: m.DopplerEffectSimulation }))
 );
+const GravitationSimulation = lazy(() =>
+  import('./components/simulations/mechanics/GravitationSimulation').then(m => ({ default: m.GravitationSimulation }))
+);
+const RollingMotionSimulation = lazy(() =>
+  import('./components/simulations/mechanics/RollingMotionSimulation').then(m => ({ default: m.RollingMotionSimulation }))
+);
+const ACGeneratorSimulation = lazy(() =>
+  import('./components/simulations/magnetism/ACGeneratorSimulation').then(m => ({ default: m.ACGeneratorSimulation }))
+);
+const DCMotorSimulation = lazy(() =>
+  import('./components/simulations/magnetism/DCMotorSimulation').then(m => ({ default: m.DCMotorSimulation }))
+);
+const TransformerSimulation = lazy(() =>
+  import('./components/simulations/electricity/TransformerSimulation').then(m => ({ default: m.TransformerSimulation }))
+);
 import { 
   Compass, 
   Activity, 
   Zap, 
   GraduationCap, 
   Atom, 
-  Waves,
+  Waves, 
   Thermometer, 
   Cpu, 
   Search, 
@@ -92,7 +107,7 @@ import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
 import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI } from './config/features';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'laboratory' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'laboratory' | 'terms' | 'privacy';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -133,6 +148,11 @@ const PATH_MAP: Record<PageType, string> = {
   centre_mass_sim: '/centre-of-mass',
   orbits_sim: '/orbits',
   hydrostatics_sim: '/hydrostatics',
+  gravitation_sim: '/newtons-gravitation',
+  rolling_motion_sim: '/rolling-motion',
+  ac_generator_sim: '/ac-generator',
+  dc_motor_sim: '/dc-motor',
+  transformer_sim: '/transformer',
   laboratory: '/laboratory',
   terms: '/terms',
   privacy: '/privacy'
@@ -433,6 +453,28 @@ function AppContent() {
       pageLink: 'hydrostatics_sim',
     },
     {
+      id: 'gravitation',
+      title: "Newton's Law of Gravitation",
+      sinhalaTitle: "නිව්ටන්ගේ සර්වත්‍ර ගුරුත්වාකර්ෂණ නියමය",
+      tamilTitle: "நியூட்டனின் அகில ஈர்ப்பு விதி",
+      unit: 'mechanics',
+      description: 'Vary masses and separation distance, measure mutual gravitational force vectors, and verify the inverse-square relationship.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'gravitation_sim',
+    },
+    {
+      id: 'rolling_motion',
+      title: 'Rolling Motion & Moment of Inertia',
+      sinhalaTitle: "පෙරළෙන චලිතය සහ අවස්ථිති ඝූර්ණය",
+      tamilTitle: "உருளும் இயக்கம் & சடத்துவத்திருப்பம்",
+      unit: 'mechanics',
+      description: 'Race different geometric objects down an incline, analyze rotational vs translational kinetic energy, and investigate moment of inertia.',
+      icon: Compass,
+      status: 'active',
+      pageLink: 'rolling_motion_sim',
+    },
+    {
       id: 'optics',
       title: 'Geometrical Optics Explainer',
       sinhalaTitle: "ජ්‍යාමිතික ප්‍රකාශ විද්‍යාව",
@@ -553,6 +595,39 @@ function AppContent() {
       icon: Zap,
       status: 'active',
       pageLink: 'induction_sim',
+    },
+    {
+      id: 'ac_generator',
+      title: 'AC Generator & Alternator',
+      sinhalaTitle: "ප්‍රත්‍යාවර්ත ධාරා (AC) ජනකය",
+      tamilTitle: "மாறுதிசை மின்னோட்ட (AC) பிறப்பாக்கி",
+      unit: 'magnetism',
+      description: 'Rotate an armature coil in a uniform magnetic field, observe continuous sinusoidal EMF and magnetic flux waveforms, and verify Faraday’s law.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'ac_generator_sim',
+    },
+    {
+      id: 'dc_motor',
+      title: 'DC Motor & Split-Ring Commutator',
+      sinhalaTitle: "සරල ධාරා (DC) මෝටරය සහ ද්විඛණ්ඩිත මුදු",
+      tamilTitle: "நேரோட்ட (DC) மோட்டார் & மாற்றகம்",
+      unit: 'magnetism',
+      description: 'Analyze magnetic torque on a current-carrying loop, observe commutator current reversal for continuous rotation, and reverse magnetic/current polarity.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'dc_motor_sim',
+    },
+    {
+      id: 'transformer',
+      title: 'AC Transformer & Mutual Induction',
+      sinhalaTitle: "ප්‍රත්‍යාවර්ත (AC) පරිණාමකය",
+      tamilTitle: "மாறுதிசை (AC) மின்மாற்றி",
+      unit: 'electricity',
+      description: 'Investigate mutual induction across laminated iron cores, verify step-up/step-down voltage and current ratios, and evaluate power transfer efficiency.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'transformer_sim',
     },
     {
       id: 'doppler_effect',
@@ -1620,6 +1695,111 @@ function AppContent() {
               <ErrorBoundary>
                 <Suspense fallback={<LoadingFallback />}>
                   <HydrostaticsSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE GRAVITATION SIMULATION */}
+        {currentPage === 'gravitation_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Newton's Law of Gravitation</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ගුරුත්වාකර්ෂණය • ஈர்ப்பு விதி</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <GravitationSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE ROLLING MOTION SIMULATION */}
+        {currentPage === 'rolling_motion_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Rolling Motion & Moment of Inertia</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">පෙරළෙන චලිතය • உருளும் இயக்கம்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <RollingMotionSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE AC GENERATOR SIMULATION */}
+        {currentPage === 'ac_generator_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">AC Generator & Alternator</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ප්‍රත්‍යාවර්ත ධාරා (AC) ජනකය • AC பிறப்பாக்கி</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <ACGeneratorSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE DC MOTOR SIMULATION */}
+        {currentPage === 'dc_motor_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">DC Motor & Split-Ring Commutator</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">සරල ධාරා (DC) මෝටරය • DC மோட்டார்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <DCMotorSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE TRANSFORMER SIMULATION */}
+        {currentPage === 'transformer_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">AC Transformer & Mutual Induction</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">ප්‍රත්‍යාවර්ත (AC) පරිණාමකය • AC மின்மாற்றி</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <TransformerSimulation lang={lang} />
                 </Suspense>
               </ErrorBoundary>
             </div>

@@ -1838,3 +1838,597 @@ export const photoelectricGraphs: ScientificGraphDefinition[] = [
     theoryDescription: 'Photocurrent drops to zero at the stopping potential V = -V_s and saturates at positive collector voltages.',
   },
 ];
+
+// ==========================================
+// 19. Newton's Law of Gravitation Presets
+// ==========================================
+export const gravitationGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'f_vs_inv_r2',
+    title: 'Gravitational Force (F) vs Inverse Square Distance (1/r²)',
+    xKey: 'inv_r2',
+    yKey: 'force',
+    xLabel: '1 / r²',
+    yLabel: 'Gravitational Force F',
+    xUnit: '1/m²',
+    yUnit: 'N',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'G · m₁ · m₂',
+    getExpectedSlope: (p) => {
+      const G = 6.674e-11;
+      const m1 = p.m1 ?? 100;
+      const m2 = p.m2 ?? 100;
+      return G * m1 * m2;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const G = 6.674e-11;
+      const m1 = p.m1 ?? 100;
+      const m2 = p.m2 ?? 100;
+      const k = G * m1 * m2;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 1, 1);
+      const pts = [];
+      for (let i = 0; i <= 25; i++) {
+        const x = x0 + (i / 25) * (x1 - x0);
+        pts.push({ x: parseFloat(x.toFixed(4)), y: parseFloat((k * x).toExponential(3)) });
+      }
+      return { points: pts, label: `Theoretical F = G·m₁·m₂ / r²`, equation: `F = (G·m₁·m₂)·(1/r²)` };
+    },
+    deducePhysics: (reg, p) => {
+      const G_theo = 6.674e-11;
+      const m1 = p.m1 ?? 100;
+      const m2 = p.m2 ?? 100;
+      const product = m1 * m2;
+      const deduced_G = product > 0 ? reg.slope / product : 0;
+      const err = calculatePercentageError(deduced_G, G_theo);
+      return {
+        label: 'Universal Gravitational Constant (G)',
+        formula: 'G = slope / (m₁ · m₂)',
+        unit: 'N·m²/kg²',
+        experimentalValue: parseFloat(deduced_G.toExponential(3)),
+        theoreticalValue: parseFloat(G_theo.toExponential(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Newton’s Law of Universal Gravitation states that F = G · m₁ · m₂ / r². Plotting F against 1/r² yields a straight line through the origin with slope = G · m₁ · m₂.',
+  },
+  {
+    id: 'f_vs_r',
+    title: 'Gravitational Force (F) vs Separation Distance (r)',
+    xKey: 'r',
+    yKey: 'force',
+    xLabel: 'Separation Distance r',
+    yLabel: 'Gravitational Force F',
+    xUnit: 'm',
+    yUnit: 'N',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const G = 6.674e-11;
+      const m1 = p.m1 ?? 100;
+      const m2 = p.m2 ?? 100;
+      const x0 = Math.max(minX ?? 1, 0.5);
+      const x1 = Math.max(maxX ?? 10, 10);
+      const pts = [];
+      for (let i = 0; i <= 40; i++) {
+        const rVal = x0 + (i / 40) * (x1 - x0);
+        const F = (G * m1 * m2) / (rVal * rVal);
+        pts.push({ x: parseFloat(rVal.toFixed(2)), y: parseFloat(F.toExponential(3)) });
+      }
+      return { points: pts, label: `Inverse Square Decay: F ∝ 1/r²`, equation: `F(r) = G·m₁·m₂ / r²` };
+    },
+    theoryDescription: 'Demonstrates the Inverse-Square Law: doubling distance quarters the gravitational force.',
+  },
+  {
+    id: 'f_vs_m1',
+    title: 'Gravitational Force (F) vs Mass m₁',
+    xKey: 'm1',
+    yKey: 'force',
+    xLabel: 'Mass m₁',
+    yLabel: 'Gravitational Force F',
+    xUnit: 'kg',
+    yUnit: 'N',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'G · m₂ / r²',
+    getExpectedSlope: (p) => {
+      const G = 6.674e-11;
+      const m2 = p.m2 ?? 100;
+      const r = p.r ?? 2;
+      return (G * m2) / (r * r);
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const G = 6.674e-11;
+      const m2 = p.m2 ?? 100;
+      const r = p.r ?? 2;
+      const slope = (G * m2) / (r * r);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 200, 200);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toExponential(3)) },
+        { x: x1, y: parseFloat((slope * x1).toExponential(3)) },
+      ];
+      return { points: pts, label: `Theoretical F ∝ m₁`, equation: `F = (G·m₂/r²) · m₁` };
+    },
+    theoryDescription: 'Gravitational attraction is directly proportional to each participating mass (F ∝ m₁).',
+  },
+];
+
+// ==========================================
+// 20. Rolling Motion & Moment of Inertia Presets
+// ==========================================
+export const rollingMotionGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'a_vs_sin_theta',
+    title: 'Linear Acceleration (a) vs sin(θ)',
+    xKey: 'sinTheta',
+    yKey: 'acceleration',
+    xLabel: 'sin(θ)',
+    yLabel: 'Linear Acceleration a',
+    xUnit: '',
+    yUnit: 'm/s²',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'g / (1 + I/(mR²))',
+    getExpectedSlope: (p) => {
+      const g = p.g ?? 9.8;
+      const k = p.kFactor ?? 0.4; // default solid sphere = 0.4
+      return g / (1 + k);
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const g = p.g ?? 9.8;
+      const k = p.kFactor ?? 0.4;
+      const slope = g / (1 + k);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 1, 1);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical a = [g / (1 + k)] · sin(θ)`, equation: `a = ${(slope).toFixed(2)} · sin(θ)` };
+    },
+    deducePhysics: (reg, p) => {
+      const g = p.g ?? 9.8;
+      const theo_k = p.kFactor ?? 0.4;
+      const deduced_k = reg.slope > 0 ? (g / reg.slope) - 1 : 0;
+      const err = calculatePercentageError(deduced_k, theo_k);
+      return {
+        label: 'Inertia Constant k = I/(mR²)',
+        formula: 'k = (g / slope) - 1',
+        unit: '',
+        experimentalValue: parseFloat(deduced_k.toFixed(3)),
+        theoreticalValue: parseFloat(theo_k.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'For a body rolling without slipping down an incline, linear acceleration is a = (g · sin θ) / (1 + k), where k = I / (m · R²).',
+  },
+  {
+    id: 'v2_vs_h',
+    title: 'Velocity Squared (v²) vs Release Height (h)',
+    xKey: 'h',
+    yKey: 'vSquared',
+    xLabel: 'Incline Height h',
+    yLabel: 'Velocity Squared v²',
+    xUnit: 'm',
+    yUnit: 'm²/s²',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: '2g / (1 + k)',
+    getExpectedSlope: (p) => {
+      const g = p.g ?? 9.8;
+      const k = p.kFactor ?? 0.4;
+      return (2 * g) / (1 + k);
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const g = p.g ?? 9.8;
+      const k = p.kFactor ?? 0.4;
+      const slope = (2 * g) / (1 + k);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 5, 5);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical v² = [2gh / (1 + k)]`, equation: `v² = ${slope.toFixed(2)} · h` };
+    },
+    theoryDescription: 'By conservation of mechanical energy, m·g·h = ½·m·v² + ½·I·ω² = ½·m·v²(1 + k) ⟹ v² = 2gh / (1 + k).',
+  },
+  {
+    id: 'ke_rot_vs_ke_trans',
+    title: 'Rotational KE vs Translational KE',
+    xKey: 'keTrans',
+    yKey: 'keRot',
+    xLabel: 'Translational Kinetic Energy',
+    yLabel: 'Rotational Kinetic Energy',
+    xUnit: 'J',
+    yUnit: 'J',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'k = I / (mR²)',
+    getExpectedSlope: (p) => p.kFactor ?? 0.4,
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const k = p.kFactor ?? 0.4;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 50, 50);
+      const pts = [
+        { x: x0, y: parseFloat((k * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((k * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `KE_rot = k · KE_trans`, equation: `KE_rot = ${k.toFixed(2)} · KE_trans` };
+    },
+    deducePhysics: (reg, p) => {
+      const theo_k = p.kFactor ?? 0.4;
+      const err = calculatePercentageError(reg.slope, theo_k);
+      return {
+        label: 'Rotational Energy Ratio (k = I / mR²)',
+        formula: 'k = ΔKE_rot / ΔKE_trans',
+        unit: '',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theo_k.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'For pure rolling (v = ω·R), KE_rot / KE_trans = (½·I·ω²) / (½·m·v²) = I / (m·R²) = k.',
+  },
+];
+
+// ==========================================
+// 21. AC Generator Presets
+// ==========================================
+export const acGeneratorGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'emf_vs_omega',
+    title: 'Peak Induced EMF (ℰ₀) vs Angular Velocity (ω)',
+    xKey: 'omega',
+    yKey: 'peakEMF',
+    xLabel: 'Angular Velocity ω',
+    yLabel: 'Peak Induced EMF ℰ₀',
+    xUnit: 'rad/s',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'N · A · B',
+    getExpectedSlope: (p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      return N * A * B;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const slope = N * A * B;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 50, 50);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical ℰ₀ = (NAB)·ω`, equation: `ℰ₀ = ${slope.toFixed(3)} · ω` };
+    },
+    deducePhysics: (reg, p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const theoSlope = N * A * B;
+      const err = calculatePercentageError(reg.slope, theoSlope);
+      return {
+        label: 'Peak Flux Linkage Factor (N·A·B)',
+        formula: 'NAB = Δℰ₀ / Δω',
+        unit: 'V·s/rad',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoSlope.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Faraday’s Law for a rotating coil in a uniform magnetic field gives ℰ(t) = NABω sin(ωt). The peak EMF ℰ₀ is directly proportional to angular speed ω.',
+  },
+  {
+    id: 'emf_vs_b',
+    title: 'Peak Induced EMF (ℰ₀) vs Magnetic Field (B)',
+    xKey: 'magneticField',
+    yKey: 'peakEMF',
+    xLabel: 'Magnetic Field B',
+    yLabel: 'Peak Induced EMF ℰ₀',
+    xUnit: 'T',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'N · A · ω',
+    getExpectedSlope: (p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const omega = p.omega ?? 20;
+      return N * A * omega;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const omega = p.omega ?? 20;
+      const slope = N * A * omega;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 2, 2);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical ℰ₀ = (NAω)·B`, equation: `ℰ₀ = ${slope.toFixed(2)} · B` };
+    },
+    theoryDescription: 'Peak generator EMF scales linearly with the external magnetic flux density B.',
+  },
+  {
+    id: 'emf_vs_n',
+    title: 'Peak Induced EMF (ℰ₀) vs Coil Turns (N)',
+    xKey: 'turns',
+    yKey: 'peakEMF',
+    xLabel: 'Number of Turns N',
+    yLabel: 'Peak Induced EMF ℰ₀',
+    xUnit: '',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'A · B · ω',
+    getExpectedSlope: (p) => {
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const omega = p.omega ?? 20;
+      return A * B * omega;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const omega = p.omega ?? 20;
+      const slope = A * B * omega;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 100, 100);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical ℰ₀ = (ABω)·N`, equation: `ℰ₀ = ${slope.toFixed(3)} · N` };
+    },
+    theoryDescription: 'Adding more turns in series compounds the induced EMF linearly (ℰ₀ ∝ N).',
+  },
+];
+
+// ==========================================
+// 22. DC Motor Presets
+// ==========================================
+export const dcMotorGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'tau_vs_i',
+    title: 'Peak Torque (τ₀) vs Armature Current (I)',
+    xKey: 'current',
+    yKey: 'peakTorque',
+    xLabel: 'Current I',
+    yLabel: 'Peak Torque τ₀',
+    xUnit: 'A',
+    yUnit: 'N·m',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'N · A · B',
+    getExpectedSlope: (p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      return N * A * B;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const slope = N * A * B;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 10, 10);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(3)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(3)) },
+      ];
+      return { points: pts, label: `Theoretical τ₀ = (NAB)·I`, equation: `τ₀ = ${slope.toFixed(3)} · I` };
+    },
+    deducePhysics: (reg, p) => {
+      const N = p.turns ?? 50;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const theoSlope = N * A * B;
+      const err = calculatePercentageError(reg.slope, theoSlope);
+      return {
+        label: 'Motor Torque Constant (N·A·B)',
+        formula: 'k_t = Δτ₀ / ΔI',
+        unit: 'N·m/A',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoSlope.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'Torque on a current-carrying loop in a magnetic field is τ = N · I · A · B · sin(θ). Peak torque τ₀ occurs when the plane of the coil is parallel to magnetic field lines (sin θ = 1).',
+  },
+  {
+    id: 'tau_vs_sin_theta',
+    title: 'Instantaneous Torque (τ) vs sin(θ)',
+    xKey: 'sinTheta',
+    yKey: 'torque',
+    xLabel: 'sin(θ)',
+    yLabel: 'Instantaneous Torque τ',
+    xUnit: '',
+    yUnit: 'N·m',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'N · I · A · B',
+    getExpectedSlope: (p) => {
+      const N = p.turns ?? 50;
+      const I = p.current ?? 2.0;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      return N * I * A * B;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const N = p.turns ?? 50;
+      const I = p.current ?? 2.0;
+      const A = p.area ?? 0.04;
+      const B = p.magneticField ?? 0.5;
+      const slope = N * I * A * B;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 1, 1);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(3)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(3)) },
+      ];
+      return { points: pts, label: `τ = (NIAB)·sin(θ)`, equation: `τ = ${slope.toFixed(3)} · sin(θ)` };
+    },
+    theoryDescription: 'Torque varies sinusoidally as the coil rotates through the magnetic field.',
+  },
+  {
+    id: 'tau_vs_b',
+    title: 'Peak Torque (τ₀) vs Magnetic Field (B)',
+    xKey: 'magneticField',
+    yKey: 'peakTorque',
+    xLabel: 'Magnetic Field B',
+    yLabel: 'Peak Torque τ₀',
+    xUnit: 'T',
+    yUnit: 'N·m',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'N · I · A',
+    getExpectedSlope: (p) => {
+      const N = p.turns ?? 50;
+      const I = p.current ?? 2.0;
+      const A = p.area ?? 0.04;
+      return N * I * A;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const N = p.turns ?? 50;
+      const I = p.current ?? 2.0;
+      const A = p.area ?? 0.04;
+      const slope = N * I * A;
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 2, 2);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(3)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(3)) },
+      ];
+      return { points: pts, label: `Theoretical τ₀ = (NIA)·B`, equation: `τ₀ = ${slope.toFixed(3)} · B` };
+    },
+    theoryDescription: 'Magnetic torque is directly proportional to the magnetic flux density B.',
+  },
+];
+
+// ==========================================
+// 23. Transformer Presets
+// ==========================================
+export const transformerGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'vs_vs_ns',
+    title: 'Secondary Voltage (V_s) vs Secondary Turns (N_s)',
+    xKey: 'secondaryTurns',
+    yKey: 'secondaryVoltage',
+    xLabel: 'Secondary Turns N_s',
+    yLabel: 'Secondary Voltage V_s',
+    xUnit: '',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'V_p / N_p',
+    getExpectedSlope: (p) => {
+      const Vp = p.primaryVoltage ?? 230;
+      const Np = p.primaryTurns ?? 500;
+      return Vp / (Np || 1);
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const Vp = p.primaryVoltage ?? 230;
+      const Np = p.primaryTurns ?? 500;
+      const slope = Vp / (Np || 1);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 1000, 1000);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical V_s = (V_p/N_p)·N_s`, equation: `V_s = ${slope.toFixed(3)} · N_s` };
+    },
+    deducePhysics: (reg, p) => {
+      const Vp = p.primaryVoltage ?? 230;
+      const Np = p.primaryTurns ?? 500;
+      const theoSlope = Vp / (Np || 1);
+      const err = calculatePercentageError(reg.slope, theoSlope);
+      return {
+        label: 'Volts Per Turn (V_p / N_p)',
+        formula: 'Volts/Turn = ΔV_s / ΔN_s',
+        unit: 'V/turn',
+        experimentalValue: parseFloat(reg.slope.toFixed(3)),
+        theoreticalValue: parseFloat(theoSlope.toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'The Transformer Equation states that V_s / V_p = N_s / N_p. The slope of V_s vs N_s gives the volts per turn induced by the core flux.',
+  },
+  {
+    id: 'vs_vs_vp',
+    title: 'Secondary Voltage (V_s) vs Primary Voltage (V_p)',
+    xKey: 'primaryVoltage',
+    yKey: 'secondaryVoltage',
+    xLabel: 'Primary Voltage V_p',
+    yLabel: 'Secondary Voltage V_s',
+    xUnit: 'V',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'Turns Ratio (N_s / N_p)',
+    getExpectedSlope: (p) => {
+      const Ns = p.secondaryTurns ?? 1000;
+      const Np = p.primaryTurns ?? 500;
+      return Ns / (Np || 1);
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const Ns = p.secondaryTurns ?? 1000;
+      const Np = p.primaryTurns ?? 500;
+      const ratio = Ns / (Np || 1);
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 300, 300);
+      const pts = [
+        { x: x0, y: parseFloat((ratio * x0).toFixed(2)) },
+        { x: x1, y: parseFloat((ratio * x1).toFixed(2)) },
+      ];
+      return { points: pts, label: `Theoretical V_s = (N_s/N_p)·V_p`, equation: `V_s = ${ratio.toFixed(2)} · V_p` };
+    },
+    theoryDescription: 'Secondary voltage is directly proportional to primary voltage, scaled by turns ratio k = N_s / N_p.',
+  },
+  {
+    id: 'is_vs_ip',
+    title: 'Secondary Current (I_s) vs Primary Current (I_p)',
+    xKey: 'primaryCurrent',
+    yKey: 'secondaryCurrent',
+    xLabel: 'Primary Current I_p',
+    yLabel: 'Secondary Current I_s',
+    xUnit: 'A',
+    yUnit: 'A',
+    graphType: 'scatter',
+    isLinear: true,
+    expectedSlopeFormula: 'η · (N_p / N_s)',
+    getExpectedSlope: (p) => {
+      const Ns = p.secondaryTurns ?? 1000;
+      const Np = p.primaryTurns ?? 500;
+      const eff = (p.efficiency ?? 95) / 100;
+      return eff * (Np / (Ns || 1));
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const Ns = p.secondaryTurns ?? 1000;
+      const Np = p.primaryTurns ?? 500;
+      const eff = (p.efficiency ?? 95) / 100;
+      const slope = eff * (Np / (Ns || 1));
+      const x0 = minX ?? 0;
+      const x1 = Math.max(maxX ?? 10, 10);
+      const pts = [
+        { x: x0, y: parseFloat((slope * x0).toFixed(3)) },
+        { x: x1, y: parseFloat((slope * x1).toFixed(3)) },
+      ];
+      return { points: pts, label: `Current Relation: I_s = [η·(N_p/N_s)]·I_p`, equation: `I_s = ${slope.toFixed(3)} · I_p` };
+    },
+    theoryDescription: 'For power conservation P_out = η · P_in, stepping up voltage steps down current inversely: I_s / I_p = η · (N_p / N_s).',
+  },
+];
+
+

@@ -149,6 +149,10 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
   const [objVolume, setObjVolume] = useState(0.001); // m³ (1 Litre = 0.001 m³)
   const [liquidDensity, setLiquidDensity] = useState(1000); // kg/m³ (Water = 1000)
   const [immersionPercent, setImmersionPercent] = useState(50); // 0% to 100% submerged
+  const [freeFloat, setFreeFloat] = useState(false); // free-floating toggle
+
+  // Effective immersion based on free-float mode
+  const effectiveImmersion = freeFloat ? Math.min(100, (objMass / (liquidDensity * objVolume)) * 100) : immersionPercent;
 
   // Mode 2: Pressure vs Depth
   const [probeDepth, setProbeDepth] = useState(1.0); // meters (0 to 2m)
@@ -167,9 +171,10 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
   // MODE 1 CALCULATIONS
   const weightAir = objMass * g; // Newtons
   const objDensity = objVolume > 0 ? objMass / objVolume : 0; // kg/m³
-  const submergedVolume = (immersionPercent / 100) * objVolume; // m³
+  const submergedVolume = (effectiveImmersion / 100) * objVolume; // m³
   const buoyantForce = liquidDensity * submergedVolume * g; // Newtons
   const apparentWeight = Math.max(0, weightAir - buoyantForce); // Tension reading in Newtons
+
 
   // MODE 2 CALCULATIONS
   const pAtm = includeAtm ? 101325 : 0; // Pa
@@ -210,7 +215,7 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
 
       // Draw Beaker Background Liquid
       const initialLiquidH = 100;
-      const displacedRise = (immersionPercent / 100) * 15; // visual rise in liquid level
+      const displacedRise = (effectiveImmersion / 100) * 15; // visual rise in liquid level
       const currentLiquidH = initialLiquidH + displacedRise;
       const liquidTop = beakerY + beakerH - currentLiquidH;
 
@@ -238,45 +243,47 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
         ctx.stroke();
       }
 
-      // Draw Spring Scale at the top
       const scaleX = beakerX + beakerW / 2;
       const scaleY = 15;
       const scaleW = 40;
       const scaleH = 50;
 
-      ctx.fillStyle = '#f8fafc';
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(scaleX - scaleW / 2, scaleY, scaleW, scaleH, 4);
-      ctx.fill();
-      ctx.stroke();
+      // Draw Spring Scale at the top only when not free-floating
+      if (!freeFloat) {
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(scaleX - scaleW / 2, scaleY, scaleW, scaleH, 4);
+        ctx.fill();
+        ctx.stroke();
 
-      // Scale Reading display on device
-      ctx.fillStyle = apparentWeight <= 0.05 ? '#10b981' : '#1e293b';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${apparentWeight.toFixed(1)} N`, scaleX, scaleY + 28);
-      ctx.font = '7px sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText('SPRING SCALE', scaleX, scaleY + 12);
+        // Scale Reading display on device
+        ctx.fillStyle = apparentWeight <= 0.05 ? '#10b981' : '#1e293b';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${apparentWeight.toFixed(1)} N`, scaleX, scaleY + 28);
+        ctx.font = '7px sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('SPRING SCALE', scaleX, scaleY + 12);
+      }
 
-      // Calculate Object Position
+      // Calculate Object Position using effectiveImmersion
       const objW = 50;
       const objH = 60;
-      // When immersionPercent = 0, bottom of object is at liquidTop.
-      // When immersionPercent = 100, object is fully submerged.
-      const blockBottomY = liquidTop + (immersionPercent / 100) * objH;
+      const blockBottomY = liquidTop + (effectiveImmersion / 100) * objH;
       const blockTopY = blockBottomY - objH;
       const blockLeftX = scaleX - objW / 2;
 
-      // Connecting Spring / Wire
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(scaleX, scaleY + scaleH);
-      ctx.lineTo(scaleX, blockTopY);
-      ctx.stroke();
+      // Connecting Spring / Wire (only when scale is attached)
+      if (!freeFloat) {
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(scaleX, scaleY + scaleH);
+        ctx.lineTo(scaleX, blockTopY);
+        ctx.stroke();
+      }
 
       // Draw Block
       ctx.fillStyle = objDensity > liquidDensity ? '#d97706' : '#f59e0b';
@@ -794,19 +801,38 @@ export function HydrostaticsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
           {/* MODE 1: ARCHIMEDES CONTROLS */}
           {activeTab === 'archimedes' && (
             <div className="space-y-3 pt-1">
-              {/* Immersion depth slider */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-slate-600">{t.submergeDepth}</span>
-                  <span className="text-blue-600 font-mono font-bold">{immersionPercent}%</span>
-                </div>
-                <input
-                  type="range" min="0" max="100" step="1" value={immersionPercent}
-                  disabled={recorder.isAutoRunning}
-                  onChange={(e) => setImmersionPercent(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                />
+              {/* Free Float Mode Toggle */}
+              <div className="p-2 bg-blue-50/70 border border-blue-200/60 rounded-lg">
+                <label className="flex items-center gap-2 text-xs font-semibold text-blue-900 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={freeFloat}
+                    onChange={(e) => setFreeFloat(e.target.checked)}
+                    disabled={recorder.isAutoRunning}
+                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300"
+                  />
+                  <span>Free Float Mode (Natural Equilibrium)</span>
+                </label>
+                <p className="text-[10px] text-blue-700 mt-1 pl-6">
+                  Object floats freely without scale tether; immersion depth adjusts automatically.
+                </p>
               </div>
+
+              {/* Immersion depth slider (only when not free-floating) */}
+              {!freeFloat && (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-slate-600">{t.submergeDepth}</span>
+                    <span className="text-blue-600 font-mono font-bold">{immersionPercent}%</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="100" step="1" value={immersionPercent}
+                    disabled={recorder.isAutoRunning}
+                    onChange={(e) => setImmersionPercent(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  />
+                </div>
+              )}
 
               {/* Object mass slider */}
               <div className="space-y-1.5">
