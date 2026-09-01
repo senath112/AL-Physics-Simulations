@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Sparkles, Zap, ClipboardList } from 'lucide-react';
+import { Play, Pause, RotateCcw, Sparkles, Zap, Activity, Waves, ClipboardList } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
@@ -18,6 +18,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       areaLabel: 'Coil Area (A)',
       showFlux: 'Show Magnetic Flux (Φ)',
       showEMF: 'Show Induced EMF (ℰ)',
+      showCurrent: 'Show Induced Current Vectors (I)',
       play: 'Rotate Generator',
       pause: 'Pause',
       reset: 'Reset Angle',
@@ -29,6 +30,8 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       instantFlux: 'Instantaneous Flux (Φ)',
       maxFlux: 'Peak Flux (Φ₀)',
       phaseShiftNotice: 'Notice: EMF peaks when flux rate of change is maximum (90° phase shift).',
+      oscilloscopeTitle: 'Real-Time Sinusoidal Oscilloscope (EMF & Magnetic Flux)',
+      oscilloscopeSubtitle: 'Live waveform comparison demonstrating the 90° (π/2 rad) phase difference',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
       labNotes: 'Observation Notebook',
@@ -45,6 +48,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       areaLabel: 'දඟර වර්ගඵලය (A)',
       showFlux: 'චුම්බක ස්‍රාවය (Φ) පෙන්වන්න',
       showEMF: 'ප්‍රේරිත වි.ගා.බ. (ℰ) පෙන්වන්න',
+      showCurrent: 'ප්‍රේරිත ධාරා දෛශික පෙන්වන්න (I)',
       play: 'ක්‍රියාත්මක කරන්න',
       pause: 'නවත්වා තබන්න',
       reset: 'කෝණය නැවත මුලට',
@@ -56,6 +60,8 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       instantFlux: 'ක්ෂණික ස්‍රාවය (Φ)',
       maxFlux: 'උච්ච ස්‍රාවය (Φ₀)',
       phaseShiftNotice: 'සටහන: ස්‍රාවයේ වෙනස්වීමේ සීඝ්‍රතාව උපරිම වන විට වි.ගා.බ. උපරිම වේ (90° කලා වෙනස).',
+      oscilloscopeTitle: 'තථ්‍ය කාලීන සයිනාකාර තරංග ඔසිලෝස්කෝපය (වි.ගා.බ. සහ චුම්බක ස්‍රාවය)',
+      oscilloscopeSubtitle: 'වි.ගා.බ. සහ ස්‍රාවය අතර 90° (π/2 rad) කලා වෙනස පෙන්වන සජීවී තරංග සටහන',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
       labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
@@ -72,6 +78,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       areaLabel: 'சுருள் பரப்பளவு (A)',
       showFlux: 'காந்தப் பாயத்தைக் காட்டு (Φ)',
       showEMF: 'தூண்டப்பட்ட மின்னியக்க விசையைக் காட்டு (ℰ)',
+      showCurrent: 'மின்னோட்ட திசையன்களைக் காட்டு (I)',
       play: 'இயக்கு',
       pause: 'நிறுத்து',
       reset: 'மீட்டமை',
@@ -83,6 +90,8 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       instantFlux: 'உடனடி காந்தப் பாயம் (Φ)',
       maxFlux: 'உச்ச காந்தப் பாயம் (Φ₀)',
       phaseShiftNotice: 'குறிப்பு: பாய மாற்ற வீதம் உச்சமாக இருக்கும்போது மின்னியக்க விசை உச்சமடைகிறது (90° கட்ட வேறுபாடு).',
+      oscilloscopeTitle: 'நிகழ்நேர சைன் அலை அலைக்காட்டி (மி.இ.வி & காந்தப் பாயம்)',
+      oscilloscopeSubtitle: '90° (π/2 rad) கட்ட வேறுபாட்டைக் காட்டும் நேரடி அலைவடிவம்',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
@@ -101,6 +110,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
   const [showFlux, setShowFlux] = useState<boolean>(true);
   const [showEMF, setShowEMF] = useState<boolean>(true);
+  const [showCurrent, setShowCurrent] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [labNotes, setLabNotes] = useState<string>('');
 
@@ -116,6 +126,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
   const instantEMF = peakEMF * Math.sin(theta);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const oscCanvasRef = useRef<HTMLCanvasElement>(null);
 
   // Animation Loop
   useEffect(() => {
@@ -126,7 +137,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     const tick = (now: number) => {
       const dt = Math.min(0.04, (now - lastTime) / 1000);
       lastTime = now;
-      setTheta(prev => (prev + omega * dt) % (2 * Math.PI));
+      setTheta(prev => (prev + omega * dt) % (4 * Math.PI));
       frameId = requestAnimationFrame(tick);
     };
 
@@ -138,7 +149,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     setTheta(0);
   };
 
-  // Canvas Drawing: 3D Generator & Dual Waveform Oscilloscope (Pure White BG)
+  // Canvas 1: Full-Width 3D AC Generator Model with Current Vectors (Pure White BG)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -147,7 +158,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
     const dpr = window.devicePixelRatio || 1;
     const width = 540;
-    const height = 280;
+    const height = 290;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -161,35 +172,42 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
-    // Split Canvas: Left 280px = 3D Rotating Armature, Right 260px = Dual Waveform Oscilloscope
-    const genWidth = 270;
-    const oscX = 285;
-    const oscWidth = 245;
+    // Subtle Perspective Floor Grid
+    ctx.save();
+    ctx.strokeStyle = 'rgba(226, 232, 240, 0.7)';
+    ctx.lineWidth = 1;
+    for (let gy = 240; gy <= height; gy += 12) {
+      ctx.beginPath();
+      ctx.moveTo(10, gy);
+      ctx.lineTo(width - 10, gy);
+      ctx.stroke();
+    }
+    ctx.restore();
 
-    // 1. Draw 3D Magnetic Pole Blocks on Left and Right
-    const poleY = 45;
-    const poleH = 140;
-    const poleDepth = 16;
+    // 3D Magnetic Pole Blocks on Left and Right
+    const poleY = 35;
+    const poleH = 160;
+    const poleDepth = 20;
 
     // North Pole (Red, Left) in 3D
     ctx.save();
     // Top bevel
     ctx.fillStyle = '#f87171';
     ctx.beginPath();
-    ctx.moveTo(15, poleY);
-    ctx.lineTo(15 + poleDepth, poleY - 10);
-    ctx.lineTo(55 + poleDepth, poleY - 10);
-    ctx.lineTo(55, poleY);
+    ctx.moveTo(20, poleY);
+    ctx.lineTo(20 + poleDepth, poleY - 12);
+    ctx.lineTo(80 + poleDepth, poleY - 12);
+    ctx.lineTo(80, poleY);
     ctx.closePath();
     ctx.fill();
 
     // Side bevel
     ctx.fillStyle = '#b91c1c';
     ctx.beginPath();
-    ctx.moveTo(55, poleY);
-    ctx.lineTo(55 + poleDepth, poleY - 10);
-    ctx.lineTo(55 + poleDepth, poleY + poleH - 10);
-    ctx.lineTo(55, poleY + poleH);
+    ctx.moveTo(80, poleY);
+    ctx.lineTo(80 + poleDepth, poleY - 12);
+    ctx.lineTo(80 + poleDepth, poleY + poleH - 12);
+    ctx.lineTo(80, poleY + poleH);
     ctx.closePath();
     ctx.fill();
 
@@ -198,14 +216,14 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.strokeStyle = '#991b1b';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(15, poleY, 40, poleH, [6, 0, 0, 6]);
+    ctx.roundRect(20, poleY, 60, poleH, [8, 0, 0, 8]);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 26px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('N', 35, poleY + poleH / 2 + 7);
+    ctx.fillText('N', 50, poleY + poleH / 2 + 9);
     ctx.restore();
 
     // South Pole (Blue, Right) in 3D
@@ -213,20 +231,20 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     // Top bevel
     ctx.fillStyle = '#60a5fa';
     ctx.beginPath();
-    ctx.moveTo(genWidth - 45, poleY);
-    ctx.lineTo(genWidth - 45 + poleDepth, poleY - 10);
-    ctx.lineTo(genWidth - 5 + poleDepth, poleY - 10);
-    ctx.lineTo(genWidth - 5, poleY);
+    ctx.moveTo(width - 80, poleY);
+    ctx.lineTo(width - 80 + poleDepth, poleY - 12);
+    ctx.lineTo(width - 20 + poleDepth, poleY - 12);
+    ctx.lineTo(width - 20, poleY);
     ctx.closePath();
     ctx.fill();
 
     // Side bevel
     ctx.fillStyle = '#1d4ed8';
     ctx.beginPath();
-    ctx.moveTo(genWidth - 5, poleY);
-    ctx.lineTo(genWidth - 5 + poleDepth, poleY - 10);
-    ctx.lineTo(genWidth - 5 + poleDepth, poleY + poleH - 10);
-    ctx.lineTo(genWidth - 5, poleY + poleH);
+    ctx.moveTo(width - 20, poleY);
+    ctx.lineTo(width - 20 + poleDepth, poleY - 12);
+    ctx.lineTo(width - 20 + poleDepth, poleY + poleH - 12);
+    ctx.lineTo(width - 20, poleY + poleH);
     ctx.closePath();
     ctx.fill();
 
@@ -235,100 +253,170 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     ctx.strokeStyle = '#1e3a8a';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(genWidth - 45, poleY, 40, poleH, [0, 6, 6, 0]);
+    ctx.roundRect(width - 80, poleY, 60, poleH, [0, 8, 8, 0]);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 26px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('S', genWidth - 25, poleY + poleH / 2 + 7);
+    ctx.fillText('S', width - 50, poleY + poleH / 2 + 9);
     ctx.restore();
 
-    // Magnetic Field Lines (Left to Right)
+    // Magnetic Field Lines (North to South across the gap)
     ctx.save();
-    ctx.strokeStyle = 'rgba(2, 132, 199, 0.35)';
+    ctx.strokeStyle = 'rgba(2, 132, 199, 0.25)';
+    ctx.fillStyle = 'rgba(2, 132, 199, 0.6)';
     ctx.lineWidth = 1.2;
-    ctx.setLineDash([4, 4]);
-    for (let fy = poleY + 20; fy <= poleY + poleH - 20; fy += 25) {
+    ctx.setLineDash([6, 6]);
+    for (let fy = poleY + 20; fy <= poleY + poleH - 20; fy += 28) {
       ctx.beginPath();
-      ctx.moveTo(55, fy);
-      ctx.lineTo(genWidth - 45, fy);
+      ctx.moveTo(80, fy);
+      ctx.lineTo(width - 80, fy);
       ctx.stroke();
+
+      // Field direction arrows
+      ctx.beginPath();
+      ctx.moveTo(width / 2 + 10, fy);
+      ctx.lineTo(width / 2 + 3, fy - 3);
+      ctx.lineTo(width / 2 + 3, fy + 3);
+      ctx.closePath();
+      ctx.fill();
     }
     ctx.restore();
 
-    // 2. Rotating Rectangular Armature Coil in 3D Perspective
-    const cX = genWidth / 2 + 5;
-    const cY = poleY + poleH / 2;
-    const coilW = 60;
-    const coilH = 85;
+    // 2. Rotating Armature Coil in 3D Perspective
+    const cX = width / 2;
+    const cY = poleY + poleH / 2 - 10;
+    const coilW = 95;
+    const coilH = 115;
 
     ctx.save();
     ctx.translate(cX, cY);
 
-    // Axle shaft (Stainless Steel cylinder with highlights)
-    const axleGrad = ctx.createLinearGradient(-3, 0, 3, 0);
+    // 3D Axle Shaft (Stainless Steel Cylinder)
+    const axleGrad = ctx.createLinearGradient(-4, 0, 4, 0);
     axleGrad.addColorStop(0, '#64748b');
-    axleGrad.addColorStop(0.5, '#cbd5e1');
+    axleGrad.addColorStop(0.5, '#e2e8f0');
     axleGrad.addColorStop(1, '#475569');
     ctx.fillStyle = axleGrad;
-    ctx.fillRect(-3, -coilH / 2 - 25, 6, coilH + 70);
+    ctx.fillRect(-4, -coilH / 2 - 30, 8, coilH + 85);
 
-    // 3D Perspective projected width
+    // 3D Perspective projected width & vertical tilt
     const projW = coilW * Math.cos(theta);
-    const tilt = 16 * Math.sin(theta);
+    const tilt = 22 * Math.sin(theta);
+
+    const tlX = -projW, tlY = -coilH / 2 + tilt;
+    const trX = projW, trY = -coilH / 2 - tilt;
+    const brX = projW, brY = coilH / 2 - tilt;
+    const blX = -projW, blY = coilH / 2 + tilt;
 
     // Coil Copper Outline with depth
     ctx.strokeStyle = '#d97706';
-    ctx.lineWidth = 4;
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
+    ctx.lineWidth = 5;
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
     ctx.beginPath();
-    ctx.moveTo(-projW, -coilH / 2 + tilt);
-    ctx.lineTo(projW, -coilH / 2 - tilt);
-    ctx.lineTo(projW, coilH / 2 - tilt);
-    ctx.lineTo(-projW, coilH / 2 + tilt);
+    ctx.moveTo(tlX, tlY);
+    ctx.lineTo(trX, trY);
+    ctx.lineTo(brX, brY);
+    ctx.lineTo(blX, blY);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
     // Normal Area Vector A (Cyan arrow)
-    const normLen = 38;
+    const normLen = 45;
     const normX = normLen * Math.sin(theta);
     const normY = normLen * Math.cos(theta) * 0.35;
     ctx.strokeStyle = '#0284c7';
     ctx.fillStyle = '#0284c7';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(normX, normY);
     ctx.stroke();
 
-    // Arrowhead
+    // Arrowhead on normal vector
     const normAngle = Math.atan2(normY, normX);
     ctx.beginPath();
     ctx.moveTo(normX, normY);
-    ctx.lineTo(normX - 7 * Math.cos(normAngle - Math.PI / 6), normY - 7 * Math.sin(normAngle - Math.PI / 6));
-    ctx.lineTo(normX - 7 * Math.cos(normAngle + Math.PI / 6), normY - 7 * Math.sin(normAngle + Math.PI / 6));
+    ctx.lineTo(normX - 8 * Math.cos(normAngle - Math.PI / 6), normY - 8 * Math.sin(normAngle - Math.PI / 6));
+    ctx.lineTo(normX - 8 * Math.cos(normAngle + Math.PI / 6), normY - 8 * Math.sin(normAngle + Math.PI / 6));
     ctx.closePath();
     ctx.fill();
 
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#0284c7';
+    ctx.fillText('A⃗', normX + 10, normY + 3);
+
+    // 3. SHOW INDUCED CURRENT VECTORS (I) ALONG COIL PERIMETER
+    if (showCurrent) {
+      const sinVal = Math.sin(theta);
+      const currentIntensity = Math.abs(sinVal);
+
+      if (currentIntensity > 0.08) {
+        const isForward = sinVal > 0;
+        ctx.save();
+        ctx.strokeStyle = '#10b981';
+        ctx.fillStyle = '#10b981';
+        ctx.lineWidth = 3;
+
+        // Helper to draw animated current arrow along a segment
+        const drawCurrentVector = (fromX: number, fromY: number, toX: number, toY: number, forward: boolean) => {
+          const startX = forward ? fromX : toX;
+          const startY = forward ? fromY : toY;
+          const endX = forward ? toX : fromX;
+          const endY = forward ? toY : fromY;
+
+          const midX = (startX + endX) / 2;
+          const midY = (startY + endY) / 2;
+          const segAngle = Math.atan2(endY - startY, endX - startX);
+          const headlen = Math.max(7, Math.min(12, currentIntensity * 12));
+
+          ctx.beginPath();
+          ctx.moveTo(midX + headlen * Math.cos(segAngle), midY + headlen * Math.sin(segAngle));
+          ctx.lineTo(
+            midX - headlen * Math.cos(segAngle - Math.PI / 6),
+            midY - headlen * Math.sin(segAngle - Math.PI / 6)
+          );
+          ctx.lineTo(
+            midX - headlen * Math.cos(segAngle + Math.PI / 6),
+            midY - headlen * Math.sin(segAngle + Math.PI / 6)
+          );
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        // 4 Arms of rectangular loop: Left, Top, Right, Bottom
+        drawCurrentVector(blX, blY, tlX, tlY, isForward); // Left leg
+        drawCurrentVector(tlX, tlY, trX, trY, isForward); // Top leg
+        drawCurrentVector(trX, trY, brX, brY, isForward); // Right leg
+        drawCurrentVector(brX, brY, blX, blY, isForward); // Bottom leg
+
+        // Current vector label badge
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = '#059669';
+        ctx.fillText(`I⃗ (${(Math.abs(instantEMF)).toFixed(1)}V)`, trX + (isForward ? 14 : -35), (trY + brY) / 2);
+        ctx.restore();
+      }
+    }
+
     // 3D Brass Slip Rings on the axle
-    const ringY1 = coilH / 2 + 18;
-    const ringY2 = coilH / 2 + 32;
+    const ringY1 = coilH / 2 + 20;
+    const ringY2 = coilH / 2 + 36;
 
     const drawSlipRing = (ry: number) => {
       ctx.fillStyle = '#eab308';
       ctx.strokeStyle = '#ca8a04';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.ellipse(0, ry, 11, 4.5, 0, 0, 2 * Math.PI);
+      ctx.ellipse(0, ry, 12, 5, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
 
       // Carbon Brush Block
       ctx.fillStyle = '#1e293b';
-      ctx.fillRect(9, ry - 3, 7, 6);
+      ctx.fillRect(10, ry - 3, 8, 6);
     };
 
     drawSlipRing(ringY1);
@@ -336,106 +424,157 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
 
     ctx.restore();
 
-    // Angle indicator dial
+    // Bottom Status Badge on Canvas
     ctx.fillStyle = '#0369a1';
-    ctx.font = 'bold 11px monospace';
+    ctx.font = 'bold 12px sans-serif';
     ctx.textAlign = 'center';
-    const deg = Math.round((theta * 180) / Math.PI) % 360;
-    ctx.fillText(`θ = ${deg}° (${(theta).toFixed(2)} rad)`, cX, poleY + poleH + 35);
+    const deg = Math.round(((theta % (2 * Math.PI)) * 180) / Math.PI);
+    ctx.fillText(`θ = ${deg}° • ℰ(t) = ${instantEMF.toFixed(2)} V • Φ(t) = ${(instantFlux * 1000).toFixed(2)} mWb`, width / 2, height - 12);
 
-    // 3. Right Side: Clean Real-time Oscilloscope
+  }, [theta, omega, B, N, area, showFlux, showEMF, showCurrent, instantEMF, instantFlux]);
+
+  // Canvas 2: Dedicated Real-Time Sinusoidal Oscilloscope (Outside Canvas)
+  useEffect(() => {
+    const oscCanvas = oscCanvasRef.current;
+    if (!oscCanvas) return;
+    const ctx = oscCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = 540;
+    const height = 150;
+
+    oscCanvas.width = width * dpr;
+    oscCanvas.height = height * dpr;
+    oscCanvas.style.width = `${width}px`;
+    oscCanvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Light-theme Oscilloscope Background
     ctx.fillStyle = '#f8fafc';
-    ctx.strokeStyle = '#cbd5e1';
+    ctx.fillRect(0, 0, width, height);
+
+    const padLeft = 40;
+    const padRight = 20;
+    const padTop = 20;
+    const padBottom = 25;
+    const plotW = width - padLeft - padRight;
+    const plotH = height - padTop - padBottom;
+    const midY = padTop + plotH / 2;
+
+    // Graticule Grid
+    ctx.save();
+    ctx.strokeStyle = 'rgba(203, 213, 225, 0.7)';
+    ctx.lineWidth = 1;
+
+    // Horizontal division lines
+    ctx.beginPath();
+    ctx.moveTo(padLeft, padTop); ctx.lineTo(padLeft + plotW, padTop);
+    ctx.moveTo(padLeft, midY); ctx.lineTo(padLeft + plotW, midY);
+    ctx.moveTo(padLeft, padTop + plotH); ctx.lineTo(padLeft + plotW, padTop + plotH);
+    ctx.stroke();
+
+    // Vertical time division lines (0, pi, 2pi, 3pi, 4pi)
+    const timeLabels = ['0', 'π', '2π', '3π', '4π'];
+    for (let i = 0; i <= 4; i++) {
+      const gx = padLeft + (i / 4) * plotW;
+      ctx.beginPath();
+      ctx.moveTo(gx, padTop);
+      ctx.lineTo(gx, padTop + plotH);
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(timeLabels[i], gx, padTop + plotH + 14);
+    }
+    ctx.restore();
+
+    // Central Axis Zero Line
+    ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(oscX, 15, oscWidth, height - 30, 8);
-    ctx.fill();
+    ctx.moveTo(padLeft, midY);
+    ctx.lineTo(padLeft + plotW, midY);
     ctx.stroke();
 
-    // Oscilloscope Grid
-    const oscCenterY = 15 + (height - 30) / 2;
-    ctx.strokeStyle = 'rgba(203, 213, 225, 0.8)';
-    ctx.lineWidth = 1;
-    // Central horizontal axis
-    ctx.beginPath();
-    ctx.moveTo(oscX + 10, oscCenterY);
-    ctx.lineTo(oscX + oscWidth - 10, oscCenterY);
-    ctx.stroke();
+    const maxPlotAmp = plotH * 0.42;
 
-    for (let gx = oscX + 20; gx < oscX + oscWidth; gx += 35) {
-      ctx.beginPath();
-      ctx.moveTo(gx, 25);
-      ctx.lineTo(gx, height - 25);
-      ctx.stroke();
-    }
-
-    // Sine Waveforms (2 full cycles = 4*PI)
-    const waveW = oscWidth - 25;
-    const maxPlotAmp = 80;
-
-    // A. Magnetic Flux Curve (Cosine wave in Blue)
+    // 1. Magnetic Flux Curve Φ(t) = Φ0 cos(ωt) (Cyan/Blue Trace)
     if (showFlux) {
+      ctx.save();
       ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let i = 0; i <= waveW; i++) {
-        const phiAngle = (i / waveW) * 4 * Math.PI;
-        const yVal = oscCenterY - Math.cos(phiAngle) * (maxPlotAmp * 0.65);
-        if (i === 0) ctx.moveTo(oscX + 12 + i, yVal);
-        else ctx.lineTo(oscX + 12 + i, yVal);
-      }
-      ctx.stroke();
-    }
-
-    // B. Induced EMF Curve (Sine wave in Emerald Green)
-    if (showEMF) {
-      ctx.strokeStyle = '#059669';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      for (let i = 0; i <= waveW; i++) {
-        const emfAngle = (i / waveW) * 4 * Math.PI;
-        const yVal = oscCenterY - Math.sin(emfAngle) * (maxPlotAmp * 0.85);
-        if (i === 0) ctx.moveTo(oscX + 12 + i, yVal);
-        else ctx.lineTo(oscX + 12 + i, yVal);
+      for (let i = 0; i <= plotW; i++) {
+        const phiAngle = (i / plotW) * 4 * Math.PI;
+        const yVal = midY - Math.cos(phiAngle) * maxPlotAmp * 0.75;
+        if (i === 0) ctx.moveTo(padLeft + i, yVal);
+        else ctx.lineTo(padLeft + i, yVal);
       }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 2. Induced EMF Curve ℰ(t) = ℰ0 sin(ωt) (Emerald Green Trace)
+    if (showEMF) {
+      ctx.save();
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i <= plotW; i++) {
+        const emfAngle = (i / plotW) * 4 * Math.PI;
+        const yVal = midY - Math.sin(emfAngle) * maxPlotAmp;
+        if (i === 0) ctx.moveTo(padLeft + i, yVal);
+        else ctx.lineTo(padLeft + i, yVal);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 3. Synchronized Live Cursor Dot and Indicator Line
+    const curCycleTheta = theta % (4 * Math.PI);
+    const curX = padLeft + (curCycleTheta / (4 * Math.PI)) * plotW;
+
+    ctx.save();
+    // Vertical sweep cursor line
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(curX, padTop);
+    ctx.lineTo(curX, padTop + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Flux cursor dot
+    if (showFlux) {
+      const curFluxY = midY - Math.cos(curCycleTheta) * maxPlotAmp * 0.75;
+      ctx.fillStyle = '#0284c7';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(curX, curFluxY, 5, 0, 2 * Math.PI);
+      ctx.fill();
       ctx.stroke();
     }
 
-    // Synchronized Cursor dot for current theta
-    // waveW spans 4π (2 full cycles). Theta is in [0, 2π).
-    // Map theta → [0, 2π) across half the display (one full cycle) to keep in sync.
-    const curCycleTheta = theta % (2 * Math.PI);
-    const curX = oscX + 12 + (curCycleTheta / (2 * Math.PI)) * (waveW / 2);
-
-    if (showFlux) {
-      const curFluxY = oscCenterY - Math.cos(curCycleTheta) * (maxPlotAmp * 0.65);
-      ctx.fillStyle = '#0284c7';
-      ctx.beginPath();
-      ctx.arc(curX, curFluxY, 4.5, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
+    // EMF cursor dot
     if (showEMF) {
-      const curEmfY = oscCenterY - Math.sin(curCycleTheta) * (maxPlotAmp * 0.85);
+      const curEmfY = midY - Math.sin(curCycleTheta) * maxPlotAmp;
       ctx.fillStyle = '#059669';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(curX, curEmfY, 5.5, 0, 2 * Math.PI);
+      ctx.arc(curX, curEmfY, 6, 0, 2 * Math.PI);
       ctx.fill();
+      ctx.stroke();
     }
+    ctx.restore();
 
-    // Legend
-    ctx.font = 'bold 9px sans-serif';
-    ctx.textAlign = 'left';
-    if (showEMF) {
-      ctx.fillStyle = '#059669';
-      ctx.fillText('● ℰ = ℰ₀ sin(ωt)', oscX + 15, 32);
-    }
-    if (showFlux) {
-      ctx.fillStyle = '#0284c7';
-      ctx.fillText('● Φ = Φ₀ cos(ωt)', oscX + 130, 32);
-    }
-
-  }, [theta, omega, B, N, area, showFlux, showEMF]);
+  }, [theta, showFlux, showEMF]);
 
   const recorder = useSimulationRecorder({
     simulationId: 'ac_generator_sim',
@@ -605,6 +744,15 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
             <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
               <input
                 type="checkbox"
+                checked={showCurrent}
+                onChange={(e) => setShowCurrent(e.target.checked)}
+                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+              />
+              {t.showCurrent}
+            </label>
+            <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
                 checked={showEMF}
                 onChange={(e) => setShowEMF(e.target.checked)}
                 className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
@@ -686,8 +834,9 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
         </div>
       </div>
 
-      {/* Main Viewport & Graphs */}
+      {/* Main Viewport & Oscilloscope & Graphs */}
       <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 overflow-y-auto">
+        {/* 1. 3D AC Generator Model Canvas */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 relative flex flex-col items-center justify-center">
           <div className="w-full flex items-center justify-between mb-2 text-xs text-slate-700">
             <span className="font-bold flex items-center gap-1.5 text-slate-900">
@@ -699,8 +848,42 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
             </span>
           </div>
 
-          <div className="relative w-full max-w-[540px] aspect-[540/280] rounded-xl overflow-hidden border border-slate-200 bg-white">
+          <div className="relative w-full max-w-[540px] aspect-[540/290] rounded-xl overflow-hidden border border-slate-200 bg-white">
             <canvas ref={canvasRef} className="w-full h-full block" />
+          </div>
+        </div>
+
+        {/* 2. DEDICATED REAL-TIME SINUSOIDAL OSCILLOSCOPE (BROUGHT OUT OF CANVAS) */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 flex flex-col gap-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-emerald-600" />
+              <span className="font-bold text-xs text-slate-800">{t.oscilloscopeTitle}</span>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] font-semibold">
+              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                ℰ = {instantEMF.toFixed(2)} V
+              </span>
+              <span className="text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                Φ = {(instantFlux * 1000).toFixed(2)} mWb
+              </span>
+            </div>
+          </div>
+
+          <div className="relative w-full max-w-[540px] aspect-[540/150] rounded-xl overflow-hidden border border-slate-200 bg-slate-50 mx-auto">
+            <canvas ref={oscCanvasRef} className="w-full h-full block" />
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] text-slate-500 px-1">
+            <span className="flex items-center gap-1">
+              <Waves className="w-3 h-3 text-indigo-500" />
+              {t.oscilloscopeSubtitle}
+            </span>
+            <span className="font-mono text-slate-600 font-semibold">
+              Phase Difference: Δφ = π/2 (90°)
+            </span>
           </div>
         </div>
 

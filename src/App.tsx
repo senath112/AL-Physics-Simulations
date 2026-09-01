@@ -490,7 +490,7 @@ function AppContent() {
       title: 'Simple Harmonic Motion',
       sinhalaTitle: "සරල අනුවර්තී චලිතය",
       tamilTitle: "எளிய இசை இயக்கம்",
-      unit: 'mechanics',
+      unit: 'waves',
       description: 'Explore dynamic displacement, velocity, acceleration phase vectors, and energy state relationships for spring-mass oscillators.',
       icon: Activity,
       status: 'active',
@@ -643,8 +643,8 @@ function AppContent() {
   ];
 
   const unitsList: { id: SyllabusUnit; name: string; sinhalaName: string; tamilName: string; icon: any; color: string }[] = [
-    { id: 'mechanics', name: 'Mechanics & SHM', sinhalaName: 'යාන්ත්‍ර විද්‍යාව සහ සරල අනුවර්තී චලිතය', tamilName: 'இயந்திரவியல் மற்றும் எளிய இசை இயக்கம்', icon: Compass, color: 'text-blue-600 bg-blue-50' },
-    { id: 'waves', name: 'Waves & Oscillations', sinhalaName: 'තරංග සහ දෝලන', tamilName: 'அலைகள் மற்றும் ஊசலாட்டங்கள்', icon: Waves, color: 'text-indigo-600 bg-indigo-50' },
+    { id: 'mechanics', name: 'Mechanics', sinhalaName: 'යාන්ත්‍ර විද්‍යාව', tamilName: 'இயந்திரவியல்', icon: Compass, color: 'text-blue-600 bg-blue-50' },
+    { id: 'waves', name: 'Waves & Oscillations', sinhalaName: 'තරංග සහ දෝලන (SHM)', tamilName: 'அலைகள் மற்றும் ஊசலாட்டங்கள்', icon: Waves, color: 'text-indigo-600 bg-indigo-50' },
     { id: 'electricity', name: 'Electricity', sinhalaName: 'ධාරා විද්‍යුතය', tamilName: 'மின்னியல்', icon: Zap, color: 'text-amber-600 bg-amber-50' },
     { id: 'magnetism', name: 'Electromagnetism', sinhalaName: 'විද්‍යුත් චුම්බකත්වය', tamilName: 'மின்காந்தவியல்', icon: Cpu, color: 'text-rose-600 bg-rose-50' },
     { id: 'thermal', name: 'Thermal Physics', sinhalaName: 'තාප භෞතික විද්‍යාව', tamilName: 'வெப்ப இயற்பியல்', icon: Thermometer, color: 'text-emerald-600 bg-emerald-50' },

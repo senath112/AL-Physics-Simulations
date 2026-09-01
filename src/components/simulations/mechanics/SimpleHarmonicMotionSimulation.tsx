@@ -1029,7 +1029,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   const recorder = useSimulationRecorder({
     simulationId: 'shm_sim',
     simulationTitle: 'Simple Harmonic Motion',
-    category: 'mechanics',
+    category: 'waves',
     columns: [
       { key: 'trial', label: 'Trial #' },
       { key: 'mode', label: 'Oscillator Mode', unit: '' },
