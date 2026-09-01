@@ -109,67 +109,37 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // All mutable physics state lives here – never stale inside rAF
+  const phys = useRef({ x1: 120, x2: 400, v1: u1, v2: u2, hasCollided: false });
+
+  // Keep phys in sync when parameters change (only while paused / reset)
   useEffect(() => {
-    if (!isPlaying) return;
-    let lastTime = performance.now();
-    let frameId: number;
+    if (!isPlaying) {
+      phys.current.v1 = u1;
+      phys.current.v2 = u2;
+    }
+  }, [u1, u2, isPlaying]);
 
-    const tick = (now: number) => {
-      const dt = Math.min(0.03, (now - lastTime) / 1000);
-      lastTime = now;
-
-      setX1((prevX1) => {
-        setX2((prevX2) => {
-          // Sphere radius = 22px; spheres touch when center distance <= 44px
-          const newX1 = prevX1 + v1 * dt * 20;
-          const newX2 = prevX2 + v2 * dt * 20;
-
-          if (!hasCollided && newX1 >= newX2 - 44) {
-            setHasCollided(true);
-            setV1(calcV1);
-            setV2(calcV2);
-            // Place sphere 2 exactly 44px to the right of sphere 1 at contact
-            const contactX1 = newX2 - 44;
-            setX2(newX2); // keep x2 where it is, x1 snaps to contact
-            return contactX1;
-          }
-          return newX1;
-        });
-
-        const newX1Val = prevX1 + v1 * dt * 20;
-        // stop if cart runs off screen
-        if (newX1Val < 20 || newX1Val > 520) {
-          setIsPlaying(false);
-        }
-        return newX1Val;
-      });
-
-      frameId = requestAnimationFrame(tick);
-    };
-
-    frameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameId);
-  }, [isPlaying, v1, v2, hasCollided, calcV1, calcV2]);
-
-  // Render collision track
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // Helper to paint a frame from phys.current
+  const drawFrame = (canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
     const width = 540;
     const height = 240;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    ctx.scale(dpr, dpr);
+
+    if (canvas.width !== width * dpr) {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.scale(dpr, dpr);
+    }
 
     ctx.clearRect(0, 0, width, height);
 
-    // Track baseline
+    // Track
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -177,24 +147,20 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
     ctx.lineTo(520, 180);
     ctx.stroke();
 
-    // Visual boundary buffers (walls)
+    // Walls
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(10, 120, 10, 60);
     ctx.fillRect(520, 120, 10, 60);
 
-    // Sphere radius
     const R = 22;
-    const cy = 180 - R; // sphere center Y (sits on the track)
+    const cy = 180 - R;
 
-    // Helper to draw a sphere with gradient shading
     const drawSphere = (cx: number, fillColor: string, strokeColor: string, label: string) => {
-      // Drop shadow
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,0.25)';
       ctx.shadowBlur = 8;
       ctx.shadowOffsetY = 4;
 
-      // Radial gradient for 3-D sphere look
       const grad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
       grad.addColorStop(0, 'rgba(255,255,255,0.55)');
       grad.addColorStop(0.4, fillColor);
@@ -206,20 +172,17 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       ctx.fill();
       ctx.restore();
 
-      // Stroke outline
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(cx, cy, R, 0, 2 * Math.PI);
       ctx.stroke();
 
-      // Specular highlight
       ctx.fillStyle = 'rgba(255,255,255,0.4)';
       ctx.beginPath();
       ctx.ellipse(cx - R * 0.28, cy - R * 0.28, R * 0.28, R * 0.18, -Math.PI / 4, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Mass label
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
@@ -227,42 +190,98 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       ctx.fillText(label, cx, cy + 1);
     };
 
-    drawSphere(x1, '#ef4444', '#b91c1c', 'm₁');
-    drawSphere(x2, '#10b981', '#047857', 'm₂');
+    drawSphere(phys.current.x1, '#ef4444', '#b91c1c', 'm₁');
+    drawSphere(phys.current.x2, '#10b981', '#047857', 'm₂');
 
-    // Draw Velocity Vector arrows above spheres
+    // Velocity arrows
     const drawVelArrow = (xPos: number, velocity: number, color: string) => {
       if (Math.abs(velocity) < 0.1) return;
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.lineWidth = 2;
-      const arrowLength = velocity * 15;
+      ctx.textBaseline = 'alphabetic';
+      const arrowLen = velocity * 15;
       const arrowY = cy - R - 10;
-
       ctx.beginPath();
       ctx.moveTo(xPos, arrowY);
-      ctx.lineTo(xPos + arrowLength, arrowY);
+      ctx.lineTo(xPos + arrowLen, arrowY);
       ctx.stroke();
-
-      // arrowhead
       ctx.beginPath();
-      const headDir = velocity > 0 ? 1 : -1;
-      ctx.moveTo(xPos + arrowLength, arrowY);
-      ctx.lineTo(xPos + arrowLength - 4 * headDir, arrowY - 3);
-      ctx.lineTo(xPos + arrowLength - 4 * headDir, arrowY + 3);
+      const d = velocity > 0 ? 1 : -1;
+      ctx.moveTo(xPos + arrowLen, arrowY);
+      ctx.lineTo(xPos + arrowLen - 4 * d, arrowY - 3);
+      ctx.lineTo(xPos + arrowLen - 4 * d, arrowY + 3);
       ctx.fill();
     };
 
-    ctx.textBaseline = 'alphabetic';
-    drawVelArrow(x1, hasCollided ? v1 : u1, '#2563eb');
-    drawVelArrow(x2, hasCollided ? v2 : u2, '#059669');
+    drawVelArrow(phys.current.x1, phys.current.v1, '#2563eb');
+    drawVelArrow(phys.current.x2, phys.current.v2, '#059669');
+  };
 
-  }, [x1, x2, u1, u2, v1, v2, hasCollided]);
+  // Draw initial static frame whenever parameters or isPlaying changes
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    drawFrame(canvas);
+  }, [x1, x2, v1, v2, hasCollided, u1, u2]);
+
+  // Single rAF loop – all physics + drawing inside, no stale closures
+  useEffect(() => {
+    if (!isPlaying) return;
+    let frameId: number;
+    let lastTime = performance.now();
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.03, (now - lastTime) / 1000);
+      lastTime = now;
+
+      const p = phys.current;
+      const newX1 = p.x1 + p.v1 * dt * 20;
+      const newX2 = p.x2 + p.v2 * dt * 20;
+
+      if (!p.hasCollided && newX1 >= newX2 - 44) {
+        // Collision: snap to contact and apply post-collision velocities
+        p.hasCollided = true;
+        p.x1 = newX2 - 44;
+        p.x2 = newX2;
+        // calcV1/calcV2 based on current params (captured once at effect start, stable)
+        p.v1 = calcV1;
+        p.v2 = calcV2;
+        // Sync React display state
+        setHasCollided(true);
+        setV1(calcV1);
+        setV2(calcV2);
+        setX1(p.x1);
+        setX2(p.x2);
+      } else {
+        p.x1 = newX1;
+        p.x2 = newX2;
+        setX1(newX1);
+        setX2(newX2);
+      }
+
+      // Stop when a sphere goes out of bounds
+      if (p.x1 < 20 || p.x2 > 520) {
+        setIsPlaying(false);
+        return;
+      }
+
+      const canvas = canvasRef.current;
+      if (canvas) drawFrame(canvas);
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, calcV1, calcV2]);
 
   const handleReset = () => {
     setIsPlaying(false);
-    setX1(100);
-    setX2(380);
+    phys.current = { x1: 120, x2: 400, v1: u1, v2: u2, hasCollided: false };
+    setX1(120);
+    setX2(400);
     setV1(u1);
     setV2(u2);
     setHasCollided(false);
