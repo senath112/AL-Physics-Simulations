@@ -349,18 +349,21 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
     ctx.textAlign = 'right';
     ctx.fillText(`h = ${height.toFixed(2)}m`, fStartX - 22, (fTopY + fBaseY) / 2 + 3);
 
-    // Front Angle Protractor Arc θ
+    // Front Angle Protractor Arc θ (exact, no distortion)
     const arcRadius = 45;
     ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(fEndX, fEndY, arcRadius, Math.PI, Math.PI + thetaRad * 0.65, false);
+    ctx.arc(fEndX, fEndY, arcRadius, Math.PI, Math.PI + thetaRad, false);
     ctx.stroke();
 
+    // Angle label positioned at arc midpoint
+    const arcMidAngle = Math.PI + thetaRad / 2;
+    const labelR = arcRadius + 16;
     ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 12px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(`θ = ${thetaDeg}°`, fEndX - arcRadius - 8, fEndY - 8);
+    ctx.textAlign = 'center';
+    ctx.fillText(`θ=${thetaDeg}°`, fEndX + Math.cos(arcMidAngle) * labelR, fEndY + Math.sin(arcMidAngle) * labelR);
     ctx.restore();
 
     // 4. Render Beautiful 3D Rolling Bodies along the Slope

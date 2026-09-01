@@ -402,8 +402,10 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     }
 
     // Synchronized Cursor dot for current theta
+    // waveW spans 4π (2 full cycles). Theta is in [0, 2π).
+    // Map theta → [0, 2π) across half the display (one full cycle) to keep in sync.
     const curCycleTheta = theta % (2 * Math.PI);
-    const curX = oscX + 12 + (curCycleTheta / (4 * Math.PI)) * waveW;
+    const curX = oscX + 12 + (curCycleTheta / (2 * Math.PI)) * (waveW / 2);
 
     if (showFlux) {
       const curFluxY = oscCenterY - Math.cos(curCycleTheta) * (maxPlotAmp * 0.65);

@@ -488,8 +488,8 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
     drawMassSphere3D(x1, cy, radius1, '#f87171', '#dc2626', 'Mass 1 (m₁)', m1);
     drawMassSphere3D(x2, cy, radius2, '#60a5fa', '#2563eb', 'Mass 2 (m₂)', m2);
 
-    // Center Crosshairs
-    ctx.fillStyle = '#ffffff';
+    // Center Crosshairs (dark slate, visible on white bg)
+    ctx.fillStyle = '#1e293b';
     ctx.fillRect(x1 - 3, cy - 1, 6, 2);
     ctx.fillRect(x1 - 1, cy - 3, 2, 6);
     ctx.fillRect(x2 - 3, cy - 1, 6, 2);
