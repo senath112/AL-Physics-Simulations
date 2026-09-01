@@ -120,17 +120,18 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
 
       setX1((prevX1) => {
         setX2((prevX2) => {
-          // Check collision boundary: distance between center points <= cart size (45px)
+          // Sphere radius = 22px; spheres touch when center distance <= 44px
           const newX1 = prevX1 + v1 * dt * 20;
           const newX2 = prevX2 + v2 * dt * 20;
 
-          if (!hasCollided && newX1 >= newX2 - 45) {
+          if (!hasCollided && newX1 >= newX2 - 44) {
             setHasCollided(true);
             setV1(calcV1);
             setV2(calcV2);
-            // return exact contact point to avoid overlapping
-            const overlapDist = (newX1 + newX2) / 2;
-            return overlapDist - 22.5;
+            // Place sphere 2 exactly 44px to the right of sphere 1 at contact
+            const contactX1 = newX2 - 44;
+            setX2(newX2); // keep x2 where it is, x1 snaps to contact
+            return contactX1;
           }
           return newX1;
         });
@@ -176,90 +177,67 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
     ctx.lineTo(520, 180);
     ctx.stroke();
 
-    // Visual boundary buffers
+    // Visual boundary buffers (walls)
     ctx.fillStyle = '#cbd5e1';
     ctx.fillRect(10, 120, 10, 60);
     ctx.fillRect(520, 120, 10, 60);
 
-    // Cart sizes
-    const cW = 45;
-    const cH = 28;
+    // Sphere radius
+    const R = 22;
+    const cy = 180 - R; // sphere center Y (sits on the track)
 
-    // Helper to draw a pulley-like train wheel
-    const drawPulleyWheel = (wx: number, wy: number) => {
-      // Outer pulley rim
-      ctx.fillStyle = '#334155';
+    // Helper to draw a sphere with gradient shading
+    const drawSphere = (cx: number, fillColor: string, strokeColor: string, label: string) => {
+      // Drop shadow
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.25)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 4;
+
+      // Radial gradient for 3-D sphere look
+      const grad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+      grad.addColorStop(0, 'rgba(255,255,255,0.55)');
+      grad.addColorStop(0.4, fillColor);
+      grad.addColorStop(1, strokeColor);
+
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(wx, wy, 6, 0, 2 * Math.PI);
+      ctx.arc(cx, cy, R, 0, 2 * Math.PI);
       ctx.fill();
+      ctx.restore();
 
-      // Inner pulley groove ring
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 1;
+      // Stroke outline
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(wx, wy, 4, 0, 2 * Math.PI);
+      ctx.arc(cx, cy, R, 0, 2 * Math.PI);
       ctx.stroke();
 
-      // Center hub pin
-      ctx.fillStyle = '#f8fafc';
+      // Specular highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
       ctx.beginPath();
-      ctx.arc(wx, wy, 1.5, 0, 2 * Math.PI);
+      ctx.ellipse(cx - R * 0.28, cy - R * 0.28, R * 0.28, R * 0.18, -Math.PI / 4, 0, 2 * Math.PI);
       ctx.fill();
+
+      // Mass label
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, cx, cy + 1);
     };
 
-    // Draw Cart 1 (Red Train Box)
-    ctx.fillStyle = '#ef4444';
-    ctx.strokeStyle = '#b91c1c';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(x1 - cW / 2, 180 - cH, cW, cH, 4);
-    ctx.fill();
-    ctx.stroke();
+    drawSphere(x1, '#ef4444', '#b91c1c', 'm₁');
+    drawSphere(x2, '#10b981', '#047857', 'm₂');
 
-    // Side coupling bumpers for train box 1
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(x1 + cW / 2, 180 - cH + 10, 3, 6);
-    ctx.fillRect(x1 - cW / 2 - 3, 180 - cH + 10, 3, 6);
-
-    // Pulley Wheels C1 - hide wheels after collision
-    if (!hasCollided) {
-      drawPulleyWheel(x1 - 12, 180);
-      drawPulleyWheel(x1 + 12, 180);
-    }
-
-    // Draw Cart 2 (Green Train Box)
-    ctx.fillStyle = '#10b981';
-    ctx.strokeStyle = '#047857';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(x2 - cW / 2, 180 - cH, cW, cH, 4);
-    ctx.fill();
-    ctx.stroke();
-
-    // Side coupling bumpers for train box 2
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(x2 + cW / 2, 180 - cH + 10, 3, 6);
-    ctx.fillRect(x2 - cW / 2 - 3, 180 - cH + 10, 3, 6);
-
-    // Pulley Wheels C2
-    drawPulleyWheel(x2 - 12, 180);
-    drawPulleyWheel(x2 + 12, 180);
-
-    // Cart Label tags
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 9px font-sans';
-    ctx.textAlign = 'center';
-    ctx.fillText('m₁', x1, 180 - cH / 2 + 3);
-    ctx.fillText('m₂', x2, 180 - cH / 2 + 3);
-
-    // Draw Velocity Vector arrows on carts
+    // Draw Velocity Vector arrows above spheres
     const drawVelArrow = (xPos: number, velocity: number, color: string) => {
       if (Math.abs(velocity) < 0.1) return;
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.lineWidth = 2;
       const arrowLength = velocity * 15;
-      const arrowY = 180 - cH - 8;
+      const arrowY = cy - R - 10;
 
       ctx.beginPath();
       ctx.moveTo(xPos, arrowY);
@@ -275,6 +253,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       ctx.fill();
     };
 
+    ctx.textBaseline = 'alphabetic';
     drawVelArrow(x1, hasCollided ? v1 : u1, '#2563eb');
     drawVelArrow(x2, hasCollided ? v2 : u2, '#059669');
 
