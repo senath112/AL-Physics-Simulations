@@ -18,7 +18,8 @@ import {
   Upload, 
   BarChart2, 
   FileDown, 
-  AlertCircle 
+  AlertCircle,
+  Variable
 } from 'lucide-react';
 
 interface LaboratoryDashboardProps {
@@ -630,6 +631,85 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                   </div>
                 )}
 
+                {/* Mathematical Graph Type & Governing Physics Equation Bar */}
+                {(() => {
+                  const yValsRaw = selectedPractical.data
+                    .map((r) => transformValue(Number(r[yKey]), yTransform))
+                    .filter((v) => !isNaN(v) && isFinite(v));
+                  const ySpan = yValsRaw.length > 0 ? Math.max(...yValsRaw) - Math.min(...yValsRaw) : 1;
+                  const isDirectProportion = reg ? Math.abs(reg.intercept) < Math.max(0.04, 0.04 * ySpan) : true;
+                  const graphForm = isDirectProportion ? 'y = mx' : 'y = mx + c';
+                  const graphFormDesc = isDirectProportion ? 'Direct Proportion (Passes Through Origin)' : 'Linear (with Intercept)';
+
+                  let governingFormula = '';
+                  const simId = selectedPractical.simulationId;
+                  if (simId === 'shm_sim') {
+                    if (xKey.includes('length') || displayXLabel.includes('Length')) governingFormula = 'T² = (4π²/g)·L';
+                    else if (xKey.includes('displacement') || displayXLabel.includes('Displacement')) governingFormula = 'a = -ω²x';
+                    else governingFormula = 'x(t) = A cos(ωt)';
+                  } else if (simId === 'ohms_sim') {
+                    if (xKey === 'voltage' && yKey === 'current') governingFormula = 'I = (1/R)·V';
+                    else governingFormula = 'V = I·R';
+                  } else if (simId === 'photoelectric_sim') {
+                    governingFormula = 'V_s = (h/e)·f - (Φ/e)';
+                  } else if (simId === 'newtons_sim') {
+                    governingFormula = 'F = ma';
+                  } else if (simId === 'optics_sim') {
+                    governingFormula = '1/v = -1/u + 1/f';
+                  } else if (simId === 'gas_sim') {
+                    governingFormula = 'P = nRT·(1/V)';
+                  } else if (simId === 'gravitation_sim') {
+                    governingFormula = 'F = (G m₁ m₂)·(1/r²)';
+                  } else if (simId === 'ac_generator_sim') {
+                    governingFormula = 'ℰ₀ = (NAB)·ω';
+                  } else if (simId === 'rolling_motion_sim') {
+                    governingFormula = 'a = [g / (1 + k)]·sinθ';
+                  } else if (simId === 'transformer_sim') {
+                    governingFormula = 'V_s = (V_p / N_p)·N_s';
+                  } else if (simId === 'dc_motor_sim') {
+                    governingFormula = 'τ = (NAB)·I';
+                  }
+
+                  return (
+                    <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                          <Variable className="w-3.5 h-3.5 text-indigo-600" />
+                          Graph Type:
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full font-mono font-black text-xs border shadow-2xs ${
+                          isDirectProportion
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}>
+                          {graphForm}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-600">
+                          ({graphFormDesc})
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                        {governingFormula && (
+                          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-800 shadow-2xs">
+                            <span className="text-[10px] text-slate-500 font-sans font-bold">Equation:</span>
+                            <span className="font-bold text-blue-700">{governingFormula}</span>
+                          </div>
+                        )}
+                        {reg && (
+                          <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg text-indigo-900 shadow-2xs">
+                            <span className="text-[10px] text-indigo-600 font-sans font-bold">Fit:</span>
+                            <span className="font-bold">
+                              y = {reg.slope.toFixed(3)}x {reg.intercept >= 0 ? `+ ${reg.intercept.toFixed(3)}` : `- ${Math.abs(reg.intercept).toFixed(3)}`}
+                            </span>
+                            <span className="text-[10px] text-indigo-600 font-normal">(R² = {reg.r2.toFixed(3)})</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Graph View */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-inner">
                   {(() => {
@@ -654,21 +734,26 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                     if (reg && xVals.length > 1) {
                       const minX = Math.min(...xVals);
                       const maxX = Math.max(...xVals);
+                      const fitEq = `Fit: y = ${reg.slope.toFixed(3)}x ${reg.intercept >= 0 ? '+' : '-'} ${Math.abs(reg.intercept).toFixed(3)}`;
                       traces.push({
                         x: [minX, maxX],
                         y: [reg.slope * minX + reg.intercept, reg.slope * maxX + reg.intercept],
                         mode: 'lines',
                         type: 'scatter',
-                        name: `Fit: y = ${reg.slope.toFixed(3)}x + ${reg.intercept.toFixed(3)}`,
+                        name: fitEq,
                         line: { color: '#ef4444', dash: 'dot', width: 2 },
                       });
                     }
+
+                    const ySpan = yVals.length > 0 ? Math.max(...yVals) - Math.min(...yVals) : 1;
+                    const isDirect = reg ? Math.abs(reg.intercept) < Math.max(0.04, 0.04 * ySpan) : true;
+                    const formLabel = isDirect ? 'y = mx' : 'y = mx + c';
 
                     return (
                       <PlotlyGraph
                         data={traces}
                         layout={{
-                          title: { text: `<b>${displayYLabel} vs ${displayXLabel}</b>`, font: { size: 14 } },
+                          title: { text: `<b>${displayYLabel} vs ${displayXLabel}</b> <span style="font-size: 11px; color: #64748b; font-weight: normal;">[${formLabel}]</span>`, font: { size: 14 } },
                           xaxis: { title: { text: displayXLabel } },
                           yaxis: { title: { text: displayYLabel } },
                           margin: { l: 60, r: 25, t: 40, b: 45 },

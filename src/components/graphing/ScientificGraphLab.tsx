@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 import { PlotlyGraph } from '../PlotlyGraph';
 import { ScientificGraphDefinition, PhysicalDeduction, RealtimeDataPoint } from './types';
-import { calculateLinearRegression, calculatePercentageError, downloadCSV } from './regressionUtils';
+import { calculateLinearRegression, calculatePercentageError, downloadCSV, getGraphFormInfo } from './regressionUtils';
 import { DataRow } from '../../types/laboratory';
 import { 
   TrendingUp, 
@@ -14,7 +14,8 @@ import {
   ChevronDown, 
   Camera, 
   Sparkles,
-  LineChart 
+  LineChart,
+  Variable
 } from 'lucide-react';
 
 export interface ScientificGraphLabProps {
@@ -155,6 +156,12 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     return activeGraph.getTheoreticalCurve([minX, maxX], simulationParams);
   }, [activeGraph, rawPoints, simulationParams]);
 
+  // 4b. Mathematical Graph Form & Governing Physics Equation
+  const formInfo = useMemo(() => {
+    if (!activeGraph) return null;
+    return getGraphFormInfo(activeGraph, theoryCurve);
+  }, [activeGraph, theoryCurve]);
+
   // 5. Construct Plotly traces
   const plotTraces = useMemo(() => {
     if (!activeGraph) return [];
@@ -260,10 +267,16 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     return {
       autosize: true,
       height: typeof height === 'number' ? height : undefined,
-      margin: { l: 60, r: 25, t: 30, b: 50 },
+      margin: { l: 60, r: 25, t: 40, b: 50 },
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'rgba(248, 250, 252, 0.6)',
       font: { family: 'Outfit, Inter, sans-serif', size: 11, color: '#334155' },
+      title: {
+        text: `<b>${activeGraph.title}</b> <span style="font-size: 11px; color: #64748b; font-weight: normal;">[${formInfo?.form || 'y = mx'}]</span>`,
+        font: { size: 12, color: '#1e293b' },
+        x: 0.02,
+        y: 0.98,
+      },
       xaxis: {
         title: {
           text: activeGraph.xUnit ? `${activeGraph.xLabel} (${activeGraph.xUnit})` : activeGraph.xLabel,
@@ -344,11 +357,14 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
                 onChange={(e) => handleGraphChange(e.target.value)}
                 className="appearance-none bg-white border border-slate-200 hover:border-slate-300 rounded-xl pl-3 pr-8 py-1.5 text-xs font-bold text-slate-800 shadow-xs cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/20"
               >
-                {graphs.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.title}
-                  </option>
-                ))}
+                {graphs.map((g) => {
+                  const gInfo = getGraphFormInfo(g);
+                  return (
+                    <option key={g.id} value={g.id}>
+                      {g.title} • [{gInfo.form}]
+                    </option>
+                  );
+                })}
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -427,7 +443,45 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
         </div>
       )}
 
-      {/* 2. Main Plot Canvas Viewport */}
+      {/* 2. Mathematical Graph Form & Governing Physics Equation Bar */}
+      {formInfo && (
+        <div className="border-b border-slate-100 px-4 py-2 bg-gradient-to-r from-slate-50 via-slate-50/80 to-white flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          {/* Left: Graph Type Badge (e.g. y = mx, y = sin x, y = mx + c) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <Variable className="w-3.5 h-3.5 text-indigo-600" />
+              Graph Type:
+            </span>
+            <span className={`px-2.5 py-0.5 rounded-full font-mono font-black text-xs border shadow-2xs ${formInfo.badgeColor.bg} ${formInfo.badgeColor.text} ${formInfo.badgeColor.border}`}>
+              {formInfo.form}
+            </span>
+            <span className="text-[11px] font-semibold text-slate-600 hidden sm:inline">
+              ({formInfo.description})
+            </span>
+          </div>
+
+          {/* Right: Governing Physics Equation & Experimental Regression */}
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+            {formInfo.equation && (
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200/90 px-2.5 py-0.5 rounded-lg text-slate-800 shadow-2xs">
+                <span className="text-[10px] text-slate-400 font-sans font-bold">Equation:</span>
+                <span className="font-bold text-blue-700">{formInfo.equation}</span>
+              </div>
+            )}
+
+            {/* Experimental regression equation if active */}
+            {showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2 && (
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/90 px-2.5 py-0.5 rounded-lg text-amber-900 shadow-2xs">
+                <span className="text-[10px] text-amber-700 font-sans font-bold">Fit:</span>
+                <span className="font-bold">{regression.equation}</span>
+                <span className="text-[10px] text-amber-600 font-normal">(R² = {regression.r2.toFixed(3)})</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Main Plot Canvas Viewport */}
       <div id={graphContainerId} className="flex-1 w-full min-h-[260px] relative p-1 bg-white">
         <PlotlyGraph
           data={plotTraces}

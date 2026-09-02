@@ -45,6 +45,12 @@ export interface ScientificGraphDefinition {
   yUnit?: string;
   graphType: GraphType;
   isLinear: boolean;
+  /** Mathematical form/type, e.g. "y = mx", "y = mx + c", "y = A sin(x)", "y = k / x²", "y = k x²" */
+  mathematicalForm?: string;
+  /** Description of graph type, e.g. "Direct Proportion (Through Origin)", "Linear with Intercept", "Sinusoidal Wave" */
+  graphTypeDescription?: string;
+  /** Governing physical equation, e.g. "F = ma", "V = IR", "ℰ(t) = NABω sin(ωt)", "T² = (4π²/g)L" */
+  governingEquation?: string;
   expectedSlopeFormula?: string;
   expectedInterceptFormula?: string;
   /** Function to calculate expected theoretical gradient from current parameters */

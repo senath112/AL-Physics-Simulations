@@ -7,6 +7,9 @@ import { calculatePercentageError } from '../regressionUtils';
 export const newtonsSecondLawGraphs: ScientificGraphDefinition[] = [
   {
     id: 'f_vs_a',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'F = ma',
     title: 'Force (F) vs Acceleration (a)',
     xKey: 'acceleration',
     yKey: 'force',
@@ -46,6 +49,9 @@ export const newtonsSecondLawGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'fric_vs_normal',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'f_k = μ_k · R',
     title: 'Kinetic Friction (f_k) vs Normal Reaction (R)',
     xKey: 'normalForce',
     yKey: 'friction',
@@ -173,6 +179,9 @@ export const inclinedPlaneGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'v_vs_t_incline',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'v = at',
     title: 'Velocity (v) vs Time (t) along Incline',
     xKey: 't',
     yKey: 'velocity',
@@ -226,6 +235,9 @@ export const inclinedPlaneGraphs: ScientificGraphDefinition[] = [
 export const projectileGraphs: ScientificGraphDefinition[] = [
   {
     id: 'y_vs_x',
+    mathematicalForm: 'y = ax - bx²',
+    graphTypeDescription: 'Inverted Parabola (Trajectory Path)',
+    governingEquation: 'y = x tanθ - (g x²)/(2 u² cos²θ)',
     title: 'Trajectory: Height (y) vs Distance (x)',
     xKey: 'x',
     yKey: 'y',
@@ -258,6 +270,9 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'range_vs_angle',
+    mathematicalForm: 'y = A sin(2x)',
+    graphTypeDescription: 'Sinusoidal Harmonic (Max Range at 45°)',
+    governingEquation: 'R = (u² sin 2θ) / g',
     title: 'Horizontal Range (R) vs Launch Angle (θ)',
     xKey: 'angle',
     yKey: 'range',
@@ -282,6 +297,9 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'hmax_vs_angle',
+    mathematicalForm: 'y = A sin²(x)',
+    graphTypeDescription: 'Quadratic Sine (Max Height at 90°)',
+    governingEquation: 'H = (u² sin²θ) / (2g)',
     title: 'Maximum Height (H_max) vs Launch Angle (θ)',
     xKey: 'angle',
     yKey: 'height',
@@ -306,6 +324,9 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'vy_vs_t',
+    mathematicalForm: 'y = mx + c',
+    graphTypeDescription: 'Linear with Negative Slope -g',
+    governingEquation: 'v_y = u_y - gt',
     title: 'Vertical Velocity (v_y) vs Time (t)',
     xKey: 't',
     yKey: 'vy',
@@ -356,6 +377,9 @@ export const projectileGraphs: ScientificGraphDefinition[] = [
 export const connectedParticlesGraphs: ScientificGraphDefinition[] = [
   {
     id: 'v_vs_t',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Charles’s Law, T in Kelvin)',
+    governingEquation: 'V = (nR / P) · T',
     title: 'Velocity (v) vs Time (t)',
     xKey: 't',
     yKey: 'velocity',
@@ -653,6 +677,9 @@ export const circularMotionGraphs: ScientificGraphDefinition[] = [
 export const workEnergyGraphs: ScientificGraphDefinition[] = [
   {
     id: 'v2_vs_h',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Energy Conservation)',
+    governingEquation: 'v² = [2g / (1 + k)] · h',
     title: 'Velocity Squared (v²) vs Fall Height (h)',
     xKey: 'height',
     yKey: 'vSquared',
@@ -878,6 +905,9 @@ export const hydrostaticsGraphs: ScientificGraphDefinition[] = [
 export const shmGraphs: ScientificGraphDefinition[] = [
   {
     id: 'a_vs_x_shm',
+    mathematicalForm: 'y = -mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin, Negative Slope)',
+    governingEquation: 'a = -ω²x',
     title: 'Defining Relation: Acceleration (a) vs Displacement (x)',
     xKey: 'displacement',
     yKey: 'acceleration',
@@ -928,6 +958,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'x_vs_t_shm',
+    mathematicalForm: 'y = A cos(x)',
+    graphTypeDescription: 'Cosinusoidal Harmonic Oscillation',
+    governingEquation: 'x(t) = A cos(ωt)',
     title: 'Displacement (x) vs Time (t)',
     xKey: 't',
     yKey: 'displacement',
@@ -951,6 +984,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'v_vs_t_shm',
+    mathematicalForm: 'y = -A sin(x)',
+    graphTypeDescription: 'Sinusoidal Harmonic Oscillation',
+    governingEquation: 'v(t) = -Aω sin(ωt)',
     title: 'Velocity (v) vs Time (t)',
     xKey: 't',
     yKey: 'velocity',
@@ -975,6 +1011,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 't2_vs_l_pendulum',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'T² = (4π²/g) · L',
     title: 'Pendulum: Period Squared (T²) vs Length (L)',
     xKey: 'length',
     yKey: 'tSquared',
@@ -1012,6 +1051,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 't2_vs_m_spring',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'T² = (4π²/k) · m',
     title: 'Spring-Mass: Period Squared (T²) vs Mass (m)',
     xKey: 'mass',
     yKey: 'tSquared',
@@ -1050,6 +1092,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'a_vs_t_shm',
+    mathematicalForm: 'y = -A cos(x)',
+    graphTypeDescription: 'Cosinusoidal Harmonic Oscillation',
+    governingEquation: 'a(t) = -Aω² cos(ωt)',
     title: 'Acceleration (a) vs Time (t)',
     xKey: 't',
     yKey: 'acceleration',
@@ -1237,6 +1282,9 @@ export const dopplerEffectGraphs: ScientificGraphDefinition[] = [
 export const dcOhmsLawGraphs: ScientificGraphDefinition[] = [
   {
     id: 'v_vs_i',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Ohm’s Law, Slope = R)',
+    governingEquation: 'V = I · R',
     title: "Ohm's Law: Voltage (V) vs Current (I)",
     xKey: 'current',
     yKey: 'voltage',
@@ -1845,6 +1893,9 @@ export const photoelectricGraphs: ScientificGraphDefinition[] = [
 export const gravitationGraphs: ScientificGraphDefinition[] = [
   {
     id: 'f_vs_inv_r2',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Linearised Inverse-Square Law (Through Origin)',
+    governingEquation: 'F = (G m₁ m₂) · (1/r²)',
     title: 'Gravitational Force (F) vs Inverse Square Distance (1/r²)',
     xKey: 'inv_r2',
     yKey: 'force',
@@ -1895,6 +1946,9 @@ export const gravitationGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'f_vs_r',
+    mathematicalForm: 'y = k / x²',
+    graphTypeDescription: 'Inverse-Square Law Curve',
+    governingEquation: 'F = (G m₁ m₂) / r²',
     title: 'Gravitational Force (F) vs Separation Distance (r)',
     xKey: 'r',
     yKey: 'force',
@@ -1922,6 +1976,9 @@ export const gravitationGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'f_vs_m1',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Force vs Mass)',
+    governingEquation: 'F = [(G m₂) / r²] · m₁',
     title: 'Gravitational Force (F) vs Mass m₁',
     xKey: 'm1',
     yKey: 'force',
@@ -1961,6 +2018,9 @@ export const gravitationGraphs: ScientificGraphDefinition[] = [
 export const rollingMotionGraphs: ScientificGraphDefinition[] = [
   {
     id: 'a_vs_sin_theta',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = g / (1+k))',
+    governingEquation: 'a = [g / (1 + k)] · sinθ',
     title: 'Linear Acceleration (a) vs sin(θ)',
     xKey: 'sinTheta',
     yKey: 'acceleration',
@@ -2080,6 +2140,9 @@ export const rollingMotionGraphs: ScientificGraphDefinition[] = [
 export const acGeneratorGraphs: ScientificGraphDefinition[] = [
   {
     id: 'emf_vs_omega',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = NAB)',
+    governingEquation: 'ℰ₀ = (NAB) · ω',
     title: 'Peak Induced EMF (ℰ₀) vs Angular Velocity (ω)',
     xKey: 'omega',
     yKey: 'peakEMF',
@@ -2128,6 +2191,9 @@ export const acGeneratorGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'emf_vs_b',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = NAω)',
+    governingEquation: 'ℰ₀ = (NAω) · B',
     title: 'Peak Induced EMF (ℰ₀) vs Magnetic Field (B)',
     xKey: 'magneticField',
     yKey: 'peakEMF',
@@ -2161,6 +2227,9 @@ export const acGeneratorGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'emf_vs_n',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = ABω)',
+    governingEquation: 'ℰ₀ = (ABω) · N',
     title: 'Peak Induced EMF (ℰ₀) vs Coil Turns (N)',
     xKey: 'turns',
     yKey: 'peakEMF',
@@ -2200,6 +2269,9 @@ export const acGeneratorGraphs: ScientificGraphDefinition[] = [
 export const dcMotorGraphs: ScientificGraphDefinition[] = [
   {
     id: 'tau_vs_i',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = NAB)',
+    governingEquation: 'τ = (NAB) · I',
     title: 'Peak Torque (τ₀) vs Armature Current (I)',
     xKey: 'current',
     yKey: 'peakTorque',
@@ -2283,6 +2355,9 @@ export const dcMotorGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'tau_vs_b',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = NAI)',
+    governingEquation: 'τ = (NAI) · B',
     title: 'Peak Torque (τ₀) vs Magnetic Field (B)',
     xKey: 'magneticField',
     yKey: 'peakTorque',
@@ -2322,6 +2397,9 @@ export const dcMotorGraphs: ScientificGraphDefinition[] = [
 export const transformerGraphs: ScientificGraphDefinition[] = [
   {
     id: 'vs_vs_ns',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Turns Ratio)',
+    governingEquation: 'V_s = (V_p / N_p) · N_s',
     title: 'Secondary Voltage (V_s) vs Secondary Turns (N_s)',
     xKey: 'secondaryTurns',
     yKey: 'secondaryVoltage',
@@ -2367,6 +2445,9 @@ export const transformerGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'vs_vs_vp',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Voltage Ratio)',
+    governingEquation: 'V_s = (N_s / N_p) · V_p',
     title: 'Secondary Voltage (V_s) vs Primary Voltage (V_p)',
     xKey: 'primaryVoltage',
     yKey: 'secondaryVoltage',
@@ -2398,6 +2479,9 @@ export const transformerGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'is_vs_ip',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Current Transformation)',
+    governingEquation: 'I_s = η(N_p / N_s) · I_p',
     title: 'Secondary Current (I_s) vs Primary Current (I_p)',
     xKey: 'primaryCurrent',
     yKey: 'secondaryCurrent',
