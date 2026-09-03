@@ -87,6 +87,9 @@ const DCMotorSimulation = lazy(() =>
 const TransformerSimulation = lazy(() =>
   import('./components/simulations/electricity/TransformerSimulation').then(m => ({ default: m.TransformerSimulation }))
 );
+const SimulationStatusPage = lazy(() =>
+  import('./components/status/SimulationStatusPage').then(m => ({ default: m.SimulationStatusPage }))
+);
 import { 
   Compass, 
   Activity, 
@@ -107,7 +110,7 @@ import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
 import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI } from './config/features';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'laboratory' | 'terms' | 'privacy';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'laboratory' | 'terms' | 'privacy' | 'status';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -155,7 +158,8 @@ const PATH_MAP: Record<PageType, string> = {
   transformer_sim: '/transformer',
   laboratory: '/laboratory',
   terms: '/terms',
-  privacy: '/privacy'
+  privacy: '/privacy',
+  status: '/status'
 };
 
 const getPageFromPath = (path: string): PageType => {
@@ -171,6 +175,10 @@ const getPageFromPath = (path: string): PageType => {
   }
   if (cleanPath.endsWith('/') && cleanPath.length > 1) {
     cleanPath = cleanPath.slice(0, -1);
+  }
+
+  if (cleanPath === '/status' || cleanPath === '/simulation-status') {
+    return 'status';
   }
 
   const entry = Object.entries(PATH_MAP).find(([_, p]) => p === cleanPath);
@@ -692,6 +700,20 @@ function AppContent() {
             >
               <Compass className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{st.navSims}</span>
+            </button>
+
+            {/* Status Tab */}
+            <button
+              onClick={() => setCurrentPage('status')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                currentPage === 'status'
+                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20'
+                  : 'bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60'
+              }`}
+              title="Simulation Status"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Status</span>
             </button>
 
             {/* Laboratory Workspace Button (Preserved for feature flag) */}
@@ -2016,7 +2038,15 @@ function AppContent() {
           </div>
         )}
 
-
+        {/* SIMULATION STATUS PAGE */}
+        {currentPage === 'status' && (
+          <Suspense fallback={<LoadingFallback />}>
+            <SimulationStatusPage
+              onBackToSimulations={() => setCurrentPage('sims')}
+              onNavigateToSimulation={(pageLink) => setCurrentPage(pageLink as PageType)}
+            />
+          </Suspense>
+        )}
 
       </main>
 
@@ -2027,17 +2057,17 @@ function AppContent() {
           <p>
             {st.footerSub}
             <span className="mx-2">•</span>
+            <button onClick={() => setCurrentPage('status')} className="text-blue-600 hover:underline cursor-pointer">Simulation Status</button>
+            <span className="mx-2">•</span>
             <button onClick={() => setCurrentPage('terms')} className="text-blue-600 hover:underline cursor-pointer">{st.termsTitle}</button>
             <span className="mx-2">•</span>
             <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">{st.privacyTitle}</button>
           </p>
           <div className="pt-1 flex items-center justify-center">
-            <a
-              href="https://stats.uptimerobot.com/aKskfVmXAs?utm_source=status_badge&utm_medium=referral"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center transition-opacity hover:opacity-80"
-              title="Physics By Senath Service Status"
+            <button
+              onClick={() => setCurrentPage('status')}
+              className="inline-flex items-center transition-opacity hover:opacity-80 cursor-pointer"
+              title="Physics By Senath Simulation Status"
             >
               <picture>
                 <source
@@ -2050,7 +2080,7 @@ function AppContent() {
                   className="h-5"
                 />
               </picture>
-            </a>
+            </button>
           </div>
         </div>
       </footer>
