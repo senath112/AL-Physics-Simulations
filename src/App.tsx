@@ -702,20 +702,6 @@ function AppContent() {
               <span className="hidden sm:inline">{st.navSims}</span>
             </button>
 
-            {/* Status Tab */}
-            <button
-              onClick={() => setCurrentPage('status')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                currentPage === 'status'
-                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20'
-                  : 'bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60'
-              }`}
-              title="Simulation Status"
-            >
-              <Activity className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Status</span>
-            </button>
-
             {/* Laboratory Workspace Button (Preserved for feature flag) */}
             {ENABLE_LABORATORY_UI && (
               <button
@@ -2057,13 +2043,25 @@ function AppContent() {
           <p>
             {st.footerSub}
             <span className="mx-2">•</span>
-            <button onClick={() => setCurrentPage('status')} className="text-blue-600 hover:underline cursor-pointer">Simulation Status</button>
-            <span className="mx-2">•</span>
             <button onClick={() => setCurrentPage('terms')} className="text-blue-600 hover:underline cursor-pointer">{st.termsTitle}</button>
             <span className="mx-2">•</span>
             <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">{st.privacyTitle}</button>
           </p>
-          <div className="pt-1 flex items-center justify-center">
+          <div className="pt-1 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setCurrentPage('status')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border shadow-2xs ${
+                currentPage === 'status'
+                  ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm shadow-emerald-500/20'
+                  : 'bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border-emerald-200/80'
+              }`}
+              title="View Physics by Senath Simulation Status"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Simulation Status</span>
+            </button>
+
             <button
               onClick={() => setCurrentPage('status')}
               className="inline-flex items-center transition-opacity hover:opacity-80 cursor-pointer"
