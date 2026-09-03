@@ -11,7 +11,8 @@
     "build": "npm run build:frontend && npm run build:server",
     "start": "node dist-server/index.js",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:physics": "tsx scripts/test-physics.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1121.0",
