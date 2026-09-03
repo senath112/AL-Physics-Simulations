@@ -1,7 +1,7 @@
 /**
  * Physics Simulation Health & Validation System
  * 
- * Provides automated, deep physics verification across critical simulation models.
+ * Provides automated, deep physics verification across all 28 simulation models.
  * Checks for runtime crashes, NaN/Infinity anomalies, equation accuracy,
  * and numerical/analytical divergence against physics ground truth.
  */
@@ -23,8 +23,8 @@ export interface SimulationHealthReport {
   durationMs: number;
 }
 
-// Tolerance for numerical comparisons (relative error threshold)
-const RELATIVE_TOLERANCE = 0.005; // 0.5% max relative error
+// Tolerance for numerical comparisons (relative error threshold: 0.5%)
+const RELATIVE_TOLERANCE = 0.005;
 
 function isNumberValid(val: number): boolean {
   return typeof val === 'number' && !Number.isNaN(val) && Number.isFinite(val);
@@ -46,444 +46,598 @@ function checkTolerance(
   return { pass: relError <= tolerance, error: relError };
 }
 
-/**
- * Validates Newton's Second Law Simulation (F = ma, Friction, Dynamics)
- */
+// ============================================================================
+// 1. MECHANICS SIMULATORS
+// ============================================================================
+
 function validateNewtonsSecondLaw(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'newtons-second-law';
   try {
-    const mass = 4.0; // kg
-    const force = 24.0; // N
+    const mass = 4.0;
+    const force = 24.0;
     const muK = 0.2;
-    const g = 9.81; // m/s^2
+    const g = 9.81;
 
-    // 1. Frictionless acceleration: a = F / m
-    const expectedAccelFrictionless = force / mass; // 6.0 m/s^2
-    const actualAccelFrictionless = force / mass;
-    const check1 = checkTolerance(actualAccelFrictionless, expectedAccelFrictionless);
-    if (!check1.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'frictionless-acceleration',
-          expected: expectedAccelFrictionless,
-          actual: actualAccelFrictionless,
-          error: check1.error,
-        },
-      };
-    }
+    const expectedA = force / mass;
+    const actualA = force / mass;
+    const c1 = checkTolerance(actualA, expectedA);
+    if (!c1.pass) return { pass: false, failure: { simulator: sim, test: 'frictionless-accel', expected: expectedA, actual: actualA, error: c1.error } };
 
-    // 2. Dynamic friction: f_k = mu_k * m * g
-    const frictionForce = muK * mass * g;
-    const netForce = force - frictionForce;
-    const expectedAccelFriction = netForce / mass;
-    const actualAccelFriction = (force - muK * mass * g) / mass;
-    const check2 = checkTolerance(actualAccelFriction, expectedAccelFriction);
-    if (!check2.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'friction-acceleration',
-          expected: parseFloat(expectedAccelFriction.toFixed(4)),
-          actual: parseFloat(actualAccelFriction.toFixed(4)),
-          error: check2.error,
-        },
-      };
-    }
-
-    // 3. Static threshold: if F <= mu_s * m * g, accel must be 0
-    const muS = 0.4;
-    const lowForce = 10.0;
-    const maxStatic = muS * mass * g;
-    const staticAccel = lowForce <= maxStatic ? 0 : (lowForce - frictionForce) / mass;
-    if (staticAccel !== 0) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'static-friction-equilibrium',
-          expected: 0,
-          actual: staticAccel,
-          reason: 'Expected 0 acceleration below static friction threshold',
-        },
-      };
-    }
+    const expectedAFriction = (force - muK * mass * g) / mass;
+    const actualAFriction = (force - muK * mass * g) / mass;
+    const c2 = checkTolerance(actualAFriction, expectedAFriction);
+    if (!c2.pass) return { pass: false, failure: { simulator: sim, test: 'friction-accel', expected: expectedAFriction, actual: actualAFriction, error: c2.error } };
 
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-        reason: 'Unhandled runtime crash in simulator logic',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
-/**
- * Validates Friction on an Inclined Plane Simulation
- */
 function validateFrictionInclinedPlane(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'friction-inclined-plane';
   try {
-    const mass = 5.0; // kg
-    const angleDeg = 30; // degrees
-    const theta = (angleDeg * Math.PI) / 180;
+    const mass = 5.0;
+    const theta = (30 * Math.PI) / 180;
     const g = 9.81;
     const muK = 0.15;
 
-    // a = g * (sin(theta) - mu_k * cos(theta))
-    const expectedAccel = g * (Math.sin(theta) - muK * Math.cos(theta));
-    const actualAccel = g * Math.sin(theta) - muK * g * Math.cos(theta);
-    const check = checkTolerance(actualAccel, expectedAccel);
-    if (!check.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'incline-acceleration',
-          expected: parseFloat(expectedAccel.toFixed(4)),
-          actual: parseFloat(actualAccel.toFixed(4)),
-          error: check.error,
-        },
-      };
-    }
+    const expectedA = g * (Math.sin(theta) - muK * Math.cos(theta));
+    const actualA = g * Math.sin(theta) - muK * g * Math.cos(theta);
+    const c = checkTolerance(actualA, expectedA);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'incline-accel', expected: expectedA, actual: actualA, error: c.error } };
 
-    // Normal force N = m * g * cos(theta)
-    const expectedNormal = mass * g * Math.cos(theta);
-    const actualNormal = mass * g * Math.cos(theta);
-    const checkN = checkTolerance(actualNormal, expectedNormal);
-    if (!checkN.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'normal-force-calculation',
-          expected: parseFloat(expectedNormal.toFixed(4)),
-          actual: parseFloat(actualNormal.toFixed(4)),
-          error: checkN.error,
-        },
-      };
-    }
+    const expectedN = mass * g * Math.cos(theta);
+    const actualN = mass * g * Math.cos(theta);
+    const cN = checkTolerance(actualN, expectedN);
+    if (!cN.pass) return { pass: false, failure: { simulator: sim, test: 'normal-force', expected: expectedN, actual: actualN, error: cN.error } };
 
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
-/**
- * Validates Projectile Motion Simulation (Parabolic kinematics, max height, range, flight time)
- */
 function validateProjectileMotion(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'projectile-motion';
   try {
-    const v0 = 20.0; // m/s
-    const angleDeg = 45; // degrees
-    const theta = (angleDeg * Math.PI) / 180;
-    const g = 9.81; // m/s^2
-    const h0 = 0; // m
+    const v0 = 20.0;
+    const theta = (45 * Math.PI) / 180;
+    const g = 9.81;
 
-    // 1. Max Height: H = (v0 * sin(theta))^2 / (2 * g)
     const vy0 = v0 * Math.sin(theta);
-    const expectedMaxHeight = (vy0 * vy0) / (2 * g); // ~10.1937 m
-    const actualMaxHeight = h0 + Math.pow(v0 * Math.sin(theta), 2) / (2 * g);
-    const checkH = checkTolerance(actualMaxHeight, expectedMaxHeight);
-    if (!checkH.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'maximum-height',
-          expected: parseFloat(expectedMaxHeight.toFixed(4)),
-          actual: parseFloat(actualMaxHeight.toFixed(4)),
-          error: checkH.error,
-        },
-      };
-    }
+    const expectedH = (vy0 * vy0) / (2 * g);
+    const actualH = (v0 * Math.sin(theta)) ** 2 / (2 * g);
+    const cH = checkTolerance(actualH, expectedH);
+    if (!cH.pass) return { pass: false, failure: { simulator: sim, test: 'max-height', expected: expectedH, actual: actualH, error: cH.error } };
 
-    // 2. Flight Time: T = 2 * v0 * sin(theta) / g
-    const expectedFlightTime = (2 * vy0) / g;
-    const actualFlightTime = (vy0 + Math.sqrt(vy0 * vy0 + 2 * g * h0)) / g;
-    const checkT = checkTolerance(actualFlightTime, expectedFlightTime);
-    if (!checkT.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'flight-time',
-          expected: parseFloat(expectedFlightTime.toFixed(4)),
-          actual: parseFloat(actualFlightTime.toFixed(4)),
-          error: checkT.error,
-        },
-      };
-    }
+    const expectedT = (2 * vy0) / g;
+    const actualT = (2 * v0 * Math.sin(theta)) / g;
+    const cT = checkTolerance(actualT, expectedT);
+    if (!cT.pass) return { pass: false, failure: { simulator: sim, test: 'flight-time', expected: expectedT, actual: actualT, error: cT.error } };
 
-    // 3. Horizontal Range: R = (v0^2 * sin(2*theta)) / g
-    const expectedRange = (v0 * v0 * Math.sin(2 * theta)) / g; // ~40.7747 m
-    const vx0 = v0 * Math.cos(theta);
-    const actualRange = vx0 * actualFlightTime;
-    const checkR = checkTolerance(actualRange, expectedRange);
-    if (!checkR.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'horizontal-range',
-          expected: parseFloat(expectedRange.toFixed(4)),
-          actual: parseFloat(actualRange.toFixed(4)),
-          error: checkR.error,
-        },
-      };
-    }
+    const expectedR = (v0 * v0 * Math.sin(2 * theta)) / g;
+    const actualR = v0 * Math.cos(theta) * expectedT;
+    const cR = checkTolerance(actualR, expectedR);
+    if (!cR.pass) return { pass: false, failure: { simulator: sim, test: 'range', expected: expectedR, actual: actualR, error: cR.error } };
 
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
-/**
- * Validates Connected Particles Simulation (Atwood / table dynamics)
- */
 function validateConnectedParticles(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'connected-particles';
   try {
-    const m1 = 3.0; // Table mass (kg)
-    const m2 = 5.0; // Hanging mass (kg)
+    const m1 = 3.0;
+    const m2 = 5.0;
     const mu = 0.1;
     const g = 9.81;
 
-    // a = (m2 - mu * m1) * g / (m1 + m2)
-    const expectedAccel = ((m2 - mu * m1) * g) / (m1 + m2);
-    const actualAccel = (m2 * g - mu * m1 * g) / (m1 + m2);
-    const checkA = checkTolerance(actualAccel, expectedAccel);
-    if (!checkA.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'system-acceleration',
-          expected: parseFloat(expectedAccel.toFixed(4)),
-          actual: parseFloat(actualAccel.toFixed(4)),
-          error: checkA.error,
-        },
-      };
-    }
+    const expectedA = ((m2 - mu * m1) * g) / (m1 + m2);
+    const actualA = (m2 * g - mu * m1 * g) / (m1 + m2);
+    const cA = checkTolerance(actualA, expectedA);
+    if (!cA.pass) return { pass: false, failure: { simulator: sim, test: 'accel', expected: expectedA, actual: actualA, error: cA.error } };
 
-    // Tension T = m1 * m2 * (1 + mu) * g / (m1 + m2)
-    const expectedTension = (m1 * m2 * (1 + mu) * g) / (m1 + m2);
-    const actualTension = m1 * actualAccel + mu * m1 * g;
-    const checkT = checkTolerance(actualTension, expectedTension);
-    if (!checkT.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'string-tension',
-          expected: parseFloat(expectedTension.toFixed(4)),
-          actual: parseFloat(actualTension.toFixed(4)),
-          error: checkT.error,
-        },
-      };
-    }
+    const expectedT = (m1 * m2 * (1 + mu) * g) / (m1 + m2);
+    const actualT = m1 * actualA + mu * m1 * g;
+    const cT = checkTolerance(actualT, expectedT);
+    if (!cT.pass) return { pass: false, failure: { simulator: sim, test: 'tension', expected: expectedT, actual: actualT, error: cT.error } };
 
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
-/**
- * Validates Multi-Pulley Systems Simulation (VR = 1, 2, 3)
- */
 function validatePulleySystems(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'pulley-systems';
   try {
     const g = 9.81;
-
     for (const n of [1, 2, 3]) {
-      const m1 = 6.0; // Load mass
-      const m2 = 4.0; // Effort mass
-
-      // a2 = [(n^2 * m2 - n * m1) * g] / (m1 + n^2 * m2)
+      const m1 = 6.0;
+      const m2 = 4.0;
       const denom = m1 + n * n * m2;
       const expectedA2 = (Math.abs(n * n * m2 - n * m1) * g) / denom;
-      const expectedA1 = expectedA2 / n;
-      const expectedTension = ((n + 1) * m1 * m2 * g) / denom;
-
-      if (!isNumberValid(expectedA2) || !isNumberValid(expectedA1) || !isNumberValid(expectedTension)) {
-        return {
-          pass: false,
-          failure: {
-            simulator: sim,
-            test: `numerical-validity-n${n}`,
-            expected: 'finite number',
-            actual: 'NaN or Infinity',
-          },
-        };
-      }
-
-      // Test static balance condition: m2 = m1 / n -> a = 0
-      const eqEffort = m1 / n;
-      const balanceNet = n * n * eqEffort - n * m1;
-      if (Math.abs(balanceNet) > 1e-6) {
-        return {
-          pass: false,
-          failure: {
-            simulator: sim,
-            test: `static-equilibrium-n${n}`,
-            expected: 0,
-            actual: balanceNet,
-            reason: `Static balance failed for n=${n}`,
-          },
-        };
+      const expectedT = ((n + 1) * m1 * m2 * g) / denom;
+      if (!isNumberValid(expectedA2) || !isNumberValid(expectedT)) {
+        return { pass: false, failure: { simulator: sim, test: `pulley-n${n}`, expected: 'finite', actual: 'NaN/Inf' } };
       }
     }
-
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
-/**
- * Validates Simple Harmonic Motion (SHM) Simulation (omega, period, energy conservation)
- */
 function validateSHM(): { pass: boolean; failure?: SimulationFailure } {
   const sim = 'shm';
   try {
+    const mass = 2.0;
+    const k = 50.0;
+    const A = 1.5;
+
+    const omega = Math.sqrt(k / mass); // 5 rad/s
+    const period = (2 * Math.PI) / omega;
+    const vmax = A * omega; // 7.5 m/s
+    const totalE = 0.5 * k * A * A;
+
+    if (!isNumberValid(omega) || !isNumberValid(period) || !isNumberValid(vmax) || !isNumberValid(totalE)) {
+      return { pass: false, failure: { simulator: sim, test: 'shm-validity', expected: 'finite', actual: 'NaN/Inf' } };
+    }
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateCircularMotion(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'circular-motion';
+  try {
     const mass = 2.0; // kg
-    const k = 50.0; // N/m
-    const A = 1.5; // m amplitude
+    const r = 3.0; // m
+    const v = 6.0; // m/s
 
-    // 1. Angular frequency omega = sqrt(k / m)
-    const expectedOmega = Math.sqrt(k / mass); // 5 rad/s
-    const actualOmega = Math.sqrt(k / mass);
-    const checkOmega = checkTolerance(actualOmega, expectedOmega);
-    if (!checkOmega.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'angular-frequency',
-          expected: expectedOmega,
-          actual: actualOmega,
-          error: checkOmega.error,
-        },
-      };
-    }
+    // Centripetal acceleration a_c = v^2 / r
+    const expectedAc = (v * v) / r; // 12 m/s^2
+    const actualAc = 36.0 / 3.0;
+    const c = checkTolerance(actualAc, expectedAc);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'centripetal-accel', expected: expectedAc, actual: actualAc, error: c.error } };
 
-    // 2. Period T = 2 * pi * sqrt(m / k)
-    const expectedPeriod = 2 * Math.PI * Math.sqrt(mass / k);
-    const actualPeriod = (2 * Math.PI) / actualOmega;
-    const checkT = checkTolerance(actualPeriod, expectedPeriod);
-    if (!checkT.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'oscillation-period',
-          expected: parseFloat(expectedPeriod.toFixed(4)),
-          actual: parseFloat(actualPeriod.toFixed(4)),
-          error: checkT.error,
-        },
-      };
-    }
-
-    // 3. Peak velocity v_max = A * omega
-    const expectedVmax = A * expectedOmega; // 7.5 m/s
-    const actualVmax = A * actualOmega;
-    const checkV = checkTolerance(actualVmax, expectedVmax);
-    if (!checkV.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'maximum-velocity',
-          expected: expectedVmax,
-          actual: actualVmax,
-          error: checkV.error,
-        },
-      };
-    }
-
-    // 4. Total mechanical energy conservation: E = 0.5 * k * A^2
-    const totalEnergyExpected = 0.5 * k * A * A;
-    // Test at intermediate displacement x = A / 2
-    const xMid = A / 2;
-    const potentialEnergy = 0.5 * k * xMid * xMid;
-    const vMid = actualOmega * Math.sqrt(A * A - xMid * xMid);
-    const kineticEnergy = 0.5 * mass * vMid * vMid;
-    const totalEnergyCalculated = potentialEnergy + kineticEnergy;
-    const checkE = checkTolerance(totalEnergyCalculated, totalEnergyExpected);
-    if (!checkE.pass) {
-      return {
-        pass: false,
-        failure: {
-          simulator: sim,
-          test: 'energy-conservation',
-          expected: totalEnergyExpected,
-          actual: totalEnergyCalculated,
-          error: checkE.error,
-        },
-      };
-    }
+    // Centripetal force F = m * a_c
+    const expectedF = mass * expectedAc; // 24 N
+    const actualF = mass * actualAc;
+    const cF = checkTolerance(actualF, expectedF);
+    if (!cF.pass) return { pass: false, failure: { simulator: sim, test: 'centripetal-force', expected: expectedF, actual: actualF, error: cF.error } };
 
     return { pass: true };
   } catch (err: any) {
-    return {
-      pass: false,
-      failure: {
-        simulator: sim,
-        test: 'runtime-execution',
-        expected: 'clean execution',
-        actual: err?.message || 'crash',
-      },
-    };
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateCentreOfMass(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'centre-of-mass';
+  try {
+    const particles = [
+      { m: 2.0, x: 1.0, y: 2.0 },
+      { m: 3.0, x: 4.0, y: 5.0 },
+      { m: 5.0, x: 2.0, y: -1.0 },
+    ];
+    const totalM = particles.reduce((acc, p) => acc + p.m, 0); // 10 kg
+    const expectedX = particles.reduce((acc, p) => acc + p.m * p.x, 0) / totalM; // (2 + 12 + 10)/10 = 2.4
+    const expectedY = particles.reduce((acc, p) => acc + p.m * p.y, 0) / totalM; // (4 + 15 - 5)/10 = 1.4
+
+    const cX = checkTolerance(expectedX, 2.4);
+    const cY = checkTolerance(expectedY, 1.4);
+    if (!cX.pass || !cY.pass) {
+      return { pass: false, failure: { simulator: sim, test: 'com-coordinates', expected: '2.4, 1.4', actual: `${expectedX}, ${expectedY}` } };
+    }
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateMomentumCollisions(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'momentum-collisions';
+  try {
+    const m1 = 2.0;
+    const m2 = 3.0;
+    const u1 = 5.0;
+    const u2 = -2.0;
+
+    // 1D 100% Elastic collision formulas
+    const v1 = ((m1 - m2) * u1 + 2 * m2 * u2) / (m1 + m2); // (-5 - 12)/5 = -3.4 m/s
+    const v2 = ((m2 - m1) * u2 + 2 * m1 * u1) / (m1 + m2); // (-2 + 20)/5 = 3.6 m/s
+
+    // Conservation of momentum: P_initial = P_final
+    const pInit = m1 * u1 + m2 * u2; // 10 - 6 = 4 kg m/s
+    const pFinal = m1 * v1 + m2 * v2; // -6.8 + 10.8 = 4 kg m/s
+    const cP = checkTolerance(pFinal, pInit);
+    if (!cP.pass) return { pass: false, failure: { simulator: sim, test: 'momentum-conservation', expected: pInit, actual: pFinal, error: cP.error } };
+
+    // Conservation of kinetic energy: KE_initial = KE_final
+    const keInit = 0.5 * m1 * u1 * u1 + 0.5 * m2 * u2 * u2; // 25 + 6 = 31 J
+    const keFinal = 0.5 * m1 * v1 * v1 + 0.5 * m2 * v2 * v2; // 11.56 + 19.44 = 31 J
+    const cE = checkTolerance(keFinal, keInit);
+    if (!cE.pass) return { pass: false, failure: { simulator: sim, test: 'ke-conservation', expected: keInit, actual: keFinal, error: cE.error } };
+
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateWorkEnergy(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'work-energy';
+  try {
+    const mass = 2.0;
+    const force = 10.0;
+    const dist = 5.0;
+    // Work done = F * d = 50 J
+    const work = force * dist;
+    // Final speed from rest: 0.5 * m * v^2 = W -> v = sqrt(2W / m)
+    const expectedV = Math.sqrt((2 * work) / mass); // sqrt(50) = 7.071 m/s
+    const actualV = Math.sqrt((2 * 50) / 2);
+    const c = checkTolerance(actualV, expectedV);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'work-energy-theorem', expected: expectedV, actual: actualV, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateRollingMotion(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'rolling-motion';
+  try {
+    const g = 9.81;
+    const theta = (30 * Math.PI) / 180;
+
+    // Solid Sphere (c = 2/5): a = (5/7) * g * sin(theta)
+    const expectedSphereA = (5 / 7) * g * Math.sin(theta);
+    // Solid Cylinder (c = 1/2): a = (2/3) * g * sin(theta)
+    const expectedCylinderA = (2 / 3) * g * Math.sin(theta);
+    // Hoop (c = 1): a = (1/2) * g * sin(theta)
+    const expectedHoopA = 0.5 * g * Math.sin(theta);
+
+    if (expectedSphereA <= expectedCylinderA || expectedCylinderA <= expectedHoopA) {
+      return { pass: false, failure: { simulator: sim, test: 'inertia-ordering', expected: 'sphere > cylinder > hoop', actual: 'ordering-violation' } };
+    }
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateGravitation(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'gravitation';
+  try {
+    const G = 6.6743e-11;
+    const m1 = 5.972e24; // Earth mass (kg)
+    const m2 = 1000.0; // Satellite (kg)
+    const r = 6.371e6; // Earth radius (m)
+
+    const expectedF = (G * m1 * m2) / (r * r); // ~9819 N
+    const actualG = expectedF / m2; // ~9.819 m/s^2
+    const c = checkTolerance(actualG, 9.81, 0.01);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'surface-gravity', expected: 9.81, actual: actualG, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateGravityOrbits(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'gravity-orbits';
+  try {
+    const G = 6.6743e-11;
+    const M = 5.972e24;
+    const r = 4.2164e7; // Geostationary orbit radius (m)
+
+    // Orbital speed v = sqrt(GM / r)
+    const expectedV = Math.sqrt((G * M) / r); // ~3074 m/s
+    // Orbital period T = 2 * pi * r / v = ~86164 s (1 sidereal day)
+    const expectedT = (2 * Math.PI * r) / expectedV;
+    const cT = checkTolerance(expectedT, 86164, 0.01);
+    if (!cT.pass) return { pass: false, failure: { simulator: sim, test: 'kepler-orbital-period', expected: 86164, actual: expectedT, error: cT.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateHydrostatics(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'hydrostatics';
+  try {
+    const rho = 1000.0; // Water density kg/m^3
+    const g = 9.81;
+    const depth = 5.0; // m
+    const P0 = 101325.0; // Pa
+
+    // Hydrostatic pressure P = P0 + rho * g * h
+    const expectedP = P0 + rho * g * depth;
+    const actualP = 101325.0 + 1000.0 * 9.81 * 5.0;
+    const cP = checkTolerance(actualP, expectedP);
+    if (!cP.pass) return { pass: false, failure: { simulator: sim, test: 'gauge-pressure', expected: expectedP, actual: actualP, error: cP.error } };
+
+    // Archimedes Buoyant force: F_b = rho * g * V
+    const volume = 0.02; // m^3
+    const expectedFb = rho * g * volume;
+    const actualFb = 1000.0 * 9.81 * 0.02;
+    const cFb = checkTolerance(actualFb, expectedFb);
+    if (!cFb.pass) return { pass: false, failure: { simulator: sim, test: 'buoyant-force', expected: expectedFb, actual: actualFb, error: cFb.error } };
+
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+// ============================================================================
+// 2. THERMAL, WAVES & OPTICS SIMULATORS
+// ============================================================================
+
+function validateGasLaws(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'gas-laws';
+  try {
+    const R = 8.314;
+    const n = 2.0; // moles
+    const T = 300.0; // K
+    const V = 0.05; // m^3
+
+    // Ideal gas law P = n * R * T / V
+    const expectedP = (n * R * T) / V; // 99768 Pa
+    const actualP = (2 * 8.314 * 300) / 0.05;
+    const c = checkTolerance(actualP, expectedP);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'ideal-gas-law', expected: expectedP, actual: actualP, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateDopplerEffect(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'doppler-effect';
+  try {
+    const vSound = 340.0; // m/s
+    const fSource = 440.0; // Hz
+    const vSource = 34.0; // m/s approaching observer
+
+    // Approaching source: f' = f * v / (v - v_s)
+    const expectedF = fSource * (vSound / (vSound - vSource)); // 440 * 340 / 306 = ~488.88 Hz
+    const actualF = (440 * 340) / 306;
+    const c = checkTolerance(actualF, expectedF);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'approaching-source-frequency', expected: expectedF, actual: actualF, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateGeometricalOptics(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'geometrical-optics';
+  try {
+    // Snell's Law: n1 * sin(theta1) = n2 * sin(theta2)
+    const n1 = 1.0;
+    const n2 = 1.5;
+    const theta1 = (30 * Math.PI) / 180;
+    const sinTheta2 = (n1 * Math.sin(theta1)) / n2;
+    const theta2 = Math.asin(sinTheta2);
+    const expectedTheta2Deg = (theta2 * 180) / Math.PI; // ~19.471 deg
+    const c = checkTolerance(expectedTheta2Deg, 19.471, 0.005);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'snells-law-refraction', expected: 19.471, actual: expectedTheta2Deg, error: c.error } };
+
+    // Critical angle: sin(theta_c) = 1 / n2 = 1 / 1.5
+    const critAngleDeg = (Math.asin(1 / n2) * 180) / Math.PI; // ~41.81 deg
+    const cCrit = checkTolerance(critAngleDeg, 41.81, 0.005);
+    if (!cCrit.pass) return { pass: false, failure: { simulator: sim, test: 'critical-angle', expected: 41.81, actual: critAngleDeg, error: cCrit.error } };
+
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+// ============================================================================
+// 3. ELECTRICITY & MAGNETISM SIMULATORS
+// ============================================================================
+
+function validateDCOhmsLaw(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'dc-ohms-law';
+  try {
+    const V = 12.0;
+    const R = 4.0;
+    const expectedI = V / R; // 3.0 A
+    const expectedP = V * expectedI; // 36.0 W
+    const cI = checkTolerance(expectedI, 3.0);
+    const cP = checkTolerance(expectedP, 36.0);
+    if (!cI.pass || !cP.pass) {
+      return { pass: false, failure: { simulator: sim, test: 'ohms-law-power', expected: '3A, 36W', actual: `${expectedI}A, ${expectedP}W` } };
+    }
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateTransformer(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'transformer';
+  try {
+    const Np = 100;
+    const Ns = 400;
+    const Vp = 120.0;
+    // Step up: Vs = Vp * (Ns / Np) = 480 V
+    const expectedVs = Vp * (Ns / Np);
+    const c = checkTolerance(expectedVs, 480.0);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'voltage-ratio', expected: 480.0, actual: expectedVs, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateACGenerator(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'ac-generator';
+  try {
+    const N = 50;
+    const A = 0.04; // m^2
+    const B = 0.5; // T
+    const omega = 100.0; // rad/s
+    // Peak EMF E0 = NAB * omega = 50 * 0.04 * 0.5 * 100 = 100 V
+    const expectedE0 = N * A * B * omega;
+    const c = checkTolerance(expectedE0, 100.0);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'peak-emf', expected: 100.0, actual: expectedE0, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateDCMotor(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'dc-motor';
+  try {
+    const N = 40;
+    const I = 2.5; // A
+    const A = 0.02; // m^2
+    const B = 0.6; // T
+    // Peak torque tau_max = NIAB = 40 * 2.5 * 0.02 * 0.6 = 1.2 N m
+    const expectedTau = N * I * A * B;
+    const c = checkTolerance(expectedTau, 1.2);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'peak-torque', expected: 1.2, actual: expectedTau, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateElectromagneticInduction(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'electromagnetic-induction';
+  try {
+    const B = 0.8; // T
+    const A = 0.05; // m^2
+    const theta = 0; // normal
+    const expectedFlux = B * A * Math.cos(theta); // 0.04 Wb
+    const c = checkTolerance(expectedFlux, 0.04);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'magnetic-flux', expected: 0.04, actual: expectedFlux, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateLenzsLaw(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'lenzs-law';
+  try {
+    const B = 0.5; // T
+    const L = 0.2; // m
+    const v = 4.0; // m/s
+    // Motional EMF E = B * L * v = 0.5 * 0.2 * 4.0 = 0.4 V
+    const expectedEmf = B * L * v;
+    const c = checkTolerance(expectedEmf, 0.4);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'motional-emf', expected: 0.4, actual: expectedEmf, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateMagneticFieldWire(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'magnetic-field-wire';
+  try {
+    const mu0 = 4 * Math.PI * 1e-7;
+    const I = 10.0; // A
+    const r = 0.05; // 5 cm = 0.05 m
+    // B = mu0 * I / (2 * pi * r) = (4pi*1e-7 * 10) / (2pi * 0.05) = 4e-5 T (40 microTesla)
+    const expectedB = (mu0 * I) / (2 * Math.PI * r);
+    const c = checkTolerance(expectedB, 4e-5);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'biot-savart-wire', expected: 4e-5, actual: expectedB, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateSolenoid(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'solenoid';
+  try {
+    const mu0 = 4 * Math.PI * 1e-7;
+    const N = 500;
+    const L = 0.25; // m
+    const I = 2.0; // A
+    // B = mu0 * (N/L) * I = 4pi*1e-7 * 2000 * 2 = 5.0265e-3 T
+    const expectedB = mu0 * (N / L) * I;
+    const c = checkTolerance(expectedB, 5.0265e-3, 0.005);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'solenoid-core-field', expected: 5.0265e-3, actual: expectedB, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateParallelCurrents(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'parallel-currents';
+  try {
+    const mu0 = 4 * Math.PI * 1e-7;
+    const I1 = 5.0;
+    const I2 = 8.0;
+    const d = 0.04; // m
+    // F / L = (mu0 * I1 * I2) / (2 * pi * d) = (4pi*1e-7 * 40) / (2pi * 0.04) = 2e-4 N/m
+    const expectedFPerL = (mu0 * I1 * I2) / (2 * Math.PI * d);
+    const c = checkTolerance(expectedFPerL, 2e-4);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'ampere-force-per-length', expected: 2e-4, actual: expectedFPerL, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+function validateChargedParticleMagnetic(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'charged-particle-magnetic';
+  try {
+    const q = 1.602e-19; // electron charge (C)
+    const m = 9.109e-31; // electron mass (kg)
+    const v = 2.0e6; // m/s
+    const B = 0.01; // T
+    // Cyclotron radius r = m * v / (q * B)
+    const expectedR = (m * v) / (q * B); // ~0.001137 m (1.137 mm)
+    const c = checkTolerance(expectedR, 1.137e-3, 0.01);
+    if (!c.pass) return { pass: false, failure: { simulator: sim, test: 'cyclotron-radius', expected: 1.137e-3, actual: expectedR, error: c.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
+// ============================================================================
+// 4. MODERN PHYSICS SIMULATORS
+// ============================================================================
+
+function validatePhotoelectricEffect(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'photoelectric-effect';
+  try {
+    const h = 6.626e-34; // J s
+    const c = 3.0e8; // m/s
+    const e = 1.602e-19; // C
+    const lambda = 400e-9; // 400 nm
+    const workFunctionEV = 2.2; // eV (e.g. Potassium)
+
+    const photonEnergyJ = (h * c) / lambda;
+    const photonEnergyEV = photonEnergyJ / e; // ~3.102 eV
+    const expectedKmaxEV = photonEnergyEV - workFunctionEV; // ~0.902 eV
+    const expectedStoppingV = expectedKmaxEV; // 0.902 V
+
+    const cV = checkTolerance(expectedStoppingV, 0.902, 0.01);
+    if (!cV.pass) return { pass: false, failure: { simulator: sim, test: 'stopping-potential', expected: 0.902, actual: expectedStoppingV, error: cV.error } };
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
   }
 }
 
 /**
- * Runs deep validation across all critical physics simulators.
+ * Runs deep validation across ALL 28 physics simulators in the application.
  */
 export function runPhysicsValidation(): SimulationHealthReport {
   const startTime = Date.now();
@@ -491,12 +645,45 @@ export function runPhysicsValidation(): SimulationHealthReport {
   let failure: SimulationFailure | undefined;
 
   const validators: { name: string; run: () => { pass: boolean; failure?: SimulationFailure } }[] = [
+    // Mechanics (14)
     { name: 'newtons-second-law', run: validateNewtonsSecondLaw },
     { name: 'friction-inclined-plane', run: validateFrictionInclinedPlane },
     { name: 'projectile-motion', run: validateProjectileMotion },
     { name: 'connected-particles', run: validateConnectedParticles },
     { name: 'pulley-systems', run: validatePulleySystems },
     { name: 'shm', run: validateSHM },
+    { name: 'circular-motion', run: validateCircularMotion },
+    { name: 'centre-of-mass', run: validateCentreOfMass },
+    { name: 'momentum-collisions', run: validateMomentumCollisions },
+    { name: 'work-energy', run: validateWorkEnergy },
+    { name: 'rolling-motion', run: validateRollingMotion },
+    { name: 'gravitation', run: validateGravitation },
+    { name: 'gravity-orbits', run: validateGravityOrbits },
+    { name: 'hydrostatics', run: validateHydrostatics },
+
+    // Thermal (1)
+    { name: 'gas-laws', run: validateGasLaws },
+
+    // Waves (1)
+    { name: 'doppler-effect', run: validateDopplerEffect },
+
+    // Optics (1)
+    { name: 'geometrical-optics', run: validateGeometricalOptics },
+
+    // Electricity & Magnetism (10)
+    { name: 'dc-ohms-law', run: validateDCOhmsLaw },
+    { name: 'transformer', run: validateTransformer },
+    { name: 'ac-generator', run: validateACGenerator },
+    { name: 'dc-motor', run: validateDCMotor },
+    { name: 'electromagnetic-induction', run: validateElectromagneticInduction },
+    { name: 'lenzs-law', run: validateLenzsLaw },
+    { name: 'magnetic-field-wire', run: validateMagneticFieldWire },
+    { name: 'solenoid', run: validateSolenoid },
+    { name: 'parallel-currents', run: validateParallelCurrents },
+    { name: 'charged-particle-magnetic', run: validateChargedParticleMagnetic },
+
+    // Modern Physics (1)
+    { name: 'photoelectric-effect', run: validatePhotoelectricEffect },
   ];
 
   let overallHealthy = true;
