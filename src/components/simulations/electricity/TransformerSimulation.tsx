@@ -31,7 +31,7 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       coreFluxDesc: 'Magnetic flux Φ(t) links both coils through the laminated soft-iron core.',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -58,7 +58,7 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       coreFluxDesc: 'මෘදු යකඩ හරය හරහා ප්‍රාථමික සහ ද්විතීයික දඟර චුම්බක ස්‍රාවයෙන් සම්බන්ධ වේ.',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -85,7 +85,7 @@ export function TransformerSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       coreFluxDesc: 'மென்மையான இரும்பு மையத்தின் மூலம் இரு சுருள்களும் காந்தப் பாயத்தால் இணைக்கப்படுகின்றன.',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

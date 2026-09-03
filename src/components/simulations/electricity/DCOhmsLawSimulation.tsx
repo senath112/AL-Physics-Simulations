@@ -26,7 +26,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       resistanceCalculated: 'Calculated Resistance (R)',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs',
       vGraph: 'Voltage (V) vs. Current (I) Plot'
@@ -48,7 +48,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       resistanceCalculated: 'ගණනය කළ ප්‍රතිරෝධය (R)',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න',
       vGraph: 'වෝල්ටීයතාවය (V) සහ ධාරාව (I) ප්‍රස්ථාරය'
@@ -70,7 +70,7 @@ export function DCOhmsLawSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta'
       resistanceCalculated: 'கணக்கிடப்பட்ட மின்தடை (R)',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு',
       vGraph: 'மின்னழுத்தம் (V) vs மின்னோட்டம் (I) வரைபடம்'

@@ -2,8 +2,8 @@ import { BlockMath } from '../../Math';
 import { Sparkles, BookOpen, Maximize2, FileText, Lightbulb, Activity, AlertTriangle } from 'lucide-react';
 const INCLINED_THEORY_NOTES = {
   en: {
-    badge: 'Mechanics • Friction on an Inclined Plane Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Mechanics • Friction on an Inclined Plane Laboratory',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Force Resolution',
     tabFormulas: 'Equations & Motion Regimes',
@@ -95,8 +95,8 @@ const INCLINED_THEORY_NOTES = {
     ]
   },
   si: {
-    badge: 'යාන්ත්‍ර විද්‍යාව • ආනත තලයක ඝර්ෂණය අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'යාන්ත්‍ර විද්‍යාව • ආනත තලයක ඝර්ෂණය විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ බල බෙදීම',
     tabFormulas: 'සමීකරණ සහ චලිත අවස්ථා',
@@ -181,8 +181,8 @@ const INCLINED_THEORY_NOTES = {
     ]
   },
   ta: {
-    badge: 'இயக்கவியல் • சாய்வு தளத்தில் உராய்வு குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'இயக்கவியல் • சாய்வு தளத்தில் உராய்வு ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் விசை பகுப்பு',
     tabFormulas: 'சமன்பாடுகள் மற்றும் இயக்க நிலைகள்',
@@ -304,7 +304,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       reset: 'Reset',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Logged Trials History',
       clearLogs: 'Clear Logs'
     },
@@ -327,7 +327,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       reset: 'නැවත මුලට',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -350,7 +350,7 @@ export function InclinedPlaneSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       reset: 'மீட்டமை',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

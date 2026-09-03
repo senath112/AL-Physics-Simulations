@@ -26,7 +26,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       total: 'Total Energy (E)',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs',
       drawInstruction: 'Click & Drag on the canvas to draw a custom track shape!'
@@ -49,7 +49,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       total: 'මුළු ශක්තිය (E)',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න',
       drawInstruction: 'කැන්වසය මත ක්ලික් කර ඇදීමෙන් රිසි පරිදි මඟක් අඳින්න!'
@@ -72,7 +72,7 @@ export function WorkEnergySimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       total: 'மொத்த ஆற்றல் (E)',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு',
       drawInstruction: 'வரைவிடத்தில் கிளிக் செய்து இழுப்பதன் மூலம் தனிப்பயன் பாதையை வரையவும்!'

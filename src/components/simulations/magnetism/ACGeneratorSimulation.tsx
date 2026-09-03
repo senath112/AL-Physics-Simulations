@@ -34,7 +34,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       oscilloscopeSubtitle: 'Live waveform comparison demonstrating the 90° (π/2 rad) phase difference',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -64,7 +64,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       oscilloscopeSubtitle: 'වි.ගා.බ. සහ ස්‍රාවය අතර 90° (π/2 rad) කලා වෙනස පෙන්වන සජීවී තරංග සටහන',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -94,7 +94,7 @@ export function ACGeneratorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       oscilloscopeSubtitle: '90° (π/2 rad) கட்ட வேறுபாட்டைக் காட்டும் நேரடி அலைவடிவம்',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

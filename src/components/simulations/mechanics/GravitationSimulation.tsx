@@ -32,7 +32,7 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       newton3rdLaw: "Newton's 3rd Law: Action & Reaction Pair (|F₁₂| = |F₂₁|)",
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs',
       dragHint: '💡 Tip: Click and drag either sphere to adjust separation distance r interactively.'
@@ -61,7 +61,7 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       newton3rdLaw: 'නිව්ටන්ගේ 3 වන නියමය: ක්‍රියා-ප්‍රතික්‍රියා බල යුගලය (|F₁₂| = |F₂₁|)',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF වාර්තාව ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න',
       dragHint: '💡 උපදෙස: කේන්ද්‍ර අතර දුර (r) වෙනස් කිරීමට ඕනෑම ගෝලයක් මත ක්ලික් කර අදින්න.'
@@ -90,7 +90,7 @@ export function GravitationSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       newton3rdLaw: 'நியூட்டனின் 3ஆம் விதி: செயல்-எதிர்ச்செயல் ஜோடி (|F₁₂| = |F₂₁|)',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு',
       dragHint: '💡 குறிப்பு: தூரத்தை (r) மாற்ற கோளத்தை கிளிக் செய்து இழுக்கவும்.'

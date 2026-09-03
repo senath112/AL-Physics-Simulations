@@ -336,7 +336,7 @@ function AppContent() {
       sinhalaTitle: "නිව්ටන්ගේ දෙවන නියමය",
       tamilTitle: "நியூட்டனின் இரண்டாம் விதி",
       unit: 'mechanics',
-      description: 'Simulate sliding block dynamics, examine vector forces, and study static/kinetic friction limits with an integrated laboratory notebook.',
+      description: 'Simulate sliding block dynamics, examine vector forces, and study static/kinetic friction limits with integrated laboratory tools.',
       icon: Compass,
       status: 'active',
       pageLink: 'newtons_sim',

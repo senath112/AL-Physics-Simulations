@@ -16,8 +16,8 @@ interface Wavefront {
 
 const DOPPLER_THEORY_NOTES = {
   en: {
-    badge: 'Waves & Oscillations • Interactive Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Waves & Oscillations • Laboratory Simulation',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Physical Laws',
     tabFormulas: 'Equations & SI Units',
@@ -68,8 +68,8 @@ const DOPPLER_THEORY_NOTES = {
     ]
   },
   si: {
-    badge: 'තරංග සහ දෝලන • අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'තරංග සහ දෝලන • විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ නියම',
     tabFormulas: 'සමීකරණ සහ ඒකක',
@@ -120,8 +120,8 @@ const DOPPLER_THEORY_NOTES = {
     ]
   },
   ta: {
-    badge: 'அலைகள் மற்றும் ஊசலாட்டங்கள் • குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'அலைகள் மற்றும் ஊசலாட்டங்கள் • ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
     tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
@@ -219,7 +219,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       sonicBoomAlert: 'සුපිරිධ්වනි කම්පනය! (vₛ ≥ v)',
       logTrial: 'සංඛ්‍යාත සටහන් කරන්න',
       trialHistory: 'ඩොප්ලර් නිරීක්ෂණ සටහන්',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       pdf: 'PDF ලබාගන්න',
       audioOn: 'ශබ්දය සක්‍රිය කරන්න',
       audioOff: 'ශබ්දය අක්‍රිය කරන්න',
@@ -244,7 +244,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       sonicBoomAlert: 'ஒலி அதிர்வு அலறல்! (vₛ ≥ v)',
       logTrial: 'அதிர்வெண்களைப் பதிவுசெய்க',
       trialHistory: 'டாப்ளர் சோதனைப் பதிவுகள்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       pdf: 'PDF ஏற்றுமதி செய்',
       audioOn: 'ஒலியை இயக்கு',
       audioOff: 'ஒலியை முடக்கு',
@@ -649,7 +649,8 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Header & View Mode Selector */}
+      {ENABLE_THEORY_NOTEBOOKS && (
+      /* Header & View Mode Selector */
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-wider text-blue-700 mb-1">
@@ -687,6 +688,7 @@ export function DopplerEffectSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
           </button>
         </div>
       </div>
+      )}
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
       {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (

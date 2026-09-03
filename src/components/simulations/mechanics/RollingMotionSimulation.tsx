@@ -50,7 +50,7 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       raceDesc: 'Objects with lower inertia constants (k = I/mR²) accelerate faster down the slope!',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -87,7 +87,7 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       raceDesc: 'අවම අවස්ථිති නියතයක් (k = I/mR²) සහිත වස්තූන් වඩා වේගයෙන් ආනත තලයෙන් පහළට ත්වරණය වේ!',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -124,7 +124,7 @@ export function RollingMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       raceDesc: 'குறைந்த சடத்துவக் குணகம் (k = I/mR²) கொண்ட பொருள்கள் சாய்வில் வேகமாக முடுக்கமடைகின்றன!',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

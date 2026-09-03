@@ -31,7 +31,7 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       commutatorActive: 'Continuous Unidirectional Torque via Commutator Inversion',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -58,7 +58,7 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       commutatorActive: 'ධාරාව ප්‍රතිවර්තනය කරමින් අඛණ්ඩ තනි දිශානුගත ව්‍යාවර්තයක් සපයයි',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -85,7 +85,7 @@ export function DCMotorSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       commutatorActive: 'தொடர்ச்சியான ஒரே திசை முறுக்குவிசைக்காக மின்னோட்டத்தை மாற்றுகிறது',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

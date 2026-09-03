@@ -22,8 +22,8 @@ import { photoelectricGraphs } from '../../graphing/presets';
 
 const PHOTOELECTRIC_THEORY_NOTES = {
   en: {
-    badge: 'Modern Physics • Interactive Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Modern Physics • Laboratory Simulation',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Physical Laws',
     tabFormulas: 'Equations & SI Units',
@@ -73,8 +73,8 @@ const PHOTOELECTRIC_THEORY_NOTES = {
     ]
   },
   si: {
-    badge: 'නූතන භෞතික විද්‍යාව • අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'නූතන භෞතික විද්‍යාව • විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ නියම',
     tabFormulas: 'සමීකරණ සහ ඒකක',
@@ -124,8 +124,8 @@ const PHOTOELECTRIC_THEORY_NOTES = {
     ]
   },
   ta: {
-    badge: 'நவீன இயற்பியல் • குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'நவீன இயற்பியல் • ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் விதிகள்',
     tabFormulas: 'சமன்பாடுகள் மற்றும் அலகுகள்',
@@ -257,7 +257,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
       thresholdFrequency: 'කඩඉම් සංඛ්‍යාතය',
       emissionStatus: 'විමෝචන තත්ත්වය',
       theoryFormulas: 'න්‍යාය සහ සමීකරණ පෙන්වන්න',
-      labNotes: 'ලැබ් සටහන් පොත',
+      labNotes: 'ලැබ් අනුකරණය',
       trialHistory: 'පටිගත කරන ලද අත්හදා බැලීම් ඉතිහාසය',
       clear: 'මකන්න',
       pdf: 'PDF ලබාගන්න',
@@ -279,7 +279,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
       thresholdFrequency: 'அதிர்வெண் எல்லை',
       emissionStatus: 'உமிழ்வு நிலை',
       theoryFormulas: 'கோட்பாடு & சூத்திரங்களைக் காட்டு',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
       clear: 'அழி',
       pdf: 'PDF ஏற்றுமதி செய்',
@@ -640,7 +640,8 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Header & View Mode Selector */}
+      {ENABLE_THEORY_NOTEBOOKS && (
+      /* Header & View Mode Selector */
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-wider text-blue-700 mb-1">
@@ -678,6 +679,7 @@ export function PhotoelectricEffectSimulation({ lang = 'en' }: { lang?: 'en' | '
           </button>
         </div>
       </div>
+      )}
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
       {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (

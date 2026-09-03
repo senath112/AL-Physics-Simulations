@@ -2,8 +2,8 @@ import { BlockMath } from '../../Math';
 import { Sparkles, Info, BookOpen, Maximize2, FileText, Lightbulb, Activity } from 'lucide-react';
 const NEWTONS_THEORY_NOTES = {
   en: {
-    badge: 'Mechanics • Newton’s Laws Interactive Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Mechanics • Newton’s Laws Interactive Laboratory',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Basic Laws',
     tabFormulas: 'Equations & Vector Method',
@@ -81,8 +81,8 @@ const NEWTONS_THEORY_NOTES = {
     ]
   },
   si: {
-    badge: 'යාන්ත්‍ර විද්‍යාව • නියුටන්ගේ දෙවන නියමය අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'යාන්ත්‍ර විද්‍යාව • නියුටන්ගේ දෙවන නියමය විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ මූලික නියම',
     tabFormulas: 'සමීකරණ සහ දෛශික ක්‍රමය',
@@ -155,8 +155,8 @@ const NEWTONS_THEORY_NOTES = {
     ]
   },
   ta: {
-    badge: 'இயக்கவியல் • நியூட்டனின் இரண்டாம் விதி குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'இயக்கவியல் • நியூட்டனின் இரண்டாம் விதி ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் அடிப்படை விதிகள்',
     tabFormulas: 'சமன்பாடுகள் மற்றும் திசையன் முறை',
@@ -266,7 +266,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       reset: 'Reset',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Logged Trials History',
       clearLogs: 'Clear Logs'
     },
@@ -289,7 +289,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       reset: 'නැවත මුලට',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -312,7 +312,7 @@ export function NewtonsLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 't
       reset: 'மீட்டமை',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

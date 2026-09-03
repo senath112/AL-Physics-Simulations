@@ -22,8 +22,8 @@ import { shmGraphs } from '../../graphing/presets';
 
 const SHM_THEORY_NOTES = {
   en: {
-    badge: 'Simple Harmonic Motion (SHM) • Full Interactive Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Simple Harmonic Motion (SHM) • Laboratory Simulation',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Basic Laws',
     tabFormulas: 'Equations & Derivations',
@@ -133,8 +133,8 @@ const SHM_THEORY_NOTES = {
     ],
   },
   si: {
-    badge: 'සරල අනුවර්තී චලිතය (SHM) • පූර්ණ අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'සරල අනුවර්තී චලිතය (SHM) • පූර්ණ විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ මූලික නියම',
     tabFormulas: 'සමීකරණ සහ ගණනය කිරීම්',
@@ -235,8 +235,8 @@ const SHM_THEORY_NOTES = {
     ],
   },
   ta: {
-    badge: 'எளிய சீரிசை இயக்கம் (SHM) • முழுமையான குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'எளிய சீரிசை இயக்கம் (SHM) • முழுமையான ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் அடிப்படை விதிகள்',
     tabFormulas: 'சமன்பாடுகள் மற்றும் கணக்கீடுகள்',
@@ -382,7 +382,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       reset: 'නැවත මුලට',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත දෝලන ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -405,7 +405,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
       reset: 'மீட்டமை',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }
@@ -1122,7 +1122,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
   return (
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Header & View Mode Selector */}
+      {ENABLE_THEORY_NOTEBOOKS && (
+      /* Header & View Mode Selector */
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-black uppercase tracking-wider text-indigo-700 mb-1">
@@ -1160,6 +1161,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
           </button>
         </div>
       </div>
+      )}
 
       {/* INTERACTIVE THEORY NOTEBOOK CARD (Visible in Notebook Mode) */}
       {ENABLE_THEORY_NOTEBOOKS && viewMode === 'notebook' && (

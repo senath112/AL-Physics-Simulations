@@ -51,7 +51,7 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
       interactive3D: '3D අවකාශයේ කරකැවීමට ක්ලික් කර අදින්න',
       logTrial: 'නිරීක්ෂණය සටහන් කරන්න',
       trialHistory: 'සමාන්තර සන්නායක නිරීක්ෂණ ලොගය',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       pdf: 'PDF ලබාගන්න',
       electrons: 'ඉලෙක්ට්‍රෝන ප්‍රවාහය පෙන්වන්න'
     },
@@ -71,7 +71,7 @@ export function ParallelCurrentsSimulation({ lang = 'en' }: { lang?: 'en' | 'si'
       interactive3D: '3D இடத்தை சுழற்ற கிளிக் செய்து இழுக்கவும்',
       logTrial: 'பதிவைச் சேமிக்கவும்',
       trialHistory: 'இணை கடத்திகளின் சோதனைப் பதிவுகள்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       pdf: 'PDF ஏற்றுமதி செய்',
       electrons: 'மின்னணு ஓட்டத்தைக் காட்டு'
     }

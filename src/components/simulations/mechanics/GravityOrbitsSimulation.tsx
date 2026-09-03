@@ -24,7 +24,7 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       currentSpeed: 'Current Velocity',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -44,7 +44,7 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       currentSpeed: 'වත්මන් ප්‍රවේගය',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -64,7 +64,7 @@ export function GravityOrbitsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 
       currentSpeed: 'தற்போதைய வேகம்',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

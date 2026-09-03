@@ -55,7 +55,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       physicsCalculations: 'භෞතික විද්‍යාත්මක ගණනය කිරීම්',
       pressure: 'පීඩනය (P)',
       ratio: 'අනුපාතය (PV/T)',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       pdf: 'PDF ලබාගන්න'
     },
@@ -72,7 +72,7 @@ export function GasLawsSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }
       physicsCalculations: 'பௌதிகவியல் கணிப்புகள்',
       pressure: 'அழுத்தம் (P)',
       ratio: 'மாறிலி விகிதம் (PV/T)',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'பதிவு செய்யப்பட்ட சோதனை வரலாறு',
       pdf: 'PDF ஏற்றுமதி செய்'
     }

@@ -2,8 +2,8 @@ import { BlockMath } from '../../Math';
 import { Sparkles, BookOpen, Maximize2, FileText, Lightbulb, Activity, AlertTriangle } from 'lucide-react';
 const PROJECTILE_THEORY_NOTES = {
   en: {
-    badge: 'Mechanics • Projectile Motion Interactive Notebook',
-    notebookMode: 'Interactive Notebook',
+    badge: 'Mechanics • Projectile Motion Interactive Laboratory',
+    notebookMode: 'Theory Guide',
     simOnlyMode: 'Sim Only Mode',
     tabTheory: 'Theory & Vector Resolution',
     tabFormulas: 'Equations & Derivations',
@@ -76,8 +76,8 @@ const PROJECTILE_THEORY_NOTES = {
     ]
   },
   si: {
-    badge: 'යාන්ත්‍ර විද්‍යාව • ප්‍රක්ෂේපිත චලිතය අන්තර්ක්‍රියාකාරී සටහන් පොත',
-    notebookMode: 'අන්තර්ක්‍රියාකාරී සටහන් පොත',
+    badge: 'යාන්ත්‍ර විද්‍යාව • ප්‍රක්ෂේපිත චලිතය විද්‍යාගාර අනුකරණය',
+    notebookMode: 'සිද්ධාන්ත මාර්ගෝපදේශය',
     simOnlyMode: 'අනුකරණය පමණක්',
     tabTheory: 'සිද්ධාන්ත සහ දෛශික විභේදනය',
     tabFormulas: 'සමීකරණ සහ ගණනය කිරීම්',
@@ -150,8 +150,8 @@ const PROJECTILE_THEORY_NOTES = {
     ]
   },
   ta: {
-    badge: 'இயக்கவியல் • எறிபொருள் இயக்கம் குறிப்பேடு',
-    notebookMode: 'செயல்திறன் குறிப்பேடு',
+    badge: 'இயக்கவியல் • எறிபொருள் இயக்கம் ஆய்வகம்',
+    notebookMode: 'கோட்பாட்டு வழிகாட்டி',
     simOnlyMode: 'உருவகப்படுத்துதல் மட்டும்',
     tabTheory: 'கோட்பாடு மற்றும் திசையன் பகுப்பு',
     tabFormulas: 'சமன்பாடுகள் மற்றும் கணக்கீடுகள்',
@@ -262,7 +262,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       reset: 'Reset',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -283,7 +283,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       reset: 'නැවත මුලට',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -304,7 +304,7 @@ export function ProjectileSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta
       reset: 'மீட்டமை',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

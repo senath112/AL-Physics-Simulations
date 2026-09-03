@@ -26,7 +26,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       energyLoss: 'Kinetic Energy Loss',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -48,7 +48,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       energyLoss: 'චාලක ශක්ති හානිය',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -70,7 +70,7 @@ export function MomentumCollisionsSimulation({ lang = 'en' }: { lang?: 'en' | 's
       energyLoss: 'இயக்க ஆற்றல் இழப்பு',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }

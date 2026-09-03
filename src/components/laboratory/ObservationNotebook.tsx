@@ -10,7 +10,7 @@ interface ObservationNotebookProps {
 }
 
 export const ObservationNotebook: React.FC<ObservationNotebookProps> = ({
-  title = 'Observation Notebook',
+  title = 'Observation Notes',
   value,
   onChange,
   placeholder = 'Type your laboratory observations, findings, and notes here...',

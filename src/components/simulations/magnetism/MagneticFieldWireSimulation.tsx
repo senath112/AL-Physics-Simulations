@@ -50,7 +50,7 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
       interactive3D: '3D අවකාශයේ කරකැවීමට ක්ලික් කර අදින්න',
       logTrial: 'ගවේෂණ අගය සටහන් කරන්න',
       trialHistory: 'ගවේෂණ නිරීක්ෂණ සටහන්',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       pdf: 'PDF ලබාගන්න',
       electrons: 'ඉලෙක්ට්‍රෝන ප්‍රවාහය පෙන්වන්න',
       compasses: 'මාලිමා යන්ත්‍ර පෙන්වන්න'
@@ -70,7 +70,7 @@ export function MagneticFieldWireSimulation({ lang = 'en' }: { lang?: 'en' | 'si
       interactive3D: '3D இடத்தை சுழற்ற கிளிக் செய்து இழுக்கவும்',
       logTrial: 'பதிவைச் சேமிக்கவும்',
       trialHistory: 'சோதனைப் பதிவுகள்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       pdf: 'PDF ஏற்றுமதி செய்',
       electrons: 'மின்னணு ஓட்டத்தைக் காட்டு',
       compasses: 'திசைகாட்டிகளைக் காட்டு'

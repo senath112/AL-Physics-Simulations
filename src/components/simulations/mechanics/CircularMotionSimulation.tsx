@@ -29,7 +29,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       minSpeedTop: 'Min Speed at Top (v_crit)',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs',
       slackWarning: 'String Slack! Simulation stopped.'
@@ -55,7 +55,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       minSpeedTop: 'ඉහළම ලක්ෂ්‍යයේ අවම වේගය',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න',
       slackWarning: 'තන්තුව බුරුල් විය! සිමියුලේෂනය නතර කරන ලදී.'
@@ -81,7 +81,7 @@ export function CircularMotionSimulation({ lang = 'en' }: { lang?: 'en' | 'si' |
       minSpeedTop: 'உச்சியில் குறைந்தபட்ச வேகம்',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு',
       slackWarning: 'கயிறு தளர்ந்தது! உருவகப்படுத்துதல் நிறுத்தப்பட்டது.'

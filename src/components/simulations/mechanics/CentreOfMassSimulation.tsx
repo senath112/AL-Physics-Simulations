@@ -26,7 +26,7 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
       centerCoord: 'Center Coordinate (X_cm, Y_cm)',
       logData: 'Record Data Point',
       downloadPDF: 'Download PDF Report',
-      labNotes: 'Observation Notebook',
+      labNotes: 'Observation Notes',
       trialHistory: 'Observation History Log',
       clearLogs: 'Clear Logs'
     },
@@ -41,7 +41,7 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
       centerCoord: 'කේන්ද්‍ර ඛණ්ඩාංකය (X_cm, Y_cm)',
       logData: 'දත්ත සටහන් කරන්න',
       downloadPDF: 'PDF ලබාගන්න',
-      labNotes: 'ලැබ් නිරීක්ෂණ සටහන් පොත',
+      labNotes: 'ලැබ් නිරීක්ෂණ සටහන්',
       trialHistory: 'වාර්තාගත නිරීක්ෂණ ඉතිහාසය',
       clearLogs: 'සියල්ල මකන්න'
     },
@@ -56,7 +56,7 @@ export function CentreOfMassSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | '
       centerCoord: 'மைய ඛණ්ඩාංகம் (X_cm, Y_cm)',
       logData: 'பதிவைச் சேமி',
       downloadPDF: 'PDF தரவிறக்கம்',
-      labNotes: 'ஆய்வகக் குறிப்பேடு',
+      labNotes: 'ஆய்வகக் குறிப்புகள்',
       trialHistory: 'சோதனைப் பதிவுகள்',
       clearLogs: 'அனைத்தையும் நீக்கு'
     }
