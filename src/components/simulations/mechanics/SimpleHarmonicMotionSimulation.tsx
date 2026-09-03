@@ -59,7 +59,7 @@ const SHM_THEORY_NOTES = {
     sec5Body: 'The displacement of an object undergoing SHM varies sinusoidally with initial phase φ:',
     
     sec6Title: '6. Velocity in SHM & Maximum Speed',
-    sec6Body: 'Differentiating x = A sin(ωt + φ) with respect to time yields velocity v = dx/dt = Aω cos(ωt + φ). Expressed in terms of position:',
+    sec6Body: 'Differentiating displacement x = A sin(ωt) with respect to time yields the velocity equation v = Aω cos(ωt). Expressed in terms of position:',
     sec6Vmax: 'Maximum speed occurs at the equilibrium position (x = 0): v_max = ωA.',
 
     sec7Title: '7. Acceleration in SHM & Maximum Acceleration',
@@ -166,7 +166,7 @@ const SHM_THEORY_NOTES = {
     sec5Body: 'ආරම්භක කලා කෝණය φ වන විට SHM දෝලනය වන වස්තුවක විස්ථාපනය සයින් හෝ කොසයින් ලෙස දැක්විය හැක:',
 
     sec6Title: '6. SHM හි ප්‍රවේගය සහ උපරිම ප්‍රවේගය',
-    sec6Body: 'x = A sin(ωt + φ) කාලයෙන් අවකලනය කළ විට v = dx/dt = Aω cos(ωt + φ) ලැබේ. ස්ථානය අනුව ප්‍රවේගය:',
+    sec6Body: 'විස්ථාපනය x = A sin(ωt) කාලයෙන් අවකලනය කළ විට ප්‍රවේග සමීකරණය v = Aω cos(ωt) ලැබේ. ස්ථානය අනුව ප්‍රවේගය:',
     sec6Vmax: 'උපරිම ප්‍රවේගය සමතුලිත පිහිටීමේදී (x = 0) සිදුවේ: v_max = ωA.',
 
     sec7Title: '7. SHM හි ත්වරණය සහ උපරිම ත්වරණය',
@@ -268,7 +268,7 @@ const SHM_THEORY_NOTES = {
     sec5Body: 'தொடக்கக் கட்டக் கோணம் φ கொண்ட SHM இயக்கத்தின் இடப்பெயர்ச்சி:',
 
     sec6Title: '6. திசைவேகம் மற்றும் அதிகபட்ச திசைவேகம்',
-    sec6Body: 'x = A sin(ωt + φ) ஐ நேரத்தால் வகைக்கெழு செய்யும் போது v = dx/dt = Aω cos(ωt + φ) கிடைக்கும்:',
+    sec6Body: 'இடப்பெயர்ச்சி x = A sin(ωt) ஐ நேரத்தால் வகைக்கெழு செய்யும் போது திசைவேக சமன்பாடு v = Aω cos(ωt) கிடைக்கும்:',
     sec6Vmax: 'சமநிலையில் (x = 0) அதிகபட்ச திசைவேகம் நிகழும்: v_max = ωA.',
 
     sec7Title: '7. முடுக்கம் மற்றும் அதிகபட்ச முடுக்கம்',
@@ -1362,7 +1362,7 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-blue-700 text-xs">{tn.sec6Title}</h4>
                   <p className="text-[11px] text-slate-600">{tn.sec6Body}</p>
-                  <BlockMath math="v = \frac{dx}{dt} = A\omega\cos(\omega t + \phi)" />
+                  <BlockMath math="\boxed{v = A\omega\cos(\omega t)}" />
                   <BlockMath math="\boxed{v = \pm\omega\sqrt{A^2 - x^2}}" />
                   <p className="text-[11px] text-blue-900 bg-blue-50 p-2 rounded border border-blue-150 font-medium">{tn.sec6Vmax}</p>
                 </div>
@@ -1477,7 +1477,8 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
                 <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">{tn.sec16Title}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs font-mono font-bold text-indigo-800">
                   <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">a = -ω²x</div>
-                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">x = A sin(ωt + φ)</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">x = A sin(ωt)</div>
+                  <div className="bg-white p-2.5 rounded-lg border border-blue-200 text-center text-blue-700 bg-blue-50/50 font-black">v = Aω cos(ωt)</div>
                   <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">v² = ω²(A² - x²)</div>
                   <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">v_max = ωA</div>
                   <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-center">a_max = ω²A</div>
@@ -1831,13 +1832,14 @@ export function SimpleHarmonicMotionSimulation({ lang = 'en' }: { lang?: 'en' | 
               </p>
               
               <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-4 bg-white/70 rounded-lg p-3 border border-indigo-200/50">
-                <div className="text-xs font-bold text-slate-500 font-mono">Mathematical Formula:</div>
-                <div className="text-xs font-bold text-slate-800">
+                <div className="text-xs font-bold text-slate-500 font-mono">Governing Equations:</div>
+                <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-800">
                   {mode === 'spring' ? (
                     <BlockMath math={`T = 2\\pi\\sqrt{\\frac{m}{k}} = 2\\pi\\sqrt{\\frac{${mass.toFixed(1)}}{${springK}}} = ${period.toFixed(2)}s`} />
                   ) : (
                     <BlockMath math={`T = 2\\pi\\sqrt{\\frac{L}{g}} = 2\\pi\\sqrt{\\frac{${length.toFixed(1)}}{10}} = ${period.toFixed(2)}s`} />
                   )}
+                  <BlockMath math="\boxed{v = A\omega\cos(\omega t)}" />
                 </div>
               </div>
             </div>

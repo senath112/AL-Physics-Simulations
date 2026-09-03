@@ -146,8 +146,8 @@ export function getGraphFormInfo(
         form = 'y = A sin²(x)';
         description = description || 'Quadratic Sine (Peak at 90°)';
       } else if (id.includes('v_vs_t_shm')) {
-        form = 'y = -A sin(x)';
-        description = description || 'Sinusoidal Oscillation (-sin)';
+        form = 'y = A cos(x)';
+        description = description || 'Cosinusoidal Velocity Oscillation';
       } else {
         form = 'y = A sin(x)';
         description = description || 'Sinusoidal Wave / Periodic';
@@ -168,8 +168,8 @@ export function getGraphFormInfo(
       }
     } else if (id.includes('shm') && (xKey === 't' || id.includes('_vs_t'))) {
       if (id.includes('v_vs_t')) {
-        form = 'y = -A sin(ωt)';
-        description = description || 'Sinusoidal Velocity Oscillation';
+        form = 'y = A cos(ωt)';
+        description = description || 'Cosinusoidal Velocity Oscillation';
       } else if (id.includes('a_vs_t')) {
         form = 'y = -A cos(ωt)';
         description = description || 'Cosinusoidal Acceleration Oscillation';
@@ -254,7 +254,7 @@ export function getGraphFormInfo(
     else if (id === 'i_vs_v' || (xKey === 'voltage' && yKey === 'current')) equation = 'I = (1/R)·V';
     else if (id === 'a_vs_x_shm') equation = 'a = -ω²x';
     else if (id === 'x_vs_t_shm') equation = 'x(t) = A cos(ωt)';
-    else if (id === 'v_vs_t_shm') equation = 'v(t) = -Aω sin(ωt)';
+    else if (id === 'v_vs_t_shm') equation = 'v = Aω cos(ωt)';
     else if (id === 'a_vs_t_shm') equation = 'a(t) = -Aω² cos(ωt)';
     else if (id.includes('pendulum') || (xKey === 'length' && yKey.includes('period'))) equation = 'T² = (4π²/g)·L';
     else if (id.includes('spring') && yKey.includes('period')) equation = 'T² = (4π²/k)·m';

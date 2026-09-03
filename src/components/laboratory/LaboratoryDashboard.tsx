@@ -646,7 +646,8 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                   if (simId === 'shm_sim') {
                     if (xKey.includes('length') || displayXLabel.includes('Length')) governingFormula = 'T² = (4π²/g)·L';
                     else if (xKey.includes('displacement') || displayXLabel.includes('Displacement')) governingFormula = 'a = -ω²x';
-                    else governingFormula = 'x(t) = A cos(ωt)';
+                    else if (yKey.includes('velocity') || displayYLabel.includes('Velocity')) governingFormula = 'v = Aω cos(ωt)';
+                    else governingFormula = 'x(t) = A sin(ωt)';
                   } else if (simId === 'ohms_sim') {
                     if (xKey === 'voltage' && yKey === 'current') governingFormula = 'I = (1/R)·V';
                     else governingFormula = 'V = I·R';

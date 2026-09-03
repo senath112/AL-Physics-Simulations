@@ -1078,9 +1078,9 @@ export const shmGraphs: ScientificGraphDefinition[] = [
   },
   {
     id: 'v_vs_t_shm',
-    mathematicalForm: 'y = -A sin(x)',
-    graphTypeDescription: 'Sinusoidal Harmonic Oscillation',
-    governingEquation: 'v(t) = -Aω sin(ωt)',
+    mathematicalForm: 'y = A cos(x)',
+    graphTypeDescription: 'Cosinusoidal Harmonic Velocity Oscillation',
+    governingEquation: 'v = Aω cos(ωt)',
     title: 'Velocity (v) vs Time (t)',
     xKey: 't',
     yKey: 'velocity',
@@ -1098,10 +1098,11 @@ export const shmGraphs: ScientificGraphDefinition[] = [
       const pts = [];
       for (let i = 0; i <= 60; i++) {
         const t = (i / 60) * (2 * T);
-        pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat((-vmax * Math.sin(omega * t)).toFixed(2)) });
+        pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat((vmax * Math.cos(omega * t)).toFixed(2)) });
       }
-      return { points: pts, label: 'Theoretical v(t) = -Aω sin(ωt)', equation: 'v = -Aω sin(ωt)' };
+      return { points: pts, label: 'Theoretical v(t) = Aω cos(ωt)', equation: 'v = Aω cos(ωt)' };
     },
+    theoryDescription: 'When displacement starts from equilibrium x = A sin(ωt), velocity is the time derivative: v = dx/dt = Aω cos(ωt). Maximum velocity v_max = Aω occurs at equilibrium.',
   },
   {
     id: 't2_vs_l_pendulum',
