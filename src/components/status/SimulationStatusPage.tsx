@@ -541,7 +541,7 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
                   All Systems Operational
                 </h2>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-200/70 text-emerald-800">
-                  HTTP 200 OK
+                  Operational
                 </span>
               </div>
               <p className="text-sm text-emerald-800/90 leading-relaxed">
@@ -583,7 +583,7 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
                   Simulation System Unavailable
                 </h2>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-rose-200/70 text-rose-800">
-                  HTTP 503
+                  Unavailable
                 </span>
               </div>
               <p className="text-sm text-rose-800/90 leading-relaxed">
@@ -839,7 +839,7 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
                 </span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Continuous independent external validation via UptimeRobot probe pinging the simulation health API.
+                Continuous independent external monitoring validating simulation operational health.
               </p>
             </div>
 
@@ -861,10 +861,10 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
               </div>
               <div className="space-y-0.5">
                 <p className="text-xs font-bold text-slate-800">
-                  Automated Health Probe: <code className="text-[11px] font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-700">/api/health/simulations</code>
+                  Continuous Automated Verification
                 </p>
                 <p className="text-xs text-slate-450">
-                  External checks query the endpoint every 60 seconds with strict HTTP 200 assertions.
+                  External probes continuously verify simulation physics models and calculation engines around the clock.
                 </p>
               </div>
             </div>
@@ -888,7 +888,7 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
         {/* Footer info note */}
         <div className="pt-2 text-center text-xs text-slate-400 space-y-1">
           <p>
-            This public status page is updated automatically in real time using official Physics by Senath health endpoints.
+            This public status page is updated automatically in real time with continuous verification of all simulation models.
           </p>
           <p>
             No private infrastructure details or credentials are exposed on this public monitor.
