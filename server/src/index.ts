@@ -14,11 +14,16 @@ import r2Router from './routes/r2';
 import laboratoryRouter from './routes/laboratory';
 import { authMiddleware } from './middleware/auth';
 
-// Dynamic Port Selection:
-// 1. Uses process.env.PORT or process.env.SERVER_PORT if specified (e.g. Plesk / Passenger / custom host).
-// 2. If '0' or unset and dynamic selection is desired, defaults to 0 in production/custom environments or fallback to 0 to bind to any free OS port.
+// Shared Server Friendly Port Selection:
+// - Uses process.env.PORT or process.env.SERVER_PORT if provided (e.g. Passenger / hosting panel).
+// - For local/standalone runs, avoids common ports like 3000, 3001, 8000, 8080 (which conflict on shared servers)
+//   by defaulting to an uncommon high ephemeral/private port: 48293.
+// - If explicitly set to '0' or dynamic, dynamically binds to any free port assigned by OS.
+const UNCOMMON_DEFAULT_PORT = 48293;
 const envPort = process.env.PORT || process.env.SERVER_PORT;
-const PORT: number | string = envPort !== undefined ? (isNaN(Number(envPort)) ? envPort : Number(envPort)) : (process.env.NODE_ENV === 'production' ? 0 : (Number(process.env.DEV_PORT) || 0));
+const PORT: number | string = envPort !== undefined 
+  ? (isNaN(Number(envPort)) ? envPort : Number(envPort)) 
+  : (Number(process.env.DEV_PORT) || UNCOMMON_DEFAULT_PORT);
 
 const app = express();
 
@@ -78,6 +83,21 @@ const server = app.listen(PORT, () => {
     console.log(`Health Check: http://localhost:${actualPort}/api/health`);
   }
   console.log(`=================================================================`);
+});
+
+// Automatic collision fallback on shared servers: if requested port is in use, bind to any available free port
+server.on('error', (err: any) => {
+  if (err.code === 'EADDRINUSE' && PORT !== 0) {
+    console.warn(`[WARN] Port ${PORT} is currently in use on this shared server. Finding an available free port...`);
+    const fallbackServer = app.listen(0, () => {
+      const fallbackAddr = fallbackServer.address();
+      const freePort = typeof fallbackAddr === 'object' && fallbackAddr !== null ? fallbackAddr.port : 0;
+      console.log(`[INFO] Server successfully re-bound to available port: http://localhost:${freePort}`);
+      console.log(`[INFO] Health Check: http://localhost:${freePort}/api/health`);
+    });
+  } else {
+    console.error(`[ERROR] Server failed to start:`, err);
+  }
 });
 
 export default app;
