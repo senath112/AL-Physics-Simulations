@@ -470,38 +470,127 @@ export const connectedParticlesGraphs: ScientificGraphDefinition[] = [
 export const pulleySystemsGraphs: ScientificGraphDefinition[] = [
   {
     id: 'a_vs_delta_m',
-    title: 'Acceleration (a) vs Mass Difference (m₂ - m₁)',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Passes Through Origin)',
+    governingEquation: 'a = [g / (m₁ + n²m₂)] · (nm₂ - m₁)',
+    title: 'Acceleration (a) vs Net Driving Mass (nm₂ - m₁)',
     xKey: 'massDiff',
     yKey: 'acceleration',
-    xLabel: 'Mass Difference (m₂ - m₁)',
-    yLabel: 'Acceleration a',
+    xLabel: 'Net Driving Mass (nm₂ - m₁)',
+    yLabel: 'Effort Acceleration a₂',
     xUnit: 'kg',
     yUnit: 'm/s²',
     graphType: 'scatter',
     isLinear: true,
-    expectedSlopeFormula: 'g / (m₁ + m₂)',
+    expectedSlopeFormula: 'g / (m₁ + n²m₂)',
     getExpectedSlope: (p) => {
-      const m1 = p.mass1 || 2;
+      const m1 = p.mass1 || 6;
       const m2 = p.mass2 || 4;
       const g = p.gravity || 9.81;
-      return g / (m1 + m2);
+      const n = p.pulleyCount || 1;
+      return g / (m1 + n * n * m2);
     },
     getTheoreticalCurve: ([minX, maxX], p) => {
-      const m1 = p.mass1 || 2;
+      const m1 = p.mass1 || 6;
       const m2 = p.mass2 || 4;
       const g = p.gravity || 9.81;
-      const slope = g / (m1 + m2);
+      const n = p.pulleyCount || 1;
+      const slope = g / (m1 + n * n * m2);
       const x0 = minX ?? 0;
-      const x1 = Math.max(maxX ?? 5, 5);
+      const x1 = Math.max(maxX ?? 10, 10);
       return {
-        points: [{ x: x0, y: parseFloat((slope * x0).toFixed(2)) }, { x: x1, y: parseFloat((slope * x1).toFixed(2)) }],
-        label: 'Theoretical a = [g / (m₁ + m₂)] · Δm',
-        equation: 'a = (m₂ - m₁)g / (m₁ + m₂)',
+        points: [
+          { x: x0, y: parseFloat((slope * x0).toFixed(2)) },
+          { x: x1, y: parseFloat((slope * x1).toFixed(2)) },
+        ],
+        label: `Theoretical a = [g / (m₁ + n²m₂)] · Δm (n=${n})`,
+        equation: 'a = [g / (m₁ + n²m₂)] · Δm',
       };
     },
+    deducePhysics: (reg, p) => {
+      const m1 = p.mass1 || 6;
+      const m2 = p.mass2 || 4;
+      const n = p.pulleyCount || 1;
+      const theoSlope = (p.gravity || 9.81) / (m1 + n * n * m2);
+      const err = calculatePercentageError(reg.slope, theoSlope);
+      return {
+        label: 'Deduced Effective Inertia Factor',
+        formula: 'k = g / Slope',
+        unit: 'kg',
+        experimentalValue: parseFloat((9.81 / Math.max(0.001, reg.slope)).toFixed(3)),
+        theoreticalValue: parseFloat((m1 + n * n * m2).toFixed(3)),
+        percentageError: parseFloat(err.toFixed(2)),
+      };
+    },
+    theoryDescription: 'In a pulley system with Velocity Ratio n, the net driving force is (nm₂ - m₁)g and effective system inertia is m₁ + n²m₂.',
+  },
+  {
+    id: 'a_vs_m2_pulley',
+    mathematicalForm: 'y = (n²x - nm₁)g / (m₁ + n²x)',
+    graphTypeDescription: 'Rational Curve (Zero at Equilibrium m₂ = m₁/n)',
+    governingEquation: 'a₂ = [(n²m₂ - nm₁)g] / (m₁ + n²m₂)',
+    title: 'Effort Acceleration (a₂) vs Effort Mass (m₂)',
+    xKey: 'mass2',
+    yKey: 'acceleration',
+    xLabel: 'Effort Mass m₂',
+    yLabel: 'Effort Acceleration a₂',
+    xUnit: 'kg',
+    yUnit: 'm/s²',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const m1 = p.mass1 || 6;
+      const g = p.gravity || 9.81;
+      const n = p.pulleyCount || 1;
+      const pts = [];
+      for (let m2 = 0.5; m2 <= 12; m2 += 0.5) {
+        const a = Math.abs(n * n * m2 - n * m1) * g / (m1 + n * n * m2);
+        pts.push({ x: m2, y: parseFloat(a.toFixed(2)) });
+      }
+      return {
+        points: pts,
+        label: `Theoretical a₂(m₂) [Equilibrium m₂ = ${(m1/n).toFixed(2)} kg]`,
+        equation: 'a₂ = |n²m₂ - nm₁|g / (m₁ + n²m₂)',
+      };
+    },
+    theoryDescription: 'Effort acceleration is zero at static equilibrium m₂ = m₁/n. For m₂ > m₁/n, effort descends with acceleration approaching g as m₂ → ∞.',
+  },
+  {
+    id: 'tension_vs_m2_pulley',
+    mathematicalForm: 'y = (n+1)m₁xg / (m₁ + n²x)',
+    graphTypeDescription: 'Rational Curve (Asymptotic)',
+    governingEquation: 'T = [(n + 1)m₁m₂g] / (m₁ + n²m₂)',
+    title: 'String Tension (T) vs Effort Mass (m₂)',
+    xKey: 'mass2',
+    yKey: 'tension',
+    xLabel: 'Effort Mass m₂',
+    yLabel: 'String Tension T',
+    xUnit: 'kg',
+    yUnit: 'N',
+    graphType: 'line',
+    isLinear: false,
+    getTheoreticalCurve: (_, p) => {
+      const m1 = p.mass1 || 6;
+      const g = p.gravity || 9.81;
+      const n = p.pulleyCount || 1;
+      const pts = [];
+      for (let m2 = 0.5; m2 <= 12; m2 += 0.5) {
+        const T = ((n + 1) * m1 * m2 * g) / (m1 + n * n * m2);
+        pts.push({ x: m2, y: parseFloat(T.toFixed(2)) });
+      }
+      return {
+        points: pts,
+        label: `Theoretical T(m₂) [n = ${n}]`,
+        equation: 'T = (n + 1)m₁m₂g / (m₁ + n²m₂)',
+      };
+    },
+    theoryDescription: 'String tension follows T = (n+1)m₁m₂g / (m₁ + n²m₂). The total upward force supporting the load is n·T.',
   },
   {
     id: 'v_vs_t_pulley',
+    mathematicalForm: 'y = mx',
+    graphTypeDescription: 'Direct Proportion (Slope = Acceleration)',
+    governingEquation: 'v = at',
     title: 'Velocity (v) vs Time (t)',
     xKey: 't',
     yKey: 'velocity',
@@ -511,21 +600,26 @@ export const pulleySystemsGraphs: ScientificGraphDefinition[] = [
     yUnit: 'm/s',
     graphType: 'realtime-series',
     isLinear: true,
-    expectedSlopeFormula: 'Atwood Acceleration a = (m₂ - m₁)g / (m₁ + m₂)',
+    expectedSlopeFormula: 'Acceleration a₂',
     getExpectedSlope: (p) => {
-      const m1 = p.mass1 || 2;
+      const m1 = p.mass1 || 6;
       const m2 = p.mass2 || 4;
       const g = p.gravity || 9.81;
-      return (Math.abs(m2 - m1) / (m1 + m2)) * g;
+      const n = p.pulleyCount || 1;
+      const d = m1 + n * n * m2;
+      return d > 0 ? (Math.abs(n * n * m2 - n * m1) * g) / d : 0;
     },
     getTheoreticalCurve: (_, p) => {
-      const m1 = p.mass1 || 2;
+      const m1 = p.mass1 || 6;
       const m2 = p.mass2 || 4;
       const g = p.gravity || 9.81;
-      const a = (Math.abs(m2 - m1) / (m1 + m2)) * g;
+      const n = p.pulleyCount || 1;
+      const d = m1 + n * n * m2;
+      const a = d > 0 ? (Math.abs(n * n * m2 - n * m1) * g) / d : 0;
       return {
         points: [{ x: 0, y: 0 }, { x: 5, y: parseFloat((a * 5).toFixed(2)) }],
         label: `Theoretical v(t) [a = ${a.toFixed(2)} m/s²]`,
+        equation: 'v = at',
       };
     },
   },
