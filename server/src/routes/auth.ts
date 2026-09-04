@@ -1,16 +1,15 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest, parseSessionCookie } from '../middleware/auth';
+import crypto from 'crypto';
+import { AuthenticatedRequest, parseSessionCookie, signSession } from '../middleware/auth';
 import pool from '../services/db';
 
 const router = Router();
 
+const DEFAULT_GOOGLE_CLIENT_ID =
+  '390586089507-smgotc9kctkdhl201j9bjon149earu5j.apps.googleusercontent.com';
+
 function generateInternalId(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "usr_";
-  for (let i = 0; i < 16; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+  return `usr_${crypto.randomBytes(12).toString('hex')}`;
 }
 
 // POST /api/auth/google
@@ -27,7 +26,10 @@ router.post('/auth/google', async (req: AuthenticatedRequest, res: Response) => 
 
     if (!verifyRes.ok) {
       const errData = await verifyRes.json().catch(() => ({}));
-      res.status(401).json({ error: 'Invalid Google ID token signature or expired token', details: errData });
+      res.status(401).json({
+        error: 'Invalid Google ID token signature or expired token',
+        ...(process.env.NODE_ENV !== 'production' ? { details: errData } : {}),
+      });
       return;
     }
 
@@ -38,8 +40,13 @@ router.post('/auth/google', async (req: AuthenticatedRequest, res: Response) => 
       return;
     }
 
-    const expectedClientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
-    if (expectedClientId && payload.aud !== expectedClientId) {
+    const expectedClientId =
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.VITE_GOOGLE_CLIENT_ID ||
+      DEFAULT_GOOGLE_CLIENT_ID;
+
+    if (payload.aud !== expectedClientId) {
+      console.warn('[SECURITY] Token audience mismatch:', payload.aud, 'expected:', expectedClientId);
       res.status(401).json({ error: 'Token audience does not match configured Google Client ID' });
       return;
     }
@@ -75,7 +82,7 @@ router.post('/auth/google', async (req: AuthenticatedRequest, res: Response) => 
       userId = `usr_${googleSub.substring(0, 16)}`;
     }
 
-    const sessionData = JSON.stringify({
+    const sessionToken = signSession({
       userId,
       googleSub,
       email,
@@ -84,7 +91,7 @@ router.post('/auth/google', async (req: AuthenticatedRequest, res: Response) => 
       savedPracticalsCount,
       exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
     });
-    const sessionToken = Buffer.from(sessionData).toString('base64');
+
     const isProd = process.env.NODE_ENV === 'production';
     const secureFlag = isProd ? 'Secure;' : '';
 
@@ -105,7 +112,11 @@ router.post('/auth/google', async (req: AuthenticatedRequest, res: Response) => 
       },
     });
   } catch (error: any) {
-    res.status(500).json({ error: 'Internal authentication error', message: error?.message });
+    console.error('[ERROR] /api/auth/google failed:', error);
+    res.status(500).json({
+      error: 'Internal authentication error',
+      ...(process.env.NODE_ENV !== 'production' && error?.message ? { debug: error.message } : {}),
+    });
   }
 });
 
@@ -125,9 +136,11 @@ router.get('/auth/me', (req: AuthenticatedRequest, res: Response) => {
 
 // POST /api/auth/logout
 router.post('/auth/logout', (_req: AuthenticatedRequest, res: Response) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const secureFlag = isProd ? 'Secure;' : '';
   res.setHeader(
     'Set-Cookie',
-    'physics_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax;'
+    `physics_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; ${secureFlag}`
   );
   res.status(200).json({ success: true });
 });

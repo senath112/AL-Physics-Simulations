@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -27,15 +29,97 @@ const PORT: number | string = envPort !== undefined
 
 const app = express();
 
-// Security & Parsing Middleware
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+// Security Headers with Content Security Policy
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://accounts.google.com",
+          "https://apis.google.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        frameSrc: ["https://accounts.google.com"],
+        connectSrc: [
+          "'self'",
+          "https://accounts.google.com",
+          "https://oauth2.googleapis.com",
+          "https://badge.uptimerobot.com",
+          "https://stats.uptimerobot.com",
+        ],
+        fontSrc: ["'self'", "data:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// Restricted CORS Allowlist
+const configuredOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((s) => s.trim())
+  : [
+      'https://physicsfromsenath.slhosted.lk',
+      'http://physicsfromsenath.slhosted.lk',
+    ];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. same-origin SPA navigation, mobile clients, server-to-server)
+      if (!origin) return callback(null, true);
+      if (configuredOrigins.includes(origin)) return callback(null, true);
+      // Allow localhost/127.0.0.1 in non-production environments
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error('CORS request blocked by security policy'));
+    },
+    credentials: true,
+  })
+);
+
+// Rate Limiting
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts. Please try again later.' },
+});
+
+const mutationLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Rate limit exceeded. Please slow down.' },
+});
+
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(authMiddleware);
+
+// Apply Rate Limits to API endpoints
+app.use('/api', globalLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/laboratory', mutationLimiter);
+app.use('/api/r2', mutationLimiter);
 
 // API Router Mounting (Registered before SPA fallback)
 app.use('/api', healthRouter);

@@ -36,7 +36,11 @@ router.post('/r2/presign-upload', requireAuth, async (req: AuthenticatedRequest,
 
     res.status(200).json(result);
   } catch (err: any) {
-    res.status(400).json({ error: err?.message || 'Failed to generate presigned upload URL' });
+    console.error('[ERROR] /api/r2/presign-upload failed:', err);
+    res.status(400).json({
+      error: 'Failed to generate presigned upload URL',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 
@@ -59,7 +63,11 @@ router.post('/r2/presign-download', requireAuth, async (req: AuthenticatedReques
 
     res.status(200).json(result);
   } catch (err: any) {
-    res.status(403).json({ error: err?.message || 'Access denied to target object' });
+    console.error('[ERROR] /api/r2/presign-download failed:', err);
+    res.status(403).json({
+      error: 'Access denied to target object',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 
@@ -81,7 +89,11 @@ router.post('/r2/delete', requireAuth, async (req: AuthenticatedRequest, res: Re
 
     res.status(200).json(result);
   } catch (err: any) {
-    res.status(403).json({ error: err?.message || 'Failed to delete target object' });
+    console.error('[ERROR] /api/r2/delete failed:', err);
+    res.status(403).json({
+      error: 'Failed to delete target object',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 
@@ -98,7 +110,11 @@ router.get('/r2/list', requireAuth, async (req: AuthenticatedRequest, res: Respo
 
     res.status(200).json({ objects });
   } catch (err: any) {
-    res.status(500).json({ error: err?.message || 'Failed to list user objects' });
+    console.error('[ERROR] /api/r2/list failed:', err);
+    res.status(500).json({
+      error: 'Failed to list user objects',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 

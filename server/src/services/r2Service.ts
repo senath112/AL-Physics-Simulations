@@ -7,6 +7,7 @@ import {
   ListObjectsV2Command 
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import crypto from "crypto";
 
 export const ALLOWED_MIME_TYPES = new Set([
   "image/png",
@@ -59,7 +60,7 @@ export function constructObjectKey(
     .replace(/^.*[\\\/]/, "")
     .replace(/[^a-zA-Z0-9_.-]/g, "_");
 
-  const uniquePrefix = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  const uniquePrefix = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   return `users/${safeUserId}/lab/${safeLabId}/${safeCategory}/${uniquePrefix}_${safeFileName}`;
 }
 

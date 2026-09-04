@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import crypto from 'crypto';
 import { AuthenticatedRequest, requireAuth } from '../middleware/auth';
 import pool from '../services/db';
 
@@ -23,7 +24,11 @@ router.get('/laboratory/practicals', requireAuth, async (req: AuthenticatedReque
 
     res.status(200).json({ practicals });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to retrieve laboratory practicals', message: err?.message });
+    console.error('[ERROR] /api/laboratory/practicals GET failed:', err);
+    res.status(500).json({
+      error: 'Failed to retrieve laboratory practicals',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 
@@ -51,7 +56,7 @@ router.post('/laboratory/practicals', requireAuth, async (req: AuthenticatedRequ
       return;
     }
 
-    const pracId = id || `prac_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const pracId = id || `prac_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     const columnsJson = JSON.stringify(columns || []);
     const dataJson = JSON.stringify(data || []);
     const reportJson = JSON.stringify(report || {});
@@ -108,7 +113,11 @@ router.post('/laboratory/practicals', requireAuth, async (req: AuthenticatedRequ
       },
     });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to save practical', message: err?.message });
+    console.error('[ERROR] /api/laboratory/practicals POST failed:', err);
+    res.status(500).json({
+      error: 'Failed to save practical',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 
@@ -121,7 +130,11 @@ router.delete('/laboratory/practicals/:id', requireAuth, async (req: Authenticat
     await pool.query('DELETE FROM practicals WHERE id = ? AND user_id = ?', [pracId, userId]);
     res.status(200).json({ success: true, id: pracId });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to delete practical', message: err?.message });
+    console.error('[ERROR] /api/laboratory/practicals DELETE failed:', err);
+    res.status(500).json({
+      error: 'Failed to delete practical',
+      ...(process.env.NODE_ENV !== 'production' && err?.message ? { debug: err.message } : {}),
+    });
   }
 });
 

@@ -64,7 +64,12 @@ export async function verifyGoogleTokenAndLogin(idToken: string): Promise<User> 
   const name = payload.name || 'Physics Student';
   const picture = payload.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff`;
 
-  // Retrieve existing internal ID or create new one
+  // In production, require authoritative backend authentication
+  if (!import.meta.env.DEV) {
+    throw new Error('Authentication service temporarily unavailable. Please try again.');
+  }
+
+  // Development-only local session fallback (disabled in production)
   const usersStoreKey = 'physics_users_directory';
   const existingUsers: Record<string, User> = JSON.parse(localStorage.getItem(usersStoreKey) || '{}');
   
@@ -115,13 +120,15 @@ export async function fetchCurrentUser(): Promise<User | null> {
     // Fall through to dev session
   }
 
-  // Check active dev session
-  const activeUserId = sessionStorage.getItem('physics_active_user_id');
-  if (activeUserId) {
-    const usersStoreKey = 'physics_users_directory';
-    const existingUsers: Record<string, User> = JSON.parse(localStorage.getItem(usersStoreKey) || '{}');
-    const user = Object.values(existingUsers).find(u => u.id === activeUserId);
-    if (user) return user;
+  // Check active dev session in development mode only
+  if (import.meta.env.DEV) {
+    const activeUserId = sessionStorage.getItem('physics_active_user_id');
+    if (activeUserId) {
+      const usersStoreKey = 'physics_users_directory';
+      const existingUsers: Record<string, User> = JSON.parse(localStorage.getItem(usersStoreKey) || '{}');
+      const user = Object.values(existingUsers).find(u => u.id === activeUserId);
+      if (user) return user;
+    }
   }
 
   return null;
@@ -140,5 +147,7 @@ export async function logoutCurrentUser(): Promise<void> {
     // Ignore network errors on logout
   }
 
-  sessionStorage.removeItem('physics_active_user_id');
+  if (import.meta.env.DEV) {
+    sessionStorage.removeItem('physics_active_user_id');
+  }
 }
