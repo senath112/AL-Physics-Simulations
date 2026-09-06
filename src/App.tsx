@@ -101,10 +101,13 @@ import {
   Cpu, 
   Search, 
   ArrowRight,
-  FlaskConical
+  FlaskConical,
+  AlertTriangle
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LaboratoryProvider } from './context/LaboratoryContext';
+import { SimulationHealthProvider, useSimulationHealth } from './context/SimulationHealthContext';
+import { SimulationHealthUpdateModal } from './components/status/SimulationHealthUpdateModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
@@ -304,6 +307,7 @@ const siteTranslations = {
 
 function AppContent() {
   const { isAuthenticated, openAuthModal } = useAuth();
+  const { isHealthLow, openUpdateNote } = useSimulationHealth();
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
     return getPageFromPath(window.location.pathname || window.location.hash || '/');
   });
@@ -772,6 +776,47 @@ function AppContent() {
 
         </div>
       </header>
+
+      {/* System Health Advisory Announcement Bar on System Home Page */}
+      {(currentPage === 'home' || currentPage === 'sims') && isHealthLow && (
+        <aside aria-label="System Health Advisory" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-3">
+          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/90 rounded-2xl p-3 sm:px-5 sm:py-3.5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-800 shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs sm:text-sm text-amber-950">
+                    System Update Notice: Low Simulation Engine Health
+                  </span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.2 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300">
+                    Fixed Reference Active
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800/90 mt-0.5">
+                  Live calculation plotting is temporarily locked to certified fixed premade graphs across all practicals to prevent numerical divergence.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <button
+                onClick={openUpdateNote}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-all cursor-pointer"
+              >
+                Read Update Note
+              </button>
+              <button
+                onClick={() => setCurrentPage('status')}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 shadow-2xs transition-all cursor-pointer"
+              >
+                Status Page
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col min-h-0">
@@ -2083,6 +2128,12 @@ function AppContent() {
         </div>
       </footer>
 
+      {/* Simulation Health Update Note Popup */}
+      <SimulationHealthUpdateModal
+        currentPage={currentPage}
+        onNavigateToStatus={() => setCurrentPage('status')}
+      />
+
     </div>
   );
 }
@@ -2091,8 +2142,10 @@ export default function App() {
   return (
     <AuthProvider>
       <LaboratoryProvider>
-        <AppContent />
-        <AuthModal />
+        <SimulationHealthProvider>
+          <AppContent />
+          <AuthModal />
+        </SimulationHealthProvider>
       </LaboratoryProvider>
     </AuthProvider>
   );

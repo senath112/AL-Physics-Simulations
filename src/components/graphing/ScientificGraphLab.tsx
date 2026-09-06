@@ -3,6 +3,8 @@ import Plotly from 'plotly.js-basic-dist-min';
 import { PlotlyGraph } from '../PlotlyGraph';
 import { ScientificGraphDefinition, PhysicalDeduction, RealtimeDataPoint } from './types';
 import { calculateLinearRegression, calculatePercentageError, downloadCSV, getGraphFormInfo } from './regressionUtils';
+import { generateFixedPremadeGraph } from './fixedPremadeGraph';
+import { useSimulationHealth } from '../../context/SimulationHealthContext';
 import { DataRow } from '../../types/laboratory';
 import { 
   TrendingUp, 
@@ -15,7 +17,8 @@ import {
   Camera, 
   Sparkles,
   LineChart,
-  Variable
+  Variable,
+  Lock
 } from 'lucide-react';
 
 export interface ScientificGraphLabProps {
@@ -53,6 +56,8 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
   showToolbar = true,
   showTableDefault = false,
 }) => {
+  const { isHealthLow } = useSimulationHealth();
+
   const [internalGraphId, setInternalGraphId] = useState<string>(
     defaultGraphId || graphs[0]?.id || ''
   );
@@ -305,6 +310,17 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     };
   }, [activeGraph, height]);
 
+  // If simulation health is low, generate a fixed certified premade reference graph
+  const fixedPremade = useMemo(() => {
+    if (!isHealthLow) return null;
+    return generateFixedPremadeGraph(activeGraph, plotLayout);
+  }, [isHealthLow, activeGraph, plotLayout]);
+
+  const effectiveTraces = isHealthLow && fixedPremade ? fixedPremade.traces : plotTraces;
+  const effectiveLayout = isHealthLow && fixedPremade ? fixedPremade.layout : plotLayout;
+  const effectiveFormInfo = isHealthLow && fixedPremade ? fixedPremade.formInfo : formInfo;
+  const effectiveDeduction = isHealthLow && fixedPremade ? fixedPremade.deduction : deduction;
+
   // Export CSV Data Handler
   const handleExportCSV = useCallback(() => {
     if (!activeGraph) return;
@@ -443,8 +459,30 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
         </div>
       )}
 
+      {/* Low Health Advisory Banner (Fixed Premade Reference Active) */}
+      {isHealthLow && (
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-b border-amber-200/90 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-amber-500/15 text-amber-800 flex items-center justify-center shrink-0">
+              <Lock className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-amber-950">Fixed Premade Calibration Graph Active</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.2 bg-amber-200/80 text-amber-900 rounded-full border border-amber-300">
+                  Low Health Mode
+                </span>
+              </div>
+              <p className="text-[11px] text-amber-800/90 mt-0.5">
+                Simulation calculation health is currently degraded. Displaying certified premade calibration reference curve and verified benchmark points.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 2. Mathematical Graph Form & Governing Physics Equation Bar */}
-      {formInfo && (
+      {effectiveFormInfo && (
         <div className="border-b border-slate-100 px-4 py-2 bg-gradient-to-r from-slate-50 via-slate-50/80 to-white flex flex-wrap items-center justify-between gap-2.5 text-xs">
           {/* Left: Graph Type Badge (e.g. y = mx, y = sin x, y = mx + c) */}
           <div className="flex flex-wrap items-center gap-2">
@@ -452,25 +490,25 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
               <Variable className="w-3.5 h-3.5 text-indigo-600" />
               Graph Type:
             </span>
-            <span className={`px-2.5 py-0.5 rounded-full font-mono font-black text-xs border shadow-2xs ${formInfo.badgeColor.bg} ${formInfo.badgeColor.text} ${formInfo.badgeColor.border}`}>
-              {formInfo.form}
+            <span className={`px-2.5 py-0.5 rounded-full font-mono font-black text-xs border shadow-2xs ${effectiveFormInfo.badgeColor.bg} ${effectiveFormInfo.badgeColor.text} ${effectiveFormInfo.badgeColor.border}`}>
+              {effectiveFormInfo.form}
             </span>
             <span className="text-[11px] font-semibold text-slate-600 hidden sm:inline">
-              ({formInfo.description})
+              ({effectiveFormInfo.description})
             </span>
           </div>
 
           {/* Right: Governing Physics Equation & Experimental Regression */}
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            {formInfo.equation && (
+            {effectiveFormInfo.equation && (
               <div className="flex items-center gap-1.5 bg-white border border-slate-200/90 px-2.5 py-0.5 rounded-lg text-slate-800 shadow-2xs">
                 <span className="text-[10px] text-slate-400 font-sans font-bold">Equation:</span>
-                <span className="font-bold text-blue-700">{formInfo.equation}</span>
+                <span className="font-bold text-blue-700">{effectiveFormInfo.equation}</span>
               </div>
             )}
 
-            {/* Experimental regression equation if active */}
-            {showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2 && (
+            {/* Experimental regression equation if active (hidden during fixed premade mode) */}
+            {!isHealthLow && showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2 && (
               <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/90 px-2.5 py-0.5 rounded-lg text-amber-900 shadow-2xs">
                 <span className="text-[10px] text-amber-700 font-sans font-bold">Fit:</span>
                 <span className="font-bold">{regression.equation}</span>
@@ -484,41 +522,41 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
       {/* 3. Main Plot Canvas Viewport */}
       <div id={graphContainerId} className="flex-1 w-full min-h-[260px] relative p-1 bg-white">
         <PlotlyGraph
-          data={plotTraces}
-          layout={plotLayout}
+          data={effectiveTraces}
+          layout={effectiveLayout}
           config={{ responsive: true, displayModeBar: false }}
           style={{ width: '100%', height: typeof height === 'number' ? `${height}px` : height }}
         />
       </div>
 
       {/* 3. Physical Deduction & Theory Banner */}
-      {deduction ? (
+      {effectiveDeduction ? (
         <div className="bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-transparent border-t border-slate-200/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-mono">
-            <span className="font-bold text-slate-800">{deduction.label}:</span>
+            <span className="font-bold text-slate-800">{effectiveDeduction.label}:</span>
             <span className="font-extrabold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-md">
-              {deduction.experimentalValue} {deduction.unit}
+              {effectiveDeduction.experimentalValue} {effectiveDeduction.unit}
             </span>
-            {deduction.theoreticalValue !== undefined && (
+            {effectiveDeduction.theoreticalValue !== undefined && (
               <span className="text-slate-500 text-[11px]">
-                (Theory: <span className="font-semibold text-slate-700">{deduction.theoreticalValue} {deduction.unit}</span>)
+                (Theory: <span className="font-semibold text-slate-700">{effectiveDeduction.theoreticalValue} {effectiveDeduction.unit}</span>)
               </span>
             )}
           </div>
 
-          {deduction.percentageError !== undefined && (
+          {effectiveDeduction.percentageError !== undefined && (
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Error:</span>
               <span
                 className={`px-2 py-0.5 rounded-md font-mono font-bold text-xs ${
-                  deduction.percentageError < 5
+                  effectiveDeduction.percentageError < 5
                     ? 'bg-emerald-100 text-emerald-800'
-                    : deduction.percentageError < 15
+                    : effectiveDeduction.percentageError < 15
                     ? 'bg-amber-100 text-amber-800'
                     : 'bg-red-100 text-red-800'
                 }`}
               >
-                {deduction.percentageError}%
+                {effectiveDeduction.percentageError}%
               </span>
             </div>
           )}

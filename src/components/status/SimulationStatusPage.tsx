@@ -12,8 +12,10 @@ import {
   Activity,
   Layers,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
+import { useSimulationHealth } from '../../context/SimulationHealthContext';
 
 export type SimulatorStatus = 'operational' | 'degraded' | 'unavailable' | 'unknown';
 
@@ -273,9 +275,17 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
   onBackToSimulations,
   onNavigateToSimulation,
 }) => {
+  const { testHealthOverride, setTestHealthOverride } = useSimulationHealth();
   const [simResults, setSimResults] = useState<Record<string, 'pass' | 'fail'>>({});
   const [httpStatus, setHttpStatus] = useState<number | null>(null);
   const [overallStatus, setOverallStatus] = useState<'healthy' | 'degraded' | 'down' | 'unknown'>('unknown');
+
+  const effectiveOverallStatus = useMemo(() => {
+    if (testHealthOverride === 'low') return 'degraded';
+    if (testHealthOverride === 'healthy') return 'healthy';
+    return overallStatus;
+  }, [testHealthOverride, overallStatus]);
+
   const [lastCheckedTime, setLastCheckedTime] = useState<Date | null>(null);
   const [secondsAgo, setSecondsAgo] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -529,8 +539,50 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
           </div>
         </div>
 
+        {/* Diagnostic Simulator Engine Mode Switcher */}
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800">Engine Health Diagnostics:</span>
+            <span className="text-slate-500 hidden sm:inline">
+              Test how simulations and graphs respond to engine health changes
+            </span>
+          </div>
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setTestHealthOverride('auto')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                testHealthOverride === 'auto'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Auto (Live Server)
+            </button>
+            <button
+              onClick={() => setTestHealthOverride('low')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                testHealthOverride === 'low'
+                  ? 'bg-amber-500 text-white shadow-xs'
+                  : 'text-amber-700 hover:bg-amber-100/60'
+              }`}
+            >
+              Simulate Low Health
+            </button>
+            <button
+              onClick={() => setTestHealthOverride('healthy')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                testHealthOverride === 'healthy'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-emerald-700 hover:bg-emerald-100/60'
+              }`}
+            >
+              Simulate Healthy
+            </button>
+          </div>
+        </div>
+
         {/* 1. Overall Prominent Status Hero Card */}
-        {overallStatus === 'healthy' && (
+        {effectiveOverallStatus === 'healthy' && (
           <div className="rounded-2xl p-6 sm:p-7 bg-emerald-50/80 border border-emerald-200/90 shadow-xs flex items-start gap-4 transition-all">
             <div className="p-2.5 bg-emerald-100 rounded-xl text-emerald-700 shrink-0 mt-0.5">
               <CheckCircle2 className="w-6 h-6" />
@@ -551,12 +603,12 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
           </div>
         )}
 
-        {overallStatus === 'degraded' && (
+        {effectiveOverallStatus === 'degraded' && (
           <div className="rounded-2xl p-6 sm:p-7 bg-amber-50/90 border border-amber-200 shadow-xs flex items-start gap-4 transition-all">
             <div className="p-2.5 bg-amber-100 rounded-xl text-amber-700 shrink-0 mt-0.5">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5 flex-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-amber-950">
                   Some Systems Experiencing Issues
@@ -566,18 +618,22 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
                 </span>
               </div>
               <p className="text-sm text-amber-800/90 leading-relaxed">
-                One or more physics simulations are currently experiencing numerical divergence or degraded performance. Our team has been notified, and affected components are isolated.
+                One or more physics simulations are currently experiencing numerical divergence or degraded performance. Our automated health probes have isolated affected calculations.
               </p>
+              <div className="mt-2.5 pt-2.5 border-t border-amber-200/70 flex items-center gap-2 text-xs font-semibold text-amber-900">
+                <Lock className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <span>Certified fixed premade reference graphs are currently active across all practicals to safeguard student calculations.</span>
+              </div>
             </div>
           </div>
         )}
 
-        {overallStatus === 'down' && (
+        {effectiveOverallStatus === 'down' && (
           <div className="rounded-2xl p-6 sm:p-7 bg-rose-50/90 border border-rose-200 shadow-xs flex items-start gap-4 transition-all">
             <div className="p-2.5 bg-rose-100 rounded-xl text-rose-700 shrink-0 mt-0.5">
               <XCircle className="w-6 h-6" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1.5 flex-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-rose-950">
                   Simulation System Unavailable
@@ -589,11 +645,15 @@ export const SimulationStatusPage: React.FC<SimulationStatusPageProps> = ({
               <p className="text-sm text-rose-800/90 leading-relaxed">
                 The physics simulation engine is currently unavailable. Automated health probes have halted active processing to maintain calculation safety.
               </p>
+              <div className="mt-2.5 pt-2.5 border-t border-rose-200/70 flex items-center gap-2 text-xs font-semibold text-rose-900">
+                <Lock className="w-3.5 h-3.5 text-rose-700 shrink-0" />
+                <span>Certified fixed premade reference graphs are currently active across all practicals to safeguard student calculations.</span>
+              </div>
             </div>
           </div>
         )}
 
-        {overallStatus === 'unknown' && (
+        {effectiveOverallStatus === 'unknown' && (
           <div className="rounded-2xl p-6 sm:p-7 bg-slate-100/90 border border-slate-250 shadow-xs flex items-start gap-4 transition-all">
             <div className="p-2.5 bg-slate-200 rounded-xl text-slate-700 shrink-0 mt-0.5">
               <HelpCircle className="w-6 h-6" />
