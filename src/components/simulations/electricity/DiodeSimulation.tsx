@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { RotateCcw, Sparkles, Activity } from 'lucide-react';
+import { RotateCcw, Activity } from 'lucide-react';
 import { downloadReportAsPDF } from '../../../utils/pdfGenerator';
 import { useSimulationRecorder } from '../../../hooks/useSimulationRecorder';
 import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { diodeGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
-import { BlockMath, InlineMath } from '../../Math';
 import { ENABLE_SIMULATION_LAB_BAR, ENABLE_DIODE_AC_RECTIFIER } from '../../../config/features';
 
 type DiodeType = 'silicon' | 'germanium' | 'led_red' | 'led_green' | 'led_blue' | 'zener';
@@ -118,7 +117,6 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
       zenerBreakdown: 'Zener Breakdown Active',
       labNotes: 'Laboratory Observations Notebook',
       downloadPDF: 'Download Practical Report (PDF)',
-      theoryTitle: 'Physics & Mathematical Derivations',
     },
     si: {
       title: ENABLE_DIODE_AC_RECTIFIER ? 'අර්ධසන්නායක P-N ඩයෝඩ සහ සෘජුකාරක පරීක්ෂණාගාරය' : 'අර්ධසන්නායක P-N ඩයෝඩ පරීක්ෂණාගාරය',
@@ -157,7 +155,6 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
       zenerBreakdown: 'සීනර් බිඳවැටීම සක්‍රීයයි',
       labNotes: 'පරීක්ෂණාගාර නිරීක්ෂණ සටහන්',
       downloadPDF: 'වාර්තාව බාගත කරන්න (PDF)',
-      theoryTitle: 'භෞතික විද්‍යා න්‍යාය සහ සමීකරණ',
     },
     ta: {
       title: ENABLE_DIODE_AC_RECTIFIER ? 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி ஆய்வகம்' : 'குறைக்கடத்தி P-N இருமுனைய ஆய்வகம்',
@@ -196,7 +193,6 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
       zenerBreakdown: 'சீனர் முறிவு நிலை',
       labNotes: 'ஆய்வகக் குறிப்பேடு',
       downloadPDF: 'PDF அறிக்கையைப் பதிவிறக்கு',
-      theoryTitle: 'கோட்பாடுகளும் சமன்பாடுகளும்',
     },
   };
 
@@ -1169,52 +1165,6 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
             columns={recorder.columns}
             height={320}
           />
-        </div>
-
-        {/* Educational Physics Theory & Derivations */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 text-xs text-slate-700 leading-relaxed">
-          <h4 className="font-black text-slate-900 text-sm flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span>{t.theoryTitle}</span>
-          </h4>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <h5 className="font-bold text-slate-900 text-xs">1. Shockley Ideal Diode Equation</h5>
-              <p className="text-slate-600 text-[11px]">
-                The exponential relationship between current and applied voltage:
-              </p>
-              <div className="py-1">
-                <BlockMath math="I_D = I_s \left( e^{\frac{e V_D}{\eta k T}} - 1 \right)" />
-              </div>
-              <p className="text-slate-500 text-[10px]">
-                Where <InlineMath math="I_s" /> is reverse saturation current, <InlineMath math="\eta" /> is ideality factor (1 for Ge, ~2 for Si), and <InlineMath math="V_T = \frac{kT}{e} \approx 26\text{ mV}" /> at 300K.
-              </p>
-            </div>
-
-            <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <h5 className="font-bold text-slate-900 text-xs">
-                {ENABLE_DIODE_AC_RECTIFIER ? '2. Half-Wave Rectification & Ripple' : '2. Dynamic Resistance & Knee Voltage'}
-              </h5>
-              <p className="text-slate-600 text-[11px]">
-                {ENABLE_DIODE_AC_RECTIFIER
-                  ? 'Diode conducts on positive AC half-cycles. With smoothing capacitor C:'
-                  : 'Reciprocal of slope on the forward I-V characteristic curve beyond knee voltage:'}
-              </p>
-              <div className="py-1">
-                {ENABLE_DIODE_AC_RECTIFIER ? (
-                  <BlockMath math="V_{dc} \approx V_m - \frac{I_{dc}}{2 f C}, \quad V_{\text{ripple}} \approx \frac{I_{dc}}{f C}" />
-                ) : (
-                  <BlockMath math="r_d = \frac{\Delta V_D}{\Delta I_D} \approx \frac{\eta V_T}{I_D}" />
-                )}
-              </div>
-              <p className="text-slate-500 text-[10px]">
-                {ENABLE_DIODE_AC_RECTIFIER
-                  ? 'Increasing capacitance C lowers ripple voltage, transforming pulsating AC into steady DC.'
-                  : 'Dynamic resistance drops rapidly from mega-ohms down to a few ohms once forward conducting.'}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
