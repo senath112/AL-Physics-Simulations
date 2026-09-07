@@ -1,7 +1,7 @@
 /**
  * Physics Simulation Health & Validation System
  * 
- * Provides automated, deep physics verification across all 28 simulation models.
+ * Provides automated, deep physics verification across all 29 simulation models.
  * Checks for runtime crashes, NaN/Infinity anomalies, equation accuracy,
  * and numerical/analytical divergence against physics ground truth.
  */
@@ -610,6 +610,32 @@ function validateChargedParticleMagnetic(): { pass: boolean; failure?: Simulatio
   }
 }
 
+function validateDiode(): { pass: boolean; failure?: SimulationFailure } {
+  const sim = 'diode';
+  try {
+    const kneeSi = 0.70;
+    const kneeGe = 0.30;
+    const zenerV = 5.60;
+    const rSeries = 220;
+    const vs = 3.0;
+    // Series current I = (Vs - V_knee) / (R_series + r_internal)
+    // (3.0 - 0.70) / (220 + 1.5) = 2.30 / 221.5 = 0.0103837 A = 10.3837 mA
+    const expectedId = ((vs - kneeSi) / (rSeries + 1.5)) * 1000;
+    const c1 = checkTolerance(expectedId, 10.38, 0.01);
+    if (!c1.pass) return { pass: false, failure: { simulator: sim, test: 'forward-current', expected: 10.38, actual: expectedId, error: c1.error } };
+
+    const c2 = checkTolerance(kneeGe, 0.30, 0.01);
+    if (!c2.pass) return { pass: false, failure: { simulator: sim, test: 'ge-knee', expected: 0.30, actual: kneeGe, error: c2.error } };
+
+    const c3 = checkTolerance(zenerV, 5.60, 0.01);
+    if (!c3.pass) return { pass: false, failure: { simulator: sim, test: 'zener-breakdown', expected: 5.60, actual: zenerV, error: c3.error } };
+
+    return { pass: true };
+  } catch (err: any) {
+    return { pass: false, failure: { simulator: sim, test: 'runtime', expected: 'clean', actual: err?.message || 'crash' } };
+  }
+}
+
 // ============================================================================
 // 4. MODERN PHYSICS SIMULATORS
 // ============================================================================
@@ -637,7 +663,7 @@ function validatePhotoelectricEffect(): { pass: boolean; failure?: SimulationFai
 }
 
 /**
- * Runs deep validation across ALL 28 physics simulators in the application.
+ * Runs deep validation across ALL 29 physics simulators in the application.
  */
 export function runPhysicsValidation(): SimulationHealthReport {
   const startTime = Date.now();
@@ -670,9 +696,10 @@ export function runPhysicsValidation(): SimulationHealthReport {
     // Optics (1)
     { name: 'geometrical-optics', run: validateGeometricalOptics },
 
-    // Electricity & Magnetism (10)
+    // Electricity & Magnetism (11)
     { name: 'dc-ohms-law', run: validateDCOhmsLaw },
     { name: 'transformer', run: validateTransformer },
+    { name: 'diode', run: validateDiode },
     { name: 'ac-generator', run: validateACGenerator },
     { name: 'dc-motor', run: validateDCMotor },
     { name: 'electromagnetic-induction', run: validateElectromagneticInduction },

@@ -139,6 +139,26 @@ const distPath = possibleDistPaths.find(p => fs.existsSync(p) && fs.existsSync(p
 // Serve static assets from Vite production build
 app.use(express.static(distPath));
 
+// Centralized Express Error Handler (Sanitized response, no stack trace exposure)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  console.error('[SECURITY/ERROR] Unhandled server exception:', isProd ? err?.message : err);
+  
+  if (res.headersSent) {
+    return;
+  }
+
+  const statusCode = typeof err?.status === 'number' && err.status >= 400 && err.status < 600
+    ? err.status
+    : 500;
+
+  res.status(statusCode).json({
+    error: isProd 
+      ? 'An unexpected error occurred. Please try again later.' 
+      : (err?.message || 'Internal server error'),
+  });
+});
+
 // SPA Catch-all Fallback: serve dist/index.html for all non-API routes
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {

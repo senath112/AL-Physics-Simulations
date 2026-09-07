@@ -13,7 +13,6 @@ export const ALLOWED_MIME_TYPES = new Set([
   "image/png",
   "image/jpeg",
   "image/webp",
-  "image/svg+xml",
   "image/gif",
   "application/pdf",
   "text/csv",
@@ -65,11 +64,26 @@ export function constructObjectKey(
 }
 
 export function validateObjectOwnership(userId: string, key: string): void {
+  if (!key || typeof key !== "string") {
+    throw new Error("Invalid object key provided.");
+  }
+
+  // Prevent directory traversal attacks
+  if (key.includes("..") || key.includes("\\") || key.includes("%2e") || key.includes("%2E")) {
+    throw new Error("Access Denied: Malformed or malicious object key path.");
+  }
+
   const safeUserId = userId.replace(/[^a-zA-Z0-9_-]/g, "");
   const requiredPrefix = `users/${safeUserId}/`;
 
-  if (!key || !key.startsWith(requiredPrefix)) {
+  if (!key.startsWith(requiredPrefix)) {
     throw new Error("Access Denied: User is not authorized to access or modify this object.");
+  }
+
+  // Strict key format validation: users/{userId}/lab/{labId}/{category}/{prefix}_{fileName}
+  const keyPattern = /^users\/[a-zA-Z0-9_-]+\/lab\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/;
+  if (!keyPattern.test(key)) {
+    throw new Error("Access Denied: Object key does not conform to authorized structure.");
   }
 }
 
@@ -94,11 +108,15 @@ export async function createPresignedPutUrl(params: {
 
   if (!ALLOWED_MIME_TYPES.has(contentType.toLowerCase())) {
     throw new Error(
-      `Unsupported file type: ${contentType}. Allowed formats: PNG, JPEG, WEBP, SVG, GIF, PDF, CSV, JSON.`
+      `Unsupported file type: ${contentType}. Allowed formats: PNG, JPEG, WEBP, GIF, PDF, CSV, JSON.`
     );
   }
 
-  if (contentLength !== undefined && contentLength > MAX_FILE_SIZE_BYTES) {
+  if (contentLength === undefined || typeof contentLength !== 'number' || isNaN(contentLength) || contentLength <= 0) {
+    throw new Error("Valid contentLength in bytes is required for upload URL generation.");
+  }
+
+  if (contentLength > MAX_FILE_SIZE_BYTES) {
     throw new Error(
       `File size exceeds limit. Maximum allowed size is ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.`
     );
@@ -112,6 +130,7 @@ export async function createPresignedPutUrl(params: {
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
+    ContentLength: contentLength,
   });
 
   const uploadUrl = await getSignedUrl(client, command, {

@@ -5,6 +5,7 @@ import { ScientificGraphDefinition, PhysicalDeduction, RealtimeDataPoint } from 
 import { calculateLinearRegression, calculatePercentageError, downloadCSV, getGraphFormInfo } from './regressionUtils';
 import { generateFixedPremadeGraph } from './fixedPremadeGraph';
 import { useSimulationHealth } from '../../context/SimulationHealthContext';
+import { ENABLE_GRAPH_REGRESSION } from '../../config/features';
 import { DataRow } from '../../types/laboratory';
 import { 
   TrendingUp, 
@@ -114,12 +115,14 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
 
   // 2. Compute Linear Regression on experimental data
   const regression = useMemo(() => {
+    if (!ENABLE_GRAPH_REGRESSION) return null;
     if (!activeGraph || !activeGraph.isLinear || rawPoints.length < 2) return null;
     return calculateLinearRegression(rawPoints);
   }, [activeGraph, rawPoints]);
 
   // 3. Physical Deduction & Comparison with Theory
   const deduction = useMemo((): PhysicalDeduction | null => {
+    if (!ENABLE_GRAPH_REGRESSION) return null;
     if (!activeGraph) return null;
 
     if (regression && activeGraph.deducePhysics) {
@@ -221,7 +224,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
     }
 
     // D. Linear Regression fit line for experimental trials
-    if (showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2) {
+    if (ENABLE_GRAPH_REGRESSION && showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2) {
       const xVals = rawPoints.map((p: { x: number; y: number }) => p.x);
       const minX = Math.min(...xVals);
       const maxX = Math.max(...xVals);
@@ -405,7 +408,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
             )}
 
             {/* Regression Toggle */}
-            {activeGraph?.isLinear && rawPoints.length >= 2 && (
+            {ENABLE_GRAPH_REGRESSION && activeGraph?.isLinear && rawPoints.length >= 2 && (
               <button
                 onClick={() => setShowRegression(!showRegression)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
@@ -508,7 +511,7 @@ export const ScientificGraphLab: React.FC<ScientificGraphLabProps> = ({
             )}
 
             {/* Experimental regression equation if active (hidden during fixed premade mode) */}
-            {!isHealthLow && showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2 && (
+            {!isHealthLow && ENABLE_GRAPH_REGRESSION && showRegression && regression && activeGraph.isLinear && rawPoints.length >= 2 && (
               <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/90 px-2.5 py-0.5 rounded-lg text-amber-900 shadow-2xs">
                 <span className="text-[10px] text-amber-700 font-sans font-bold">Fit:</span>
                 <span className="font-bold">{regression.equation}</span>

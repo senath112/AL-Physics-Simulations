@@ -2610,4 +2610,181 @@ export const transformerGraphs: ScientificGraphDefinition[] = [
   },
 ];
 
+// ==========================================
+// 29. Semiconductor Diode Presets
+// ==========================================
+export const diodeGraphs: ScientificGraphDefinition[] = [
+  {
+    id: 'i_vs_vd',
+    mathematicalForm: 'y = I_s(e^{kV} - 1)',
+    graphTypeDescription: 'Exponential Characteristic (Shockley Diode Model)',
+    governingEquation: 'I_D = I_s \\cdot (e^{\\frac{e V_D}{\\eta k T}} - 1)',
+    title: 'Diode Current (I_D) vs Diode Voltage (V_D)',
+    xKey: 'diodeVoltage',
+    yKey: 'current_mA',
+    xLabel: 'Diode Voltage V_D',
+    yLabel: 'Diode Current I_D',
+    xUnit: 'V',
+    yUnit: 'mA',
+    graphType: 'scatter',
+    isLinear: false,
+    expectedSlopeFormula: 'Dynamic Conductance (1/r_d)',
+    getExpectedSlope: (p) => {
+      const R = p.seriesResistance ?? 220;
+      return 1000 / R; // mA/V
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const knee = p.kneeVoltage ?? 0.7;
+      const diodeType = p.diodeType || 'silicon';
+      const isZener = diodeType === 'zener';
+      const zenerV = p.zenerVoltage ?? 5.6;
+      const R = p.seriesResistance ?? 220;
+
+      const pts = [];
+      const x0 = minX !== undefined && isFinite(minX) ? Math.max(-10, minX) : -6.0;
+      const x1 = maxX !== undefined && isFinite(maxX) ? Math.min(3.5, maxX) : 1.2;
+      const steps = 60;
+
+      for (let i = 0; i <= steps; i++) {
+        const vd = x0 + (i / steps) * (x1 - x0);
+        let id_mA = 0;
+        if (vd >= knee) {
+          // Forward conduction: steep rise governed by bulk / series resistance
+          const forwardOver = vd - knee;
+          id_mA = (forwardOver / (R * 0.15 + 1.5)) * 1000;
+        } else if (vd > 0) {
+          // Sub-knee exponential rise
+          id_mA = 0.05 * (Math.exp((vd / knee) * 4) - 1);
+        } else if (isZener && vd <= -zenerV) {
+          // Zener breakdown
+          const zenerOver = -vd - zenerV;
+          id_mA = -(zenerOver / 5) * 1000;
+        } else {
+          // Reverse saturation leakage
+          const isLeak = diodeType === 'germanium' ? -0.015 : -0.0001;
+          id_mA = isLeak;
+        }
+        pts.push({ x: parseFloat(vd.toFixed(3)), y: parseFloat(id_mA.toFixed(3)) });
+      }
+
+      return {
+        points: pts,
+        label: `Theoretical I-V (${diodeType.toUpperCase()}, V_k = ${knee}V)`,
+        equation: `V_k = ${knee} V`,
+      };
+    },
+    deducePhysics: (_reg, p) => {
+      const knee = p.kneeVoltage ?? 0.7;
+      return {
+        label: 'Barrier Potential (Knee Voltage V_k)',
+        formula: 'V_k',
+        unit: 'V',
+        experimentalValue: parseFloat(knee.toFixed(2)),
+        theoreticalValue: parseFloat(knee.toFixed(2)),
+        percentageError: 0.0,
+      };
+    },
+    theoryDescription:
+      'The P-N junction diode displays an exponential forward characteristic. Conduction begins abruptly when the applied forward voltage overcomes the internal barrier potential (0.7V for Si, 0.3V for Ge).',
+  },
+  {
+    id: 'i_vs_vs',
+    mathematicalForm: 'Piecewise Linear',
+    graphTypeDescription: 'Circuit Load-Line Response',
+    governingEquation: 'I_D = \\frac{V_s - V_k}{R_s} \\quad (V_s > V_k)',
+    title: 'Diode Current (I_D) vs Supply Voltage (V_s)',
+    xKey: 'sourceVoltage',
+    yKey: 'current_mA',
+    xLabel: 'Supply Voltage V_s',
+    yLabel: 'Diode Current I_D',
+    xUnit: 'V',
+    yUnit: 'mA',
+    graphType: 'scatter',
+    isLinear: false,
+    expectedSlopeFormula: 'Conductance 1/R_s (mA/V)',
+    getExpectedSlope: (p) => {
+      const R = p.seriesResistance ?? 220;
+      return 1000 / R;
+    },
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const knee = p.kneeVoltage ?? 0.7;
+      const R = p.seriesResistance ?? 220;
+      const isZener = p.diodeType === 'zener';
+      const zenerV = p.zenerVoltage ?? 5.6;
+
+      const pts = [];
+      const x0 = minX !== undefined && isFinite(minX) ? minX : -8.0;
+      const x1 = maxX !== undefined && isFinite(maxX) ? maxX : 10.0;
+      const steps = 50;
+
+      for (let i = 0; i <= steps; i++) {
+        const vs = x0 + (i / steps) * (x1 - x0);
+        let id_mA = 0;
+        if (vs > knee) {
+          id_mA = ((vs - knee) / R) * 1000;
+        } else if (isZener && vs < -zenerV) {
+          id_mA = -((-vs - zenerV) / R) * 1000;
+        }
+        pts.push({ x: parseFloat(vs.toFixed(2)), y: parseFloat(id_mA.toFixed(2)) });
+      }
+
+      return {
+        points: pts,
+        label: `Theoretical Load Response (R_s = ${R} Ω)`,
+        equation: `I = (V_s - ${knee}) / ${R}`,
+      };
+    },
+    theoryDescription:
+      'In a closed circuit with series current-limiting resistor R_s, current above the knee voltage is governed by the load-line equation I_D = (V_s - V_k) / R_s.',
+  },
+  {
+    id: 'vd_vs_vs',
+    mathematicalForm: 'Voltage Clamping',
+    graphTypeDescription: 'Forward Voltage Regulation & Clamping',
+    governingEquation: 'V_D \\approx V_k \\quad (\\text{in forward conduction})',
+    title: 'Diode Voltage (V_D) vs Supply Voltage (V_s)',
+    xKey: 'sourceVoltage',
+    yKey: 'diodeVoltage',
+    xLabel: 'Supply Voltage V_s',
+    yLabel: 'Diode Voltage V_D',
+    xUnit: 'V',
+    yUnit: 'V',
+    graphType: 'scatter',
+    isLinear: false,
+    getTheoreticalCurve: ([minX, maxX], p) => {
+      const knee = p.kneeVoltage ?? 0.7;
+      const isZener = p.diodeType === 'zener';
+      const zenerV = p.zenerVoltage ?? 5.6;
+
+      const pts = [];
+      const x0 = minX !== undefined && isFinite(minX) ? minX : -8.0;
+      const x1 = maxX !== undefined && isFinite(maxX) ? maxX : 8.0;
+      const steps = 50;
+
+      for (let i = 0; i <= steps; i++) {
+        const vs = x0 + (i / steps) * (x1 - x0);
+        let vd = 0;
+        if (vs >= knee) {
+          vd = knee + 0.05 * Math.log10(1 + (vs - knee));
+        } else if (vs >= 0) {
+          vd = vs;
+        } else if (isZener && vs < -zenerV) {
+          vd = -zenerV;
+        } else {
+          vd = vs;
+        }
+        pts.push({ x: parseFloat(vs.toFixed(2)), y: parseFloat(vd.toFixed(3)) });
+      }
+
+      return {
+        points: pts,
+        label: `Theoretical Clamping Curve (V_k = ${knee}V)`,
+        equation: `V_D \\approx ${knee} V`,
+      };
+    },
+    theoryDescription:
+      'Illustrates diode voltage regulation. Once forward conducting, any further increase in source voltage is dropped across the external series resistor, clamping V_D near the barrier potential.',
+  },
+];
+
 

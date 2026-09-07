@@ -87,6 +87,9 @@ const DCMotorSimulation = lazy(() =>
 const TransformerSimulation = lazy(() =>
   import('./components/simulations/electricity/TransformerSimulation').then(m => ({ default: m.TransformerSimulation }))
 );
+const DiodeSimulation = lazy(() =>
+  import('./components/simulations/electricity/DiodeSimulation').then(m => ({ default: m.DiodeSimulation }))
+);
 const SimulationStatusPage = lazy(() =>
   import('./components/status/SimulationStatusPage').then(m => ({ default: m.SimulationStatusPage }))
 );
@@ -102,7 +105,8 @@ import {
   Search, 
   ArrowRight,
   FlaskConical,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LaboratoryProvider } from './context/LaboratoryContext';
@@ -113,7 +117,7 @@ import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
 import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI } from './config/features';
 
-type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'laboratory' | 'terms' | 'privacy' | 'status';
+type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'diode_sim' | 'laboratory' | 'terms' | 'privacy' | 'status';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
 
 interface SimulationMetadata {
@@ -159,6 +163,7 @@ const PATH_MAP: Record<PageType, string> = {
   ac_generator_sim: '/ac-generator',
   dc_motor_sim: '/dc-motor',
   transformer_sim: '/transformer',
+  diode_sim: '/semiconductor-diode',
   laboratory: '/laboratory',
   terms: '/terms',
   privacy: '/privacy',
@@ -202,18 +207,18 @@ const siteTranslations = {
     unitsExplorer: 'Syllabus Units Explorer:',
     studySmarterTag: '— STUDY SMARTER, INTERACT MORE',
     featuresTitle: 'Everything you need, built to help you understand the physics.',
-    feature1Title: 'Change variables',
-    feature1Desc: 'Adjust starting heights, mass parameters, force components, launch angles, and friction limits on the fly.',
-    feature2Title: 'Real-time graphs',
-    feature2Desc: 'Examine dynamic plots for positions, velocity, acceleration, friction forces, and trajectory vectors.',
-    feature3Title: 'Syllabus Equations',
-    feature3Desc: 'Connect simulated outcomes with official KaTeX derivations, variable definitions, and SI units.',
-    feature4Title: 'PDF Reports',
-    feature4Desc: 'Log experimental data trials, write observation notes, and export formal laboratory reports as PDFs.',
-    feature5Title: 'MCQ Challenges',
-    feature5Desc: 'Practice syllabus MCQ questions with detailed, step-by-step visual proofs and numerical solutions.',
-    feature6Title: 'Built by community',
-    feature6Desc: 'Developed by Physics by Senath to support G.C.E. Advanced Level students throughout Sri Lanka.',
+    feature1Title: 'Interactive Virtual Apparatus',
+    feature1Desc: 'Manipulate masses, incline angles, focal lengths, projectile speeds, and circuit voltages in real time with instant animated responses.',
+    feature2Title: 'Dynamic Scientific Graphs',
+    feature2Desc: 'Inspect live coordinate plotting for position-time, velocity curves, simple harmonic oscillations, and circuit characteristics.',
+    feature3Title: 'Official Syllabus Derivations',
+    feature3Desc: 'Connect simulated results with step-by-step KaTeX mathematical derivations, SI unit breakdowns, and NIE syllabus standards.',
+    feature4Title: 'Certified Calibration Graphs',
+    feature4Desc: 'Engineered with automated physics health probes verifying calculations within ≤ 0.5% tolerance, backed by certified ground-truth curves.',
+    feature5Title: 'Complete 6-Unit Curriculum',
+    feature5Desc: 'Full coverage across Mechanics, Oscillations & Waves, Thermal Physics, Gravitational & Electrostatic Fields, Electricity, and Modern Physics.',
+    feature6Title: 'Trilingual Learning Access',
+    feature6Desc: 'Tailored for Sri Lankan Advanced Level students with native Sinhala, Tamil, and English terminology support for intuitive understanding.',
     simsDirectoryTitle: 'Simulations Directory',
     simsDirectorySub: 'Select an active laboratory simulation to start experimenting.',
     searchPlaceholder: 'Search simulations...',
@@ -240,18 +245,18 @@ const siteTranslations = {
     unitsExplorer: 'විෂය නිර්දේශ ඒකක ගවේෂකය:',
     studySmarterTag: '— වඩාත් බුද්ධිමත්ව ඉගෙන ගන්න',
     featuresTitle: 'භෞතික විද්‍යාව පහසුවෙන් තේරුම් ගැනීමට අවශ්‍ය සියල්ල එකම තැනකින්.',
-    feature1Title: 'විචල්‍යයන් වෙනස් කරන්න',
-    feature1Desc: 'ආරම්භක උස, ස්කන්ධය, බල සංරචක, ප්‍රක්ෂේපණ කෝණ සහ ගර්ෂණ සීමා ක්ෂණිකව වෙනස් කරන්න.',
-    feature2Title: 'තාත්වික කාල ප්‍රස්ථාර',
-    feature2Desc: 'ස්ථානය, ප්‍රවේගය, ත්වරණය, ගර්ෂණ බල සහ චලිත පථ සඳහා සජීවී ප්‍රස්ථාර පරීක්ෂා කරන්න.',
-    feature3Title: 'විෂය නිර්දේශ සමීකරණ',
-    feature3Desc: 'නිල KaTeX සමීකරණ, විචල්‍ය අර්ථකථන සහ SI ඒකක සමඟ අනුකරණ ප්‍රතිඵල සසඳන්න.',
-    feature4Title: 'PDF වාර්තා',
-    feature4Desc: 'පරීක්ෂණාත්මක දත්ත සටහන් කරගනිමින් මුද්‍රණය කළ හැකි PDF වාර්තා ලබාගන්න.',
-    feature5Title: 'බහුවරණ ප්‍රශ්න අභියෝග',
-    feature5Desc: 'පියවරෙන් පියවර විස්තරාත්මක විසඳුම් සහිත විෂය නිර්දේශ බහුවරණ ප්‍රශ්න පුහුණු වන්න.',
-    feature6Title: 'ශ්‍රී ලාංකික සිසුන් වෙනුවෙන්',
-    feature6Desc: 'උසස් පෙළ භෞතික විද්‍යා සිසුන්ට උපකාර කිරීම සඳහා Physics by Senath මගින් නිර්මාණය කර ඇත.',
+    feature1Title: 'තාත්වික අනුකරණ උපකරණ',
+    feature1Desc: 'ස්කන්ධ, ආනත කෝණ, නාභීය දුර, ප්‍රක්ෂේපණ ප්‍රවේග සහ පරිපථ වෝල්ටීයතා ක්ෂණිකව වෙනස් කරමින් සජීවීව පරීක්ෂණ සිදුකරන්න.',
+    feature2Title: 'තාත්වික කාල ප්‍රස්ථාරකරණය',
+    feature2Desc: 'විස්ථාපන-කාල, ප්‍රවේග-කාල, සරල අනුවර්තී දෝලන සහ විද්‍යුත් ලාක්ෂණික ප්‍රස්ථාර අන්තර්ක්‍රියාකාරීව නිරීක්ෂණය කරන්න.',
+    feature3Title: 'විෂය නිර්දේශ සාධන හා සමීකරණ',
+    feature3Desc: 'ජාතික අධ්‍යාපන ආයතන (NIE) උසස් පෙළ විෂය නිර්දේශයට අනුකූල නිල KaTeX සාධන, විචල්‍ය අර්ථකථන සහ SI ඒකක විග්‍රහයන්.',
+    feature4Title: 'ප්‍රමිතිගත යොමු ප්‍රස්ථාර',
+    feature4Desc: 'උපරිම 0.5% ක දෝෂ සීමාවක් තුළ ගණනය කිරීම් නිරීක්ෂණය කෙරෙන ස්වයංක්‍රීය සෞඛ්‍ය පරීක්ෂණ පද්ධතියක් සහ ප්‍රමිතිගත යොමු දත්ත.',
+    feature5Title: 'පූර්ණ විෂය නිර්දේශ ඒකක 6ම',
+    feature5Desc: 'යාන්ත්‍ර විද්‍යාව, දෝලන හා තරංග, තාප භෞතික විද්‍යාව, ක්ෂේත්‍ර, ධාරා විද්‍යුතය සහ නවීන භෞතික විද්‍යාව යන ඒකක 6ම පරිපූර්ණව ආවරණය වේ.',
+    feature6Title: 'ත්‍රෛභාෂික අධ්‍යාපන පහසුකම්',
+    feature6Desc: 'ශ්‍රී ලාංකික උසස් පෙළ සිසුන් වෙනුවෙන්ම සිංහල, දෙමළ සහ ඉංග්‍රීසි මාධ්‍ය තුනෙන්ම සංකල්ප පහසුවෙන් තේරුම් ගත හැකි පරිදි සකසා ඇත.',
     simsDirectoryTitle: 'අනුකරණ නාමාවලිය',
     simsDirectorySub: 'පරීක්ෂණ ආරම්භ කිරීමට සක්‍රීය අනුකරණයක් තෝරාගන්න.',
     searchPlaceholder: 'අනුකරණ සොයන්න...',
@@ -278,21 +283,21 @@ const siteTranslations = {
     unitsExplorer: 'பாடத்திட்ட அலகு உலாவி:',
     studySmarterTag: '— திறம்பட கற்றுக்கொள்ளுங்கள்',
     featuresTitle: 'இயற்பியலைப் புரிந்துகொள்ள உங்களுக்குத் தேவையான அனைத்தும் ஒரே இடத்தில்.',
-    feature1Title: 'மாறிகளை மாற்றவும்',
-    feature1Desc: 'ஆரம்ப உயரம், நிறை, விசை கூறுகள், ஏவுதல் கோணங்கள் மற்றும் உராய்வு வரம்புகளை உடனுக்குடன் மாற்றவும்.',
-    feature2Title: 'நிகழ்நேர வரைபடங்கள்',
-    feature2Desc: 'நிலை, திசைவேகம், முடுக்கம், உராய்வு விசைகள் மற்றும் பாதைக்கான நேரடி வரைபடங்களை ஆராயுங்கள்.',
-    feature3Title: 'பாடத்திட்ட சமன்பாடுகள்',
-    feature3Desc: 'அதிகாரப்பூர்வ KaTeX சமன்பாடுகள், மாறிகளின் விளக்கங்கள் மற்றும் SI அலகுகளுடன் முடிவுகளை ஒப்பிடுக.',
-    feature4Title: 'PDF அறிக்கைகள்',
-    feature4Desc: 'சோதனைத் தரவைப் பதிவுசெய்து அச்சிடத்தக்க PDF அறிக்கைகளாகப் பதிவிறக்குங்கள்.',
-    feature5Title: 'பலவுள் தெரிவு வினாக்கள்',
-    feature5Desc: 'படிப் படியான விளக்கங்களுடன் கூடிய பாடத்திட்ட பலவுள் தெரிவு வினாக்களைப் பயிற்சி செய்யுங்கள்.',
-    feature6Title: 'இலங்கை மாணவர்களுக்காக',
-    feature6Desc: 'உயர்தர இயற்பியல் மாணவர்களுக்கு உதவ Physics by Senath மூலம் உருவாக்கப்பட்டது.',
+    feature1Title: 'ஊடாடும் மெய்நிகர் கருவிகள்',
+    feature1Desc: 'நிறைகள், சாய்வு கோணங்கள், குவியத் தூரங்கள், எறி வேகம் மற்றும் மின்னழுத்தங்களை நிகழ்நேரத்தில் மாற்றி நேரடி பரிசோதனைகளை மேற்கொள்ளுங்கள்.',
+    feature2Title: 'நிகழ்நேர அறிவியல் வரைபடங்கள்',
+    feature2Desc: 'இடப்பெயர்ச்சி-நேரம், திசைவேகம், சீரிசை அலைவுகள் மற்றும் மின் சிறப்பியல்பு வரைபடங்களை நேரலையாக வரைந்து ஆராயுங்கள்.',
+    feature3Title: 'உத்தியோகபூர்வ பாடத்திட்ட சமன்பாடுகள்',
+    feature3Desc: 'NIE உயர்தர பாடத்திட்டத்திற்கு அமைவான விரிவான KaTeX கணித விளக்கங்கள், மாறிகளின் வரைவிலக்கணங்கள் மற்றும் SI அலகுகள்.',
+    feature4Title: 'தரப்படுத்தப்பட்ட அளவீட்டு வரைபடங்கள்',
+    feature4Desc: '0.5% பிழை வரம்பிற்குள் துல்லியமாக கண்காணிக்கப்படும் தானியங்கி சோதனை அமைப்பு மற்றும் தரப்படுத்தப்பட்ட ஒப்பீட்டு வரைபடங்கள்.',
+    feature5Title: 'முழுமையான 6 பாட அலகுகள்',
+    feature5Desc: 'பொறிமுறையியல், அலைகள், வெப்பவியல், புலங்கள், மின்னோட்டம் மற்றும் நவீன இயற்பியல் ஆகிய அனைத்து 6 அலகுகளையும் உள்ளடக்கியது.',
+    feature6Title: 'மும்மொழி கற்றல் ஆதரவு',
+    feature6Desc: 'இலங்கை உயர்தர மாணவர்களுக்காக பிரத்யேகமாக தமிழ், சிங்களம் மற்றும் ஆங்கில மொழிபெயர்ப்புகளுடன் வடிவமைக்கப்பட்டுள்ளது.',
     simsDirectoryTitle: 'உருவகப்படுத்துதல் அடைவு',
     simsDirectorySub: 'சோதனையைத் தொடங்க செயலில் உள்ள உருவகப்படுத்துதலைத் தேர்ந்தெடுக்கவும்.',
-    searchPlaceholder: 'தேடுங்கள்...',
+    searchPlaceholder: 'உருவகப்படுத்துதல்களைத் தேடுங்கள்...',
     allUnits: 'அனைத்து பிரிவுகளும்',
     resetFilter: 'மீட்டமைக்கவும்',
     launchSim: 'தொடங்கவும்',
@@ -642,6 +647,17 @@ function AppContent() {
       pageLink: 'transformer_sim',
     },
     {
+      id: 'diode',
+      title: 'Semiconductor P-N Diode & Rectifier',
+      sinhalaTitle: 'අර්ධසන්නායක P-N ඩයෝඩය සහ සෘජුකාරකය',
+      tamilTitle: 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி',
+      unit: 'electricity',
+      description: 'Trace exponential I-V characteristics, test forward/reverse bias thresholds, investigate LEDs and Zener breakdown, and analyze AC half-wave rectification.',
+      icon: Zap,
+      status: 'active',
+      pageLink: 'diode_sim',
+    },
+    {
       id: 'doppler_effect',
       title: 'Doppler Effect & Sonic Boom',
       sinhalaTitle: "ඩොප්ලර් ආචරණය සහ සුපිරිධ්වනි කම්පනය",
@@ -831,9 +847,19 @@ function AppContent() {
                 
                 {/* Left content panel */}
                 <div className="lg:col-span-7 space-y-6 text-left">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200/60 border border-slate-300/40 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-600 select-none">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block animate-pulse"></span>
-                    {st.heroBadge}
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200/60 border border-slate-300/40 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-600 select-none">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block animate-pulse"></span>
+                      {st.heroBadge}
+                    </div>
+                    <button
+                      onClick={openUpdateNote}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-full text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-2xs hover:scale-102"
+                      title="Open System Release Note"
+                    >
+                      <Sparkles className="w-3 h-3 text-blue-600" />
+                      <span>Release Notes</span>
+                    </button>
                   </div>
 
                   <h2 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-tight">
@@ -997,15 +1023,15 @@ function AppContent() {
                         🎛️
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature1Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature1Desc}
                       </p>
                     </div>
                   </div>
 
                   {/* Card 2 */}
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-blue-300 transition-all flex flex-col justify-between group glow-card relative">
-                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-blue-500 transition-colors font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-emerald-300 transition-all flex flex-col justify-between group glow-card relative">
+                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-emerald-500 transition-colors font-bold">
                       ↗
                     </div>
                     <div className="space-y-3">
@@ -1013,15 +1039,15 @@ function AppContent() {
                         📈
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature2Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature2Desc}
                       </p>
                     </div>
                   </div>
 
                   {/* Card 3 */}
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-blue-300 transition-all flex flex-col justify-between group glow-card relative">
-                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-blue-500 transition-colors font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-amber-300 transition-all flex flex-col justify-between group glow-card relative">
+                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-amber-500 transition-colors font-bold">
                       ↗
                     </div>
                     <div className="space-y-3">
@@ -1029,55 +1055,55 @@ function AppContent() {
                         📐
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature3Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature3Desc}
                       </p>
                     </div>
                   </div>
 
                   {/* Card 4 */}
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-blue-300 transition-all flex flex-col justify-between group glow-card relative">
-                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-blue-500 transition-colors font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-indigo-300 transition-all flex flex-col justify-between group glow-card relative">
+                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-indigo-500 transition-colors font-bold">
                       ↗
                     </div>
                     <div className="space-y-3">
-                      <div className="bg-purple-50 text-purple-600 p-2 rounded-xl w-10 h-10 flex items-center justify-center text-lg select-none">
-                        📋
+                      <div className="bg-indigo-50 text-indigo-600 p-2 rounded-xl w-10 h-10 flex items-center justify-center text-lg select-none">
+                        🛡️
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature4Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature4Desc}
                       </p>
                     </div>
                   </div>
 
                   {/* Card 5 */}
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-blue-300 transition-all flex flex-col justify-between group glow-card relative">
-                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-blue-500 transition-colors font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-purple-300 transition-all flex flex-col justify-between group glow-card relative">
+                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-purple-500 transition-colors font-bold">
                       ↗
                     </div>
                     <div className="space-y-3">
-                      <div className="bg-rose-50 text-rose-600 p-2 rounded-xl w-10 h-10 flex items-center justify-center text-lg select-none">
-                        🎯
+                      <div className="bg-purple-50 text-purple-600 p-2 rounded-xl w-10 h-10 flex items-center justify-center text-lg select-none">
+                        🔬
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature5Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature5Desc}
                       </p>
                     </div>
                   </div>
 
                   {/* Card 6 */}
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-blue-300 transition-all flex flex-col justify-between group glow-card relative">
-                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-blue-500 transition-colors font-bold">
+                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-sky-300 transition-all flex flex-col justify-between group glow-card relative">
+                    <div className="absolute top-5 right-5 text-slate-300 group-hover:text-sky-500 transition-colors font-bold">
                       ↗
                     </div>
                     <div className="space-y-3">
                       <div className="bg-sky-50 text-sky-600 p-2 rounded-xl w-10 h-10 flex items-center justify-center text-lg select-none">
-                        👤
+                        🌐
                       </div>
                       <h4 className="font-black text-slate-900 text-sm">{st.feature6Title}</h4>
-                      <p className="text-slate-400 text-xs leading-relaxed">
+                      <p className="text-slate-600 text-xs leading-relaxed font-normal">
                         {st.feature6Desc}
                       </p>
                     </div>
@@ -1859,6 +1885,27 @@ function AppContent() {
           </div>
         )}
 
+        {/* ACTIVE DIODE SIMULATION */}
+        {currentPage === 'diode_sim' && (
+          <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col min-h-0">
+            <div className="flex items-center justify-between mb-3 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
+                <span>&gt;</span>
+                <span className="text-slate-900 font-semibold">Semiconductor P-N Diode & Rectifier</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">අර්ධසන්නායක ඩයෝඩය • இருமுனையம்</span>
+            </div>
+            <div className="flex-1 min-h-0">
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <DiodeSimulation lang={lang} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+        )}
+
         {/* ACTIVE LABORATORY WORKSPACE (PROTECTED & PRESERVED) */}
         {currentPage === 'laboratory' && (
           ENABLE_LABORATORY_UI ? (
@@ -2093,6 +2140,15 @@ function AppContent() {
             <button onClick={() => setCurrentPage('privacy')} className="text-blue-600 hover:underline cursor-pointer">{st.privacyTitle}</button>
           </p>
           <div className="pt-1 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={openUpdateNote}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border shadow-2xs bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-200/80"
+              title="View Physics by Senath Release & Update Note"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span>Release Notes</span>
+            </button>
+
             <button
               onClick={() => setCurrentPage('status')}
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border shadow-2xs ${

@@ -173,7 +173,7 @@ export const SIMULATOR_INVENTORY: SimulatorInventoryItem[] = [
     pageLink: 'optics_sim',
   },
 
-  // Electricity & Magnetism (10)
+  // Electricity & Magnetism (11)
   {
     id: 'dc-ohms-law',
     title: "DC Circuits & Ohm's Law",
@@ -189,6 +189,14 @@ export const SIMULATOR_INVENTORY: SimulatorInventoryItem[] = [
     categoryLabel: 'Electricity & Magnetism',
     description: 'Primary/secondary turns ratios, step-up/step-down voltage conversion.',
     pageLink: 'transformer_sim',
+  },
+  {
+    id: 'diode',
+    title: 'Semiconductor Diode & Rectifier',
+    category: 'electricity',
+    categoryLabel: 'Electricity & Magnetism',
+    description: 'P-N junction I-V exponential curve, knee voltage thresholds, and half-wave rectification.',
+    pageLink: 'diode_sim',
   },
   {
     id: 'ac-generator',

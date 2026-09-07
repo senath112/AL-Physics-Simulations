@@ -4,6 +4,7 @@ import { useLaboratory } from '../../context/LaboratoryContext';
 import { LaboratoryPractical, DataRow } from '../../types/laboratory';
 import { PlotlyGraph } from '../PlotlyGraph';
 import { BlockMath } from '../Math';
+import { ENABLE_GRAPH_REGRESSION } from '../../config/features';
 import { 
   FileText, 
   TableProperties, 
@@ -106,6 +107,7 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
 
   // Helper to calculate linear regression
   const calculateRegression = (rows: DataRow[], xKey: string, yKey: string, xTrans = 'none', yTrans = 'none') => {
+    if (!ENABLE_GRAPH_REGRESSION) return null;
     const validPairs = rows
       .map(r => ({
         x: transformValue(Number(r[xKey]), xTrans),
@@ -197,7 +199,9 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
                 </span>
               </div>
               <p className="text-xs text-blue-100 mt-1">
-                Perform regression analytics on recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.
+                {ENABLE_GRAPH_REGRESSION
+                  ? 'Perform regression analytics on recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.'
+                  : 'Analyze recorded simulation trials, write formal reports, and sync diagrams to Cloudflare R2.'}
               </p>
               <div className="flex flex-wrap items-center gap-2.5 mt-2.5 text-xs text-blue-200">
                 <span className="inline-flex items-center gap-1.5 bg-white/15 border border-white/20 text-white px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-xs">
@@ -287,7 +291,7 @@ export const LaboratoryDashboard: React.FC<LaboratoryDashboardProps> = ({
               }`}
             >
               <TableProperties className="w-4 h-4" />
-              <span>Data Analyzer & Regression</span>
+              <span>Data Analyzer{ENABLE_GRAPH_REGRESSION ? ' & Regression' : ''}</span>
             </button>
 
             <button

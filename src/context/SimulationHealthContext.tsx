@@ -137,13 +137,19 @@ export const SimulationHealthProvider: React.FC<{ children: React.ReactNode }> =
     );
   }, [testHealthOverride, overallStatus, httpStatus, simResults]);
 
-  // Auto-open update note on system home page when low health is detected (once per session)
+  // Auto-open update note on system home page on initial load (once per session) and whenever low health occurs
   useEffect(() => {
-    if (isHealthLow) {
-      const alreadyDismissed = typeof window !== 'undefined' && sessionStorage.getItem('physics_update_note_dismissed') === 'true';
+    if (typeof window !== 'undefined') {
+      const alreadyDismissed = sessionStorage.getItem('physics_release_note_dismissed_v4') === 'true';
       if (!alreadyDismissed) {
         setIsUpdateNoteOpen(true);
       }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isHealthLow) {
+      setIsUpdateNoteOpen(true);
     }
   }, [isHealthLow]);
 
@@ -154,7 +160,7 @@ export const SimulationHealthProvider: React.FC<{ children: React.ReactNode }> =
   const closeUpdateNote = useCallback(() => {
     setIsUpdateNoteOpen(false);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('physics_update_note_dismissed', 'true');
+      sessionStorage.setItem('physics_release_note_dismissed_v4', 'true');
     }
   }, []);
 

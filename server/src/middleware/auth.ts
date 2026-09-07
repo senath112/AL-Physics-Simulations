@@ -21,7 +21,14 @@ export interface AuthenticatedRequest extends Request {
 const SESSION_SECRET: string =
   process.env.SESSION_SECRET ||
   (process.env.NODE_ENV === 'production'
-    ? (() => { console.error('[SECURITY] SESSION_SECRET is not set in production! Generating ephemeral key.'); return crypto.randomBytes(32).toString('hex'); })()
+    ? (() => {
+        console.error(
+          '[SECURITY WARNING] SESSION_SECRET environment variable is missing in production! ' +
+          'Generating ephemeral 256-bit secret. Note: In multi-worker/cluster deployments, this will cause session signature mismatches. ' +
+          'Please define SESSION_SECRET in your server environment.'
+        );
+        return crypto.randomBytes(32).toString('hex');
+      })()
     : crypto.randomBytes(32).toString('hex'));
 
 /**
