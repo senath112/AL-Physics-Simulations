@@ -10,3 +10,4 @@ export const ENABLE_OBSERVATION_NOTEBOOKS = false; // Disables Observation Noteb
 export const ENABLE_THEORY_NOTEBOOKS = false; // Temporarily disables Theory Notebooks, making site Sim Only
 export const ENABLE_SIMULATION_LAB_BAR = false; // Temporarily disables record, autorun, rec bar
 export const ENABLE_GRAPH_REGRESSION = false; // Temporarily disables regression analysis & fit lines in graphs
+export const ENABLE_DIODE_AC_RECTIFIER = false; // Temporarily disables AC Rectifier mode in Diode simulation

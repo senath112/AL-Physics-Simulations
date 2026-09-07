@@ -16,6 +16,7 @@ import {
   Lock
 } from 'lucide-react';
 import { useSimulationHealth } from '../../context/SimulationHealthContext';
+import { ENABLE_DIODE_AC_RECTIFIER } from '../../config/features';
 
 export type SimulatorStatus = 'operational' | 'degraded' | 'unavailable' | 'unknown';
 
@@ -192,10 +193,12 @@ export const SIMULATOR_INVENTORY: SimulatorInventoryItem[] = [
   },
   {
     id: 'diode',
-    title: 'Semiconductor Diode & Rectifier',
+    title: ENABLE_DIODE_AC_RECTIFIER ? 'Semiconductor Diode & Rectifier' : 'Semiconductor P-N Diode',
     category: 'electricity',
     categoryLabel: 'Electricity & Magnetism',
-    description: 'P-N junction I-V exponential curve, knee voltage thresholds, and half-wave rectification.',
+    description: ENABLE_DIODE_AC_RECTIFIER
+      ? 'P-N junction I-V exponential curve, knee voltage thresholds, and half-wave rectification.'
+      : 'P-N junction I-V exponential curve, knee voltage thresholds, and depletion layer dynamics.',
     pageLink: 'diode_sim',
   },
   {

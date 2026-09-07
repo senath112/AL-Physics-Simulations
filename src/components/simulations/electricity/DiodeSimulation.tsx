@@ -6,7 +6,7 @@ import { ScientificGraphLab } from '../../graphing/ScientificGraphLab';
 import { diodeGraphs } from '../../graphing/presets';
 import { SimulationLabBar } from '../../laboratory/SimulationLabBar';
 import { BlockMath, InlineMath } from '../../Math';
-import { ENABLE_SIMULATION_LAB_BAR } from '../../../config/features';
+import { ENABLE_SIMULATION_LAB_BAR, ENABLE_DIODE_AC_RECTIFIER } from '../../../config/features';
 
 type DiodeType = 'silicon' | 'germanium' | 'led_red' | 'led_green' | 'led_blue' | 'zener';
 type CircuitMode = 'dc_characterization' | 'ac_rectifier' | 'pn_microscopic';
@@ -82,8 +82,10 @@ const DIODE_SPECS: Record<DiodeType, DiodeSpec> = {
 export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) {
   const TRANSLATIONS = {
     en: {
-      title: 'Semiconductor P-N Diode & Rectifier Lab',
-      subtitle: 'I-V Characteristics, Forward/Reverse Bias, LEDs, and Rectification',
+      title: ENABLE_DIODE_AC_RECTIFIER ? 'Semiconductor P-N Diode & Rectifier Lab' : 'Semiconductor P-N Diode Lab',
+      subtitle: ENABLE_DIODE_AC_RECTIFIER
+        ? 'I-V Characteristics, Forward/Reverse Bias, LEDs, and Rectification'
+        : 'I-V Characteristics, Forward/Reverse Bias, LEDs, and Zener Breakdown',
       paramsTitle: 'Diode & Circuit Parameters',
       modeTitle: 'Simulation Mode',
       modeDC: 'DC Circuit (I-V Curve)',
@@ -119,8 +121,10 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
       theoryTitle: 'Physics & Mathematical Derivations',
     },
     si: {
-      title: 'අර්ධසන්නායක P-N ඩයෝඩ සහ සෘජුකාරක පරීක්ෂණාගාරය',
-      subtitle: 'I-V ලාක්ෂණික වක්‍ර, පෙර/පසු නැඹුරුව, ආලෝක විමෝචක ඩයෝඩ සහ සෘජුකරණය',
+      title: ENABLE_DIODE_AC_RECTIFIER ? 'අර්ධසන්නායක P-N ඩයෝඩ සහ සෘජුකාරක පරීක්ෂණාගාරය' : 'අර්ධසන්නායක P-N ඩයෝඩ පරීක්ෂණාගාරය',
+      subtitle: ENABLE_DIODE_AC_RECTIFIER
+        ? 'I-V ලාක්ෂණික වක්‍ර, පෙර/පසු නැඹුරුව, ආලෝක විමෝචක ඩයෝඩ සහ සෘජුකරණය'
+        : 'I-V ලාක්ෂණික වක්‍ර, පෙර/පසු නැඹුරුව, ආලෝක විමෝචක ඩයෝඩ සහ සීනර් බිඳවැටීම',
       paramsTitle: 'ඩයෝඩ හා පරිපථ පරාමිතීන්',
       modeTitle: 'අනුකරණ ආකාරය',
       modeDC: 'DC පරිපථය (I-V වක්‍රය)',
@@ -156,8 +160,10 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
       theoryTitle: 'භෞතික විද්‍යා න්‍යාය සහ සමීකරණ',
     },
     ta: {
-      title: 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி ஆய்வகம்',
-      subtitle: 'I-V சிறப்பியல்பு வரைபடம், முன்னோக்கு/பின்னோக்குக் கோடல் மற்றும் திருத்தம்',
+      title: ENABLE_DIODE_AC_RECTIFIER ? 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி ஆய்வகம்' : 'குறைக்கடத்தி P-N இருமுனைய ஆய்வகம்',
+      subtitle: ENABLE_DIODE_AC_RECTIFIER
+        ? 'I-V சிறப்பியல்பு வரைபடம், முன்னோக்கு/பின்னோக்குக் கோடல் மற்றும் திருத்தம்'
+        : 'I-V சிறப்பியல்பு வரைபடம், முன்னோக்கு/பின்னோக்குக் கோடல் மற்றும் ஜெனர் முறிவு',
       paramsTitle: 'இருமுனைய & சுற்று அளவுருக்கள்',
       modeTitle: 'உருவகப்படுத்துதல் முறை',
       modeDC: 'DC சுற்று (I-V சிறப்பியல்பு)',
@@ -211,6 +217,12 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
 
   const [chargeOffset, setChargeOffset] = useState<number>(0);
   const [acTime, setAcTime] = useState<number>(0);
+
+  useEffect(() => {
+    if (!ENABLE_DIODE_AC_RECTIFIER && circuitMode === 'ac_rectifier') {
+      setCircuitMode('dc_characterization');
+    }
+  }, [circuitMode]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spec = DIODE_SPECS[diodeType];
@@ -302,7 +314,7 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
 
     if (circuitMode === 'dc_characterization') {
       renderDCCircuit(ctx, width, height);
-    } else if (circuitMode === 'ac_rectifier') {
+    } else if (ENABLE_DIODE_AC_RECTIFIER && circuitMode === 'ac_rectifier') {
       renderACRectifier(ctx, width, height);
     } else {
       renderMicroscopicPN(ctx, width, height);
@@ -864,7 +876,7 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
           {/* Simulation Mode Toggle */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-700 block">{t.modeTitle}</label>
-            <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl">
+            <div className={`grid ${ENABLE_DIODE_AC_RECTIFIER ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 bg-slate-100 p-1 rounded-xl`}>
               <button
                 onClick={() => setCircuitMode('dc_characterization')}
                 className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
@@ -873,14 +885,16 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
               >
                 DC I-V
               </button>
-              <button
-                onClick={() => setCircuitMode('ac_rectifier')}
-                className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                  circuitMode === 'ac_rectifier' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                AC Rectifier
-              </button>
+              {ENABLE_DIODE_AC_RECTIFIER && (
+                <button
+                  onClick={() => setCircuitMode('ac_rectifier')}
+                  className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                    circuitMode === 'ac_rectifier' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  AC Rectifier
+                </button>
+              )}
               <button
                 onClick={() => setCircuitMode('pn_microscopic')}
                 className={`py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
@@ -911,7 +925,7 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
           </div>
 
           {/* Mode Specific Controls */}
-          {circuitMode !== 'ac_rectifier' ? (
+          {(!ENABLE_DIODE_AC_RECTIFIER || circuitMode !== 'ac_rectifier') ? (
             <>
               {/* DC Voltage Slider */}
               <div className="space-y-1.5">
@@ -1071,7 +1085,7 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
               <span>
                 {circuitMode === 'dc_characterization'
                   ? t.modeDC
-                  : circuitMode === 'ac_rectifier'
+                  : ENABLE_DIODE_AC_RECTIFIER && circuitMode === 'ac_rectifier'
                   ? t.modeAC
                   : t.modePN}
               </span>
@@ -1179,15 +1193,25 @@ export function DiodeSimulation({ lang = 'en' }: { lang?: 'en' | 'si' | 'ta' }) 
             </div>
 
             <div className="space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <h5 className="font-bold text-slate-900 text-xs">2. Half-Wave Rectification & Ripple</h5>
+              <h5 className="font-bold text-slate-900 text-xs">
+                {ENABLE_DIODE_AC_RECTIFIER ? '2. Half-Wave Rectification & Ripple' : '2. Dynamic Resistance & Knee Voltage'}
+              </h5>
               <p className="text-slate-600 text-[11px]">
-                Diode conducts on positive AC half-cycles. With smoothing capacitor <InlineMath math="C" />:
+                {ENABLE_DIODE_AC_RECTIFIER
+                  ? 'Diode conducts on positive AC half-cycles. With smoothing capacitor C:'
+                  : 'Reciprocal of slope on the forward I-V characteristic curve beyond knee voltage:'}
               </p>
               <div className="py-1">
-                <BlockMath math="V_{dc} \approx V_m - \frac{I_{dc}}{2 f C}, \quad V_{\text{ripple}} \approx \frac{I_{dc}}{f C}" />
+                {ENABLE_DIODE_AC_RECTIFIER ? (
+                  <BlockMath math="V_{dc} \approx V_m - \frac{I_{dc}}{2 f C}, \quad V_{\text{ripple}} \approx \frac{I_{dc}}{f C}" />
+                ) : (
+                  <BlockMath math="r_d = \frac{\Delta V_D}{\Delta I_D} \approx \frac{\eta V_T}{I_D}" />
+                )}
               </div>
               <p className="text-slate-500 text-[10px]">
-                Increasing capacitance <InlineMath math="C" /> lowers ripple voltage, transforming pulsating AC into steady DC.
+                {ENABLE_DIODE_AC_RECTIFIER
+                  ? 'Increasing capacitance C lowers ripple voltage, transforming pulsating AC into steady DC.'
+                  : 'Dynamic resistance drops rapidly from mega-ohms down to a few ohms once forward conducting.'}
               </p>
             </div>
           </div>

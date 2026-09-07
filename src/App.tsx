@@ -115,7 +115,7 @@ import { SimulationHealthUpdateModal } from './components/status/SimulationHealt
 import { AuthModal } from './components/auth/AuthModal';
 import { UserMenu } from './components/auth/UserMenu';
 import { LaboratoryDashboard } from './components/laboratory/LaboratoryDashboard';
-import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI } from './config/features';
+import { ENABLE_LABORATORY_UI, ENABLE_AUTH_UI, ENABLE_DIODE_AC_RECTIFIER } from './config/features';
 
 type PageType = 'home' | 'sims' | 'projectile_sim' | 'newtons_sim' | 'inclined_sim' | 'optics_sim' | 'shm_sim' | 'photoelectric_sim' | 'gas_sim' | 'lenz_sim' | 'magnetic_field_wire' | 'parallel_currents' | 'charged_particle_magnetic_sim' | 'solenoid_sim' | 'induction_sim' | 'ohms_sim' | 'doppler_sim' | 'connected_particles_sim' | 'pulleys_sim' | 'collisions_sim' | 'circular_motion_sim' | 'energy_sim' | 'centre_mass_sim' | 'orbits_sim' | 'hydrostatics_sim' | 'gravitation_sim' | 'rolling_motion_sim' | 'ac_generator_sim' | 'dc_motor_sim' | 'transformer_sim' | 'diode_sim' | 'laboratory' | 'terms' | 'privacy' | 'status';
 type SyllabusUnit = 'mechanics' | 'waves' | 'electricity' | 'magnetism' | 'thermal' | 'modern';
@@ -648,11 +648,13 @@ function AppContent() {
     },
     {
       id: 'diode',
-      title: 'Semiconductor P-N Diode & Rectifier',
-      sinhalaTitle: 'අර්ධසන්නායක P-N ඩයෝඩය සහ සෘජුකාරකය',
-      tamilTitle: 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி',
+      title: ENABLE_DIODE_AC_RECTIFIER ? 'Semiconductor P-N Diode & Rectifier' : 'Semiconductor P-N Diode',
+      sinhalaTitle: ENABLE_DIODE_AC_RECTIFIER ? 'අර්ධසන්නායක P-N ඩයෝඩය සහ සෘජුකාරකය' : 'අර්ධසන්නායක P-N ඩයෝඩය',
+      tamilTitle: ENABLE_DIODE_AC_RECTIFIER ? 'குறைக்கடத்தி P-N இருமுனையம் & திருத்தி' : 'குறைக்கடத்தி P-N இருமுனையம்',
       unit: 'electricity',
-      description: 'Trace exponential I-V characteristics, test forward/reverse bias thresholds, investigate LEDs and Zener breakdown, and analyze AC half-wave rectification.',
+      description: ENABLE_DIODE_AC_RECTIFIER
+        ? 'Trace exponential I-V characteristics, test forward/reverse bias thresholds, investigate LEDs and Zener breakdown, and analyze AC half-wave rectification.'
+        : 'Trace exponential I-V characteristics, test forward/reverse bias thresholds, investigate LEDs and Zener breakdown, and explore microscopic P-N junction physics.',
       icon: Zap,
       status: 'active',
       pageLink: 'diode_sim',
@@ -1892,7 +1894,7 @@ function AppContent() {
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
                 <span onClick={() => setCurrentPage('sims')} className="hover:text-blue-600 cursor-pointer">Simulations</span>
                 <span>&gt;</span>
-                <span className="text-slate-900 font-semibold">Semiconductor P-N Diode & Rectifier</span>
+                <span className="text-slate-900 font-semibold">{ENABLE_DIODE_AC_RECTIFIER ? 'Semiconductor P-N Diode & Rectifier' : 'Semiconductor P-N Diode'}</span>
               </div>
               <span className="text-[10px] text-slate-400 font-bold bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full">අර්ධසන්නායක ඩයෝඩය • இருமுனையம்</span>
             </div>
