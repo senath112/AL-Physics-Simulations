@@ -1,6 +1,16 @@
 /**
  * Generates an academic print/PDF laboratory report using the browser's native print engine.
  */
+function escapeHtml(value: unknown): string {
+  const str = String(value ?? '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function downloadReportAsPDF(
   simTitle: string,
   parameters: Record<string, string>,
@@ -25,8 +35,8 @@ export function downloadReportAsPDF(
     .map(
       ([key, val]) => `
       <div class="param-badge">
-        <span class="param-key">${key}</span>
-        <span class="param-val">${val}</span>
+        <span class="param-key">${escapeHtml(key)}</span>
+        <span class="param-val">${escapeHtml(val)}</span>
       </div>`
     )
     .join('');
@@ -37,14 +47,17 @@ export function downloadReportAsPDF(
   if (logs.length > 0) {
     const keys = Object.keys(logs[0]);
     tableHeader = keys
-      .map(k => `<th>${k.toUpperCase().replace('_', ' ')}</th>`)
+      .map(k => `<th>${escapeHtml(k.toUpperCase().replace('_', ' '))}</th>`)
       .join('');
 
     tableBody = logs
       .map(
         row => `
       <tr>
-        ${keys.map(k => `<td>${typeof row[k] === 'number' ? row[k].toFixed(3) : row[k]}</td>`).join('')}
+        ${keys.map(k => {
+          const value = typeof row[k] === 'number' ? row[k].toFixed(3) : row[k];
+          return `<td>${escapeHtml(value)}</td>`;
+        }).join('')}
       </tr>`
       )
       .join('');
@@ -54,7 +67,7 @@ export function downloadReportAsPDF(
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Lab Report - ${simTitle}</title>
+        <title>Lab Report - ${escapeHtml(simTitle)}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
           
@@ -189,8 +202,8 @@ export function downloadReportAsPDF(
           <h1>Physics Laboratory Investigation Report</h1>
           <div class="meta">
             <span>PLATFORM: A/L Physics Simulations</span> | 
-            <span>SIMULATION: ${simTitle}</span> | 
-            <span>DATE: ${dateStr}</span>
+            <span>SIMULATION: ${escapeHtml(simTitle)}</span> | 
+            <span>DATE: ${escapeHtml(dateStr)}</span>
           </div>
         </div>
 
@@ -212,7 +225,7 @@ export function downloadReportAsPDF(
         ` : ''}
 
         <div class="section-title">Student Field Notes & Observations</div>
-        <div class="notes-box">${notes || 'No notes compiled for this investigation.'}</div>
+        <div class="notes-box">${escapeHtml(notes || 'No notes compiled for this investigation.')}</div>
 
         <div class="footer">
           Developed by Physics by Senath • Published at senathsethmika.lk/physics

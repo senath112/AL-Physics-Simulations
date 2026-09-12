@@ -1,4 +1,5 @@
 import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
+import { signSessionToken } from "./utils/session";
 
 // In-memory / persistent user store simulation for serverless execution
 // In production, connect this to your primary database (e.g., Supabase, Neon, PostgreSQL, or Cloudflare KV/D1)
@@ -52,10 +53,9 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
     const verifyRes = await fetch(googleVerifyUrl);
 
     if (!verifyRes.ok) {
-      const errData = await verifyRes.json().catch(() => ({}));
       return {
         statusCode: 401,
-        body: JSON.stringify({ error: "Invalid Google ID token signature or expired token", details: errData }),
+        body: JSON.stringify({ error: "Invalid Google ID token signature or expired token" }),
         headers: { "Content-Type": "application/json" }
       };
     }
@@ -114,8 +114,8 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
       globalUsers.set(googleSub, user);
     }
 
-    // Create a base64 session payload (or JWT session in production)
-    const sessionData = JSON.stringify({
+    // Create a signed session payload
+    const sessionToken = signSessionToken({
       userId: user.id,
       googleSub: user.google_sub,
       email: user.email,
@@ -126,7 +126,6 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
       savedPracticalsCount: user.savedPracticalsCount,
       exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60 // 30 days
     });
-    const sessionToken = Buffer.from(sessionData).toString("base64");
 
     // Secure HttpOnly session cookie
     const isProd = process.env.NODE_ENV === "production" || process.env.CONTEXT === "production";
@@ -154,9 +153,10 @@ export const handler: Handler = async (event: HandlerEvent, _context: HandlerCon
       })
     };
   } catch (error: any) {
+    console.error("[ERROR] Netlify auth-google failed:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal authentication error", message: error?.message }),
+      body: JSON.stringify({ error: "Internal authentication error" }),
       headers: { "Content-Type": "application/json" }
     };
   }
